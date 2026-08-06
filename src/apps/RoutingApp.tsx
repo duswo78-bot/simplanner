@@ -268,6 +268,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                     <RouteSummaryCard 
                       route={route} 
                       isSelected={selectedRouteId === route.id}
+                      isMapVisible={selectedRouteId === route.id && isMapForcedVisible}
                       onClick={() => setSelectedRouteId(route.id)}
                       onShowMap={() => {
                         setIsMapForcedVisible(!isMapForcedVisible);

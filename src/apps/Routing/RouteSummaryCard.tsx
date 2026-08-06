@@ -6,10 +6,11 @@ interface RouteSummaryCardProps {
   route: RouteOption;
   onClick: () => void;
   isSelected?: boolean;
+  isMapVisible?: boolean;
   onShowMap?: () => void;
 }
 
-export function RouteSummaryCard({ route, onClick, isSelected, onShowMap }: RouteSummaryCardProps) {
+export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onShowMap }: RouteSummaryCardProps) {
   return (
     <div 
       className={`glass-panel ${isSelected ? 'selected' : ''}`}
@@ -78,9 +79,12 @@ export function RouteSummaryCard({ route, onClick, isSelected, onShowMap }: Rout
             <button 
               onClick={(e) => { e.stopPropagation(); onShowMap?.(); }}
               style={{
-                background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '8px', padding: '4px 8px', color: '#fff', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', height: '24px'
+                background: isMapVisible ? 'rgba(59, 130, 246, 0.4)' : 'rgba(255,255,255,0.15)',
+                border: isMapVisible ? '1px solid rgba(59, 130, 246, 0.8)' : '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '8px', padding: '4px 8px', 
+                color: isMapVisible ? '#fff' : 'rgba(255,255,255,0.6)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', height: '24px',
+                boxShadow: isMapVisible ? '0 0 10px rgba(59, 130, 246, 0.3)' : 'none'
               }}
             >
               <Map size={14} />
