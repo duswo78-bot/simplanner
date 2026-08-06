@@ -207,7 +207,7 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
           const errMsgData = xmlDoc.getElementsByTagName("errMsg")[0]?.textContent;
           const resultMsg = xmlDoc.getElementsByTagName("resultMsg")[0]?.textContent;
           
-          if (errMsgData || (resultMsg && resultMsg !== 'NORMAL_SERVICE' && resultMsg !== '정상')) {
+          if (errMsgData || (resultMsg && !resultMsg.includes('NORMAL') && resultMsg !== '정상' && resultMsg !== 'NORMAL SERVICE.')) {
             setError(`API 오류: ${errMsgData || resultMsg}`);
             setRawResults([]);
             setIsSearching(false);
@@ -290,9 +290,9 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
             setRawResults(parsedResults);
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        setError('데이터를 불러오는 중 오류가 발생했습니다.');
+        setError(`데이터를 불러오는 중 오류가 발생했습니다: ${err.message || String(err)}`);
       } finally {
         setIsSearching(false);
       }
