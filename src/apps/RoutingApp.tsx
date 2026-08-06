@@ -231,16 +231,17 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
             disabled={isLoading}
             style={{
               flexShrink: 0,
-              width: '100%', padding: '12px', borderRadius: '12px',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-              color: '#fff', fontWeight: 'bold', fontSize: '0.95rem',
+              width: '100%', padding: '14px', borderRadius: '16px',
+              background: 'linear-gradient(to right, #3b82f6, #8b5cf6)',
+              color: '#fff', fontWeight: 'bold', fontSize: '1rem',
               border: 'none', cursor: isLoading ? 'not-allowed' : 'pointer', marginBottom: '16px',
               display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
-              opacity: isLoading ? 0.7 : 1
+              boxShadow: '0 4px 20px rgba(139, 92, 246, 0.4)',
+              opacity: isLoading ? 0.7 : 1,
+              transition: 'all 0.2s'
             }}
           >
-            {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />} 
+            {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />} 
             {isLoading ? '경로 탐색 중...' : '경로 탐색'}
           </button>
         )}

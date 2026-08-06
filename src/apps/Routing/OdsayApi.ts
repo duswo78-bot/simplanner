@@ -105,13 +105,21 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
             ];
           }
 
+          let cleanLineName = lineInfo.name || lineInfo.busNo || '노선 정보 없음';
+          if (cleanLineName.includes('(')) {
+            cleanLineName = cleanLineName.split('(')[0].trim();
+          }
+          if (isSubway && cleanLineName.startsWith('수도권 ')) {
+            cleanLineName = cleanLineName.replace('수도권 ', '');
+          }
+
           steps.push({
             id: `t-${index}-${subIdx}`,
             type: isSubway ? 'SUBWAY' : 'BUS',
-            instruction: `${lineInfo.name || lineInfo.busNo || '교통수단'} 탑승`,
+            instruction: `${cleanLineName} 탑승`,
             durationMinutes: sub.sectionTime || 0,
             distanceMeters: sub.distance || 0,
-            lineName: lineInfo.name || lineInfo.busNo || '노선 정보 없음',
+            lineName: cleanLineName,
             lineColor: lineInfo.type === 1 ? '#0052A4' : lineInfo.type === 2 ? '#00A84D' : lineInfo.type === 3 ? '#EF7C1C' : lineInfo.type === 4 ? '#00A5DE' : '#3b82f6', 
             startStation: sub.startName || '출발 정류장',
             endStation: sub.endName || '도착 정류장',
