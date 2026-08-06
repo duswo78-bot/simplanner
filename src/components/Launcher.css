@@ -1,0 +1,36 @@
+.launcher-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.apps-grid-wrapper {
+  flex: 1;
+  padding: 0 24px 24px 24px;
+  overflow-y: auto;
+}
+
+/* Hide scrollbar for grid wrapper */
+.apps-grid-wrapper::-webkit-scrollbar {
+  display: none;
+}
+.apps-grid-wrapper {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px 12px;
+  justify-items: center;
+  align-items: start;
+}
+
+/* Fallback for very small screens */
+@media (max-width: 350px) {
+  .apps-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
