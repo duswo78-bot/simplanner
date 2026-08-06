@@ -116,7 +116,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                 <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
                 <span style={{ color: '#fff', fontSize: '0.95rem', fontWeight: 'bold' }}>{endPoi?.name}</span>
               </div>
-              <button onClick={() => { setIsSearchCollapsed(false); setIsMapForcedVisible(false); }} style={{ 
+              <button onClick={() => { setIsSearchCollapsed(false); }} style={{ 
                 background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%',
                 width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center',
                 color: '#fff', cursor: 'pointer'
@@ -208,12 +208,11 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
         )}
 
         {/* Route Picker Map & Search Button */}
-        {(!isSearchCollapsed || isMapForcedVisible) && (
+        {!isSearchCollapsed && (
           <div style={{ flexShrink: 0, position: 'relative', zIndex: 1, marginBottom: '12px' }}>
             <RoutePickerMap 
               centerTo={mapCenter}
               selectedRoute={selectedRoute}
-              autoGps={isMapForcedVisible}
               onSelectStart={async (lat, lng) => {
                 const name = await reverseGeocode(lat, lng);
                 setStartPoi({ id: Date.now(), name, x: lng, y: lat });
@@ -270,9 +269,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                       isSelected={selectedRouteId === route.id}
                       onClick={() => setSelectedRouteId(route.id)}
                       onShowMap={() => {
-                        setIsMapForcedVisible(true);
-                        setIsSearchCollapsed(true);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setIsMapForcedVisible(!isMapForcedVisible);
                       }}
                     />
                     {selectedRouteId === route.id && (
@@ -281,6 +278,17 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                         background: 'rgba(0,0,0,0.1)', borderRadius: '0 0 16px 16px',
                         border: '1px solid rgba(255,255,255,0.05)', borderTop: 'none'
                       }}>
+                        {isMapForcedVisible && (
+                          <div style={{ padding: '0 16px', marginBottom: '16px' }}>
+                            <RoutePickerMap 
+                              readonly={true}
+                              autoGps={true}
+                              selectedRoute={route}
+                              onSelectStart={() => {}}
+                              onSelectEnd={() => {}}
+                            />
+                          </div>
+                        )}
                         <RouteTimeline steps={route.steps} />
                       </div>
                     )}

@@ -8,12 +8,12 @@ interface RouteTimelineProps {
 }
 
 function TransitStepDetails({ step }: { step: RoutePathStep }) {
-  const [arrivalMin, setArrivalMin] = useState<number | null>(null);
+  const [arrivalInfo, setArrivalInfo] = useState<number | string | null>(null);
 
   useEffect(() => {
     if (step.type === 'BUS' && step.startStationId && step.routeId) {
-      getRealtimeBusArrival(step.startStationId, step.routeId).then(min => {
-        if (min !== null) setArrivalMin(min);
+      getRealtimeBusArrival(step.startStationId, step.routeId).then(info => {
+        if (info !== null) setArrivalInfo(info);
       });
     }
   }, [step]);
@@ -28,9 +28,14 @@ function TransitStepDetails({ step }: { step: RoutePathStep }) {
           <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: '2px solid #fff' }} />
           <span style={{ color: '#fff', fontSize: '0.9rem' }}>{step.startStation} 승차</span>
         </div>
-        {arrivalMin !== null && (
+        {arrivalInfo !== null && typeof arrivalInfo === 'number' && (
           <span style={{ color: '#ef4444', fontSize: '0.85rem', fontWeight: 'bold', background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: '4px' }}>
-            약 {arrivalMin}분 후 도착
+            약 {arrivalInfo}분 후 도착
+          </span>
+        )}
+        {arrivalInfo !== null && typeof arrivalInfo === 'string' && (
+          <span style={{ color: '#9ca3af', fontSize: '0.85rem', fontWeight: 'bold', background: 'rgba(156,163,175,0.15)', padding: '2px 6px', borderRadius: '4px' }}>
+            {arrivalInfo}
           </span>
         )}
       </div>

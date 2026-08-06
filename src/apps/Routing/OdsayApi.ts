@@ -175,24 +175,29 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
   }
 }
 
-export async function getRealtimeBusArrival(stationId: number, routeId: number): Promise<number | null> {
+export async function getRealtimeBusArrival(stationId: number, routeId: number): Promise<number | string> {
   const url = `${BASE_URL}/realtimeStation?apiKey=${ODSAY_API_KEY}&stationID=${stationId}`;
   
   try {
     const res = await fetch(url);
     const data = await res.json();
     
-    if (data.error) return null;
+    if (data.error) return '정보 없음';
     if (data.result && data.result.real) {
       const realList = data.result.real;
       const target = realList.find((r: any) => String(r.routeId) === String(routeId));
-      if (target && target.arrival1 && target.arrival1.arrivalSec !== undefined) {
-        return Math.round(target.arrival1.arrivalSec / 60); // Return in minutes
+      if (target) {
+        if (target.arrival1 && target.arrival1.arrivalSec !== undefined) {
+          return Math.round(target.arrival1.arrivalSec / 60); // Return in minutes
+        }
+        if (target.endBusYn === 'Y') {
+          return '운행 종료';
+        }
       }
     }
-    return null;
+    return '운행 종료';
   } catch (e) {
     console.error('Failed to fetch realtime bus info:', e);
-    return null;
+    return '정보 없음';
   }
 }

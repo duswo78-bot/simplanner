@@ -10,6 +10,8 @@ interface RoutePickerMapProps {
   onSelectEnd: (lat: number, lng: number) => void;
   centerTo?: [number, number];
   selectedRoute?: RouteOption | null;
+  autoGps?: boolean;
+  readonly?: boolean;
 }
 
 const pinHtml = `
@@ -67,7 +69,7 @@ function MapController({ setPos, centerTo, gpsTrigger, selectedRoute, autoGps }:
   return null;
 }
 
-export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps }: RoutePickerMapProps) {
+export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps, readonly }: RoutePickerMapProps) {
   const [center, setCenter] = useState<[number, number]>([37.5665, 126.9780]); // Default: Seoul City Hall
   const [gpsTrigger, setGpsTrigger] = useState(0);
   
@@ -112,9 +114,11 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
       </MapContainer>
       
       {/* Center Crosshair / Pin Overlay */}
-      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -100%)', zIndex: 1000, pointerEvents: 'none', color: '#ef4444', filter: 'drop-shadow(0px 4px 4px rgba(0,0,0,0.5))' }}>
-        <MapPin size={32} fill="currentColor" color="white" />
-      </div>
+      {!readonly && (
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -100%)', zIndex: 1000, pointerEvents: 'none', color: '#ef4444', filter: 'drop-shadow(0px 4px 4px rgba(0,0,0,0.5))' }}>
+          <MapPin size={32} fill="currentColor" color="white" />
+        </div>
+      )}
 
       {/* GPS Button */}
       <button 
@@ -125,20 +129,22 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
       </button>
 
       {/* Action Buttons */}
-      <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', display: 'flex', gap: '8px', zIndex: 1000 }}>
-        <button
-          onClick={() => onSelectStart(center[0], center[1])}
-          style={{ flex: 1, background: '#3b82f6', color: '#fff', border: 'none', padding: '8px 0', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer' }}
-        >
-          출발지로 설정
-        </button>
-        <button
-          onClick={() => onSelectEnd(center[0], center[1])}
-          style={{ flex: 1, background: '#10b981', color: '#fff', border: 'none', padding: '8px 0', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer' }}
-        >
-          도착지로 설정
-        </button>
-      </div>
+      {!readonly && (
+        <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', display: 'flex', gap: '8px', zIndex: 1000 }}>
+          <button
+            onClick={() => onSelectStart(center[0], center[1])}
+            style={{ flex: 1, background: '#3b82f6', color: '#fff', border: 'none', padding: '8px 0', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer' }}
+          >
+            출발지로 설정
+          </button>
+          <button
+            onClick={() => onSelectEnd(center[0], center[1])}
+            style={{ flex: 1, background: '#10b981', color: '#fff', border: 'none', padding: '8px 0', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer' }}
+          >
+            도착지로 설정
+          </button>
+        </div>
+      )}
     </div>
   );
 }
