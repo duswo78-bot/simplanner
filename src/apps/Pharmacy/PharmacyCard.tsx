@@ -155,21 +155,17 @@ export function PharmacyCard({ pharmacy, isHospital }: PharmacyCardProps) {
             }}>
               {isOpenNow ? (isHospital ? '진료중' : '영업중') : (isHospital ? '진료종료' : '영업종료')}
             </div>
-            {pharmacy.distance !== undefined && (
-              <div style={{ 
-                width: '100%', textAlign: 'center', boxSizing: 'border-box',
-                fontSize: '0.85rem', fontWeight: 'bold', color: '#f97316', 
-                marginTop: '2px'
-              }}>
-                {pharmacy.distance < 1 ? `${Math.round(pharmacy.distance * 1000)}m` : `${pharmacy.distance.toFixed(1)}km`}
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '4px', position: 'relative' }}>
         {expanded ? <ChevronUp size={20} color="var(--text-muted)" /> : <ChevronDown size={20} color="var(--text-muted)" />}
+        {pharmacy.distance !== undefined && (
+          <div style={{ position: 'absolute', right: '4px', fontSize: '0.85rem', fontWeight: 'bold', color: '#f97316' }}>
+            {pharmacy.distance < 1 ? `${Math.round(pharmacy.distance * 1000)}m` : `${pharmacy.distance.toFixed(1)}km`}
+          </div>
+        )}
       </div>
 
       {expanded && (
