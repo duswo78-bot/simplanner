@@ -19,9 +19,9 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
         padding: '16px',
         borderRadius: '16px',
         cursor: 'pointer',
-        marginBottom: '12px',
-        border: isSelected ? '1px solid rgba(59, 130, 246, 0.8)' : '1px solid rgba(255, 255, 255, 0.1)',
-        background: isSelected ? 'rgba(59, 130, 246, 0.1)' : 'rgba(20, 25, 30, 0.6)',
+        border: isMapVisible ? 'none' : (isSelected ? '1px solid rgba(59, 130, 246, 0.8)' : '1px solid rgba(255, 255, 255, 0.1)'),
+        background: isMapVisible ? 'rgba(0,0,0,0.3)' : (isSelected ? 'rgba(59, 130, 246, 0.1)' : 'rgba(20, 25, 30, 0.6)'),
+        backdropFilter: isMapVisible ? 'none' : 'blur(12px)',
         transition: 'all 0.2s ease',
         position: 'relative',
         overflow: 'hidden'

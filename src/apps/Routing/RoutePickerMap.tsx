@@ -88,7 +88,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '220px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '16px' }}>
+    <div style={{ position: 'relative', width: '100%', height: readonly ? '100%' : '220px', borderRadius: readonly ? '0' : '16px', overflow: 'hidden', border: readonly ? 'none' : '1px solid rgba(255,255,255,0.1)', marginBottom: readonly ? '0' : '16px' }}>
       <MapContainer center={center} zoom={14} style={{ width: '100%', height: '100%' }} zoomControl={false}>
         <TileLayer
           url="https://xdworld.vworld.kr/2d/Base/service/{z}/{x}/{y}.png"
