@@ -263,46 +263,28 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
               </div>
             ) : routes.length > 0 ? (
               <>
-                {routes.map(route => {
-                  const isSelected = selectedRouteId === route.id;
-                  const isMapVisible = isSelected && isMapForcedVisible;
-                  
-                  return (
-                  <div key={route.id} style={{ position: 'relative', overflow: 'hidden', borderRadius: '16px', marginBottom: '12px', border: isMapVisible ? '1px solid rgba(59, 130, 246, 0.8)' : 'none' }}>
-                    {isMapVisible && (
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
-                        <RoutePickerMap 
-                          readonly={true}
-                          autoGps={true}
-                          selectedRoute={route}
-                          onSelectStart={() => {}}
-                          onSelectEnd={() => {}}
-                        />
-                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.95) 100%)', zIndex: 1 }} />
+                {routes.map(route => (
+                  <div key={route.id}>
+                    <RouteSummaryCard 
+                      route={route} 
+                      isSelected={selectedRouteId === route.id}
+                      isMapVisible={selectedRouteId === route.id && isMapForcedVisible}
+                      onClick={() => setSelectedRouteId(route.id)}
+                      onShowMap={() => {
+                        setIsMapForcedVisible(!isMapForcedVisible);
+                      }}
+                    />
+                    {selectedRouteId === route.id && (
+                      <div style={{ 
+                        marginTop: '-8px', paddingTop: '16px', paddingBottom: '16px',
+                        background: 'rgba(0,0,0,0.1)', borderRadius: '0 0 16px 16px',
+                        border: '1px solid rgba(255,255,255,0.05)', borderTop: 'none'
+                      }}>
+                        <RouteTimeline steps={route.steps} />
                       </div>
                     )}
-                    <div style={{ position: 'relative', zIndex: 10 }}>
-                      <RouteSummaryCard 
-                        route={route} 
-                        isSelected={isSelected}
-                        isMapVisible={isMapVisible}
-                        onClick={() => { setSelectedRouteId(route.id); if (selectedRouteId !== route.id) setIsMapForcedVisible(false); }}
-                        onShowMap={() => setIsMapForcedVisible(!isMapForcedVisible)}
-                      />
-                      {isSelected && (
-                        <div style={{ 
-                          marginTop: isMapVisible ? '0' : '-8px', paddingTop: '16px', paddingBottom: '16px',
-                          background: isMapVisible ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)', 
-                          borderRadius: '0 0 16px 16px',
-                          border: isMapVisible ? 'none' : '1px solid rgba(255,255,255,0.05)', 
-                          borderTop: 'none', backdropFilter: isMapVisible ? 'none' : 'blur(12px)'
-                        }}>
-                          <RouteTimeline steps={route.steps} />
-                        </div>
-                      )}
-                    </div>
                   </div>
-                )})}
+                ))}
               </>
             ) : null}
           </div>

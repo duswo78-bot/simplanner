@@ -1,6 +1,7 @@
 import React from 'react';
 import type { RouteOption } from './RouteTypes';
 import { Clock, Coins, Activity, Map } from 'lucide-react';
+import { RoutePickerMap } from './RoutePickerMap';
 
 interface RouteSummaryCardProps {
   route: RouteOption;
@@ -19,15 +20,31 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
         padding: '16px',
         borderRadius: '16px',
         cursor: 'pointer',
-        border: isMapVisible ? 'none' : (isSelected ? '1px solid rgba(59, 130, 246, 0.8)' : '1px solid rgba(255, 255, 255, 0.1)'),
-        background: isMapVisible ? 'rgba(0,0,0,0.3)' : (isSelected ? 'rgba(59, 130, 246, 0.1)' : 'rgba(20, 25, 30, 0.6)'),
-        backdropFilter: isMapVisible ? 'none' : 'blur(12px)',
-        transition: 'all 0.2s ease',
+        marginBottom: '12px',
+        border: isSelected ? '1px solid rgba(59, 130, 246, 0.8)' : '1px solid rgba(255, 255, 255, 0.1)',
+        background: isMapVisible ? 'transparent' : (isSelected ? 'rgba(59, 130, 246, 0.1)' : 'rgba(20, 25, 30, 0.6)'),
+        transition: 'all 0.3s ease',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column'
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+      {isMapVisible && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
+          <RoutePickerMap 
+            readonly={true}
+            autoGps={true}
+            selectedRoute={route}
+            onSelectStart={() => {}}
+            onSelectEnd={() => {}}
+          />
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.1) 30%, rgba(0,0,0,0.1) 70%, rgba(0,0,0,0.95) 100%)', zIndex: 1 }} />
+        </div>
+      )}
+
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
             <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#fff' }}>{route.totalTimeMinutes}</span>
@@ -93,7 +110,14 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
         </div>
       </div>
       
-      <div style={{ display: 'flex', gap: '16px', color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
+      {/* Spacer to push map open */}
+      <div style={{
+        transition: 'height 0.3s ease',
+        height: isMapVisible ? '240px' : '0px',
+        width: '100%'
+      }} />
+
+      <div style={{ display: 'flex', gap: '16px', color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <Coins size={14} />
           {route.totalFare.toLocaleString()}원
@@ -118,6 +142,8 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
           );
         })}
       </div>
+      
+      </div> {/* End of relative zIndex 10 container */}
     </div>
   );
 }
