@@ -272,7 +272,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                   </div>
                 ))}
               </>
-            )}
+            ) : null}
           </div>
         )}
       </div>
