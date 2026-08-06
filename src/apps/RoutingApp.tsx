@@ -145,18 +145,22 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
 
                 {/* Inputs */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <StationSearchInput 
-                    placeholder="출발지 (예: 서울역)"
-                    value={startPoi}
-                    onSelect={(poi) => { setStartPoi(poi); setMapCenter([poi.y, poi.x]); }}
-                    iconColor="#3b82f6"
-                  />
-                  <StationSearchInput 
-                    placeholder="도착지 (예: 강남역)"
-                    value={endPoi}
-                    onSelect={(poi) => { setEndPoi(poi); setMapCenter([poi.y, poi.x]); }}
-                    iconColor="#ef4444"
-                  />
+                  <div style={{ position: 'relative', zIndex: 20 }}>
+                    <StationSearchInput 
+                      placeholder="출발지 (예: 서울역)"
+                      value={startPoi}
+                      onSelect={(poi) => { setStartPoi(poi); setMapCenter([poi.y, poi.x]); }}
+                      iconColor="#3b82f6"
+                    />
+                  </div>
+                  <div style={{ position: 'relative', zIndex: 10 }}>
+                    <StationSearchInput 
+                      placeholder="도착지 (예: 강남역)"
+                      value={endPoi}
+                      onSelect={(poi) => { setEndPoi(poi); setMapCenter([poi.y, poi.x]); }}
+                      iconColor="#ef4444"
+                    />
+                  </div>
                 </div>
                 
                 {/* Swap Button */}
