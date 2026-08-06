@@ -382,7 +382,7 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
         pharmacyName={pharmacyName} setPharmacyName={setPharmacyName}
         hospitalTypes={hospitalTypes} setHospitalTypes={setHospitalTypes}
         showOpenOnly={showOpenOnly} setShowOpenOnly={setShowOpenOnly}
-        onSearch={() => handleSearch(false)}
+        onSearch={(useLocation) => handleSearch(useLocation)}
         isSearching={isSearching}
       />
       
