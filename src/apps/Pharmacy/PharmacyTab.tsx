@@ -82,10 +82,10 @@ export function PharmacyTab({
 
         if (!cachedPharmacies) {
           const apiKey = import.meta.env.VITE_PHARMACY_API_KEY;
-          const targetUrl = `https://safemap.go.kr/openapi2/IF_0048?serviceKey=${apiKey}&pageNo=1&numOfRows=30000&returnType=JSON`;
+          const firstPageUrl = `https://safemap.go.kr/openapi2/IF_0048?serviceKey=${apiKey}&pageNo=1&numOfRows=1000&returnType=JSON`;
           
           try {
-            const response = await fetch(targetUrl);
+            const response = await fetch(firstPageUrl);
             const data = await response.json();
             
             if (data.header?.resultCode !== '00' && data.header?.resultMsg !== 'NORMAL_SERVICE') {
@@ -93,7 +93,28 @@ export function PharmacyTab({
               setIsSearching(false);
               return;
             }
-            cachedPharmacies = data.body?.items?.item || [];
+            
+            let allPharmacies = data.body?.items?.item || [];
+            const totalCount = data.body?.totalCount || 25000;
+            const totalPages = Math.ceil(totalCount / 1000);
+            
+            if (totalPages > 1) {
+              const promises = [];
+              for (let p = 2; p <= totalPages; p++) {
+                promises.push(
+                  fetch(`https://safemap.go.kr/openapi2/IF_0048?serviceKey=${apiKey}&pageNo=${p}&numOfRows=1000&returnType=JSON`)
+                    .then(res => res.json())
+                    .catch(() => null)
+                );
+              }
+              const results = await Promise.all(promises);
+              for (const resData of results) {
+                if (resData?.body?.items?.item) {
+                  allPharmacies = allPharmacies.concat(resData.body.items.item);
+                }
+              }
+            }
+            cachedPharmacies = allPharmacies;
           } catch (e: any) {
             setError(`약국 데이터를 불러오는 중 오류가 발생했습니다: ${e.message}`);
             setIsSearching(false);

@@ -86,8 +86,8 @@ export function HospitalTab({
         let urls: string[] = [];
         
         if (searchSido === '전남광주통합특별시') {
-          let url1 = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent('전라남도')}&pageNo=1&numOfRows=2000`;
-          let url2 = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent('광주광역시')}&pageNo=1&numOfRows=2000`;
+          let url1 = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent('전라남도')}&pageNo=1&numOfRows=20000`;
+          let url2 = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent('광주광역시')}&pageNo=1&numOfRows=20000`;
           if (!useLocation && sigungu) {
             url1 += `&Q1=${encodeURIComponent(sigungu)}`;
             url2 += `&Q1=${encodeURIComponent(sigungu)}`;
@@ -98,7 +98,7 @@ export function HospitalTab({
           }
           urls.push(url1, url2);
         } else {
-          let url = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent(searchSido)}&pageNo=1&numOfRows=2000`;
+          let url = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent(searchSido)}&pageNo=1&numOfRows=20000`;
           if (!useLocation && sigungu) url += `&Q1=${encodeURIComponent(sigungu)}`;
           if (!useLocation && pharmacyName) url += `&QN=${encodeURIComponent(pharmacyName)}`;
           urls.push(url);
