@@ -9,6 +9,8 @@ interface PharmacyAppProps {
   onBack: () => void;
 }
 
+let cachedPharmacies: any[] | null = null;
+
 export function PharmacyApp({ onBack }: PharmacyAppProps) {
   const [searchType, setSearchType] = useState<'pharmacy' | 'hospital'>('pharmacy');
   const [sido, setSido] = useState('');
@@ -107,137 +109,175 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
 
     const performSearch = async (lat?: number, lon?: number) => {
       try {
-        const apiKey = searchType === 'hospital' 
-          ? import.meta.env.VITE_HOSPITAL_API_KEY 
-          : import.meta.env.VITE_PHARMACY_API_KEY;
-        let url = '';
-        
-        if (useLocation && lat && lon) {
-          if (searchType === 'pharmacy') {
-             url = `https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyLcinfoInqire?serviceKey=${apiKey}&WGS84_LON=${lon}&WGS84_LAT=${lat}&pageNo=1&numOfRows=2000`;
-          } else {
-            url = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncLcinfoInqire?serviceKey=${apiKey}&WGS84_LON=${lon}&WGS84_LAT=${lat}&pageNo=1&numOfRows=2000`;
+        if (searchType === 'pharmacy') {
+          // Use SafeMap API for pharmacies
+          if (!cachedPharmacies) {
+            const apiKey = import.meta.env.VITE_PHARMACY_API_KEY;
+            const url = `https://safemap.go.kr/openapi2/IF_0048?serviceKey=${apiKey}&pageNo=1&numOfRows=30000&returnType=JSON`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.header?.resultCode !== '00') {
+              setError(`API 오류: ${data.header?.errorMsg || data.header?.resultMsg}`);
+              setIsSearching(false);
+              return;
+            }
+            cachedPharmacies = data.body?.items?.item || [];
           }
+
+          let parsedResults: PharmacyData[] = [];
+          const itemsToProcess = cachedPharmacies || [];
+          for (const item of itemsToProcess) {
+            const dutyName = item.dutyname || '';
+            const dutyAddr = item.dutyaddr || '';
+            
+            if (!useLocation) {
+              if (sido && !dutyAddr.includes(sido)) continue;
+              if (sigungu && !dutyAddr.includes(sigungu)) continue;
+              if (pharmacyName && !dutyName.includes(pharmacyName)) continue;
+            }
+
+            const times: Record<number, {s: string, c: string} | null> = {};
+            for (let d = 1; d <= 8; d++) {
+              const s = item[`dutytime${d}s`];
+              const c = item[`dutytime${d}c`];
+              if (s && c) {
+                times[d] = { s, c };
+              }
+            }
+
+            parsedResults.push({
+              id: item.hpid || `id-${Math.random()}`,
+              name: dutyName,
+              address: dutyAddr,
+              tel: item.dutytel1 || '',
+              lat: parseFloat(item.lat) || 0,
+              lng: parseFloat(item.lon) || 0,
+              type: '약국',
+              times
+            });
+          }
+
+          if (useLocation && lat && lon) {
+            let filtered = parsedResults.filter(item => {
+              if (!item.lat || !item.lng) return false;
+              const dist = getDistance(lat, lon, item.lat, item.lng);
+              item.distance = dist;
+              return dist <= 5;
+            });
+            filtered.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+            if (filtered.length === 0 && parsedResults.length > 0) {
+              setError('반경 5km 이내에 검색 결과가 없습니다.');
+            }
+            setRawResults(filtered);
+          } else {
+            setRawResults(parsedResults);
+          }
+
         } else {
-          if (searchType === 'pharmacy') {
-            url = `https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent(sido)}&pageNo=1&numOfRows=2000`;
-            if (sigungu) url += `&Q1=${encodeURIComponent(sigungu)}`;
-            if (pharmacyName) url += `&QN=${encodeURIComponent(pharmacyName)}`;
+          // Use data.go.kr API for hospitals
+          const apiKey = import.meta.env.VITE_HOSPITAL_API_KEY;
+          let url = '';
+          
+          if (useLocation && lat && lon) {
+            url = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncLcinfoInqire?serviceKey=${apiKey}&WGS84_LON=${lon}&WGS84_LAT=${lat}&pageNo=1&numOfRows=2000`;
           } else {
             url = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent(sido)}&pageNo=1&numOfRows=2000`;
             if (sigungu) url += `&Q1=${encodeURIComponent(sigungu)}`;
             if (pharmacyName) url += `&QN=${encodeURIComponent(pharmacyName)}`;
           }
-        }
-        
-        const response = await fetch(url);
-        const text = await response.text();
-        
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(text, "text/xml");
-        
-        const errMsgData = xmlDoc.getElementsByTagName("errMsg")[0]?.textContent;
-        const resultMsg = xmlDoc.getElementsByTagName("resultMsg")[0]?.textContent;
-        
-        if (errMsgData || resultMsg === 'SERVICE_KEY_IS_NOT_REGISTERED_ERROR') {
-          setError(`API 오류: ${errMsgData || resultMsg}`);
-          setIsSearching(false);
-          return;
-        }
+          
+          const response = await fetch(url);
+          const text = await response.text();
+          
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(text, "text/xml");
+          
+          const errMsgData = xmlDoc.getElementsByTagName("errMsg")[0]?.textContent;
+          const resultMsg = xmlDoc.getElementsByTagName("resultMsg")[0]?.textContent;
+          
+          if (errMsgData || (resultMsg && resultMsg !== 'NORMAL_SERVICE' && resultMsg !== '정상')) {
+            setError(`API 오류: ${errMsgData || resultMsg}`);
+            setRawResults([]);
+            setIsSearching(false);
+            return;
+          }
 
-        const items = xmlDoc.getElementsByTagName("item");
-        if (items.length === 0) {
-          setError('검색 결과가 없습니다.');
-          setRawResults([]);
-          setTotalCount(0);
-          setIsSearching(false);
-          return;
-        }
-        
-        const parsedResults: PharmacyData[] = [];
-        
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i];
+          const items = xmlDoc.getElementsByTagName("item");
+          let parsedResults: PharmacyData[] = [];
           
-          const getText = (tag1: string, tag2: string) => {
-            let el = item.getElementsByTagName(tag1)[0];
-            if (!el) el = item.getElementsByTagName(tag2)[0];
-            return el ? el.textContent || '' : '';
-          };
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            const getText = (tag: string, tagLower: string = '') => {
+              return item.getElementsByTagName(tag)[0]?.textContent || 
+                     (tagLower ? item.getElementsByTagName(tagLower)[0]?.textContent : '') || '';
+            };
+            
+            const dutyName = getText('dutyName', 'dutyname');
+            if (!useLocation && pharmacyName && !dutyName.includes(pharmacyName)) continue;
 
-          const dutyName = getText('dutyName', 'dutyname');
-          let type = getText('dutyDivNam', 'dutydivnam');
-          const divCode = getText('dutyDiv', 'dutydiv');
-          
-          if (divCode === 'W') {
-            type = '부속의원';
-          } else if (divCode === 'U') {
-            type = '보건의료원';
-          } else if (type === '보건소' || divCode === 'R') {
-            if (dutyName.includes('보건진료소')) {
-              type = '보건진료소';
-            } else if (dutyName.includes('보건지소')) {
-              type = '보건지소';
-            } else {
-              type = '보건소';
+            let type = '';
+            const divCode = getText('dutyDiv', 'dutydiv');
+            
+            if (divCode === 'W') {
+              type = '부속의원';
+            } else if (divCode === 'U') {
+              type = '보건의료원';
+            } else if (type === '보건소' || divCode === 'R') {
+              if (dutyName.includes('보건진료소')) {
+                type = '보건진료소';
+              } else if (dutyName.includes('보건지소')) {
+                type = '보건지소';
+              } else {
+                type = '보건소';
+              }
+            } else if (!type) {
+              type = '병원';
             }
-          } else if (!type) {
-            type = searchType === 'hospital' ? '병원' : '약국';
-          }
-          
-          if (type && type.includes('구급차')) {
-            continue;
-          }
-          
-          const times: Record<number, {s: string, c: string} | null> = {};
-          for (let d = 1; d <= 8; d++) {
-            const s = getText(`dutyTime${d}s`, `dutytime${d}s`);
-            const c = getText(`dutyTime${d}c`, `dutytime${d}c`);
-            if (s && c) {
-              times[d] = { s, c };
+            
+            if (type && type.includes('구급차')) {
+              continue;
             }
+            
+            const times: Record<number, {s: string, c: string} | null> = {};
+            for (let d = 1; d <= 8; d++) {
+              const s = getText(`dutyTime${d}s`, `dutytime${d}s`);
+              const c = getText(`dutyTime${d}c`, `dutytime${d}c`);
+              if (s && c) {
+                times[d] = { s, c };
+              }
+            }
+            
+            parsedResults.push({
+              id: getText('hpid', 'hpid') || `id-${i}`,
+              name: dutyName,
+              address: getText('dutyAddr', 'dutyaddr'),
+              tel: getText('dutyTel1', 'dutytel1'),
+              lat: parseFloat(getText('wgs84Lat', 'lat')) || parseFloat(getText('latitude', 'latitude')) || 0,
+              lng: parseFloat(getText('wgs84Lon', 'lon')) || parseFloat(getText('longitude', 'longitude')) || 0,
+              type: type,
+              divCode: divCode,
+              times
+            });
           }
           
-          parsedResults.push({
-            id: getText('hpid', 'hpid') || `id-${i}`,
-            name: dutyName,
-            address: getText('dutyAddr', 'dutyaddr'),
-            tel: getText('dutyTel1', 'dutytel1'),
-            lat: parseFloat(getText('wgs84Lat', 'lat')) || parseFloat(getText('latitude', 'latitude')) || 0,
-            lng: parseFloat(getText('wgs84Lon', 'lon')) || parseFloat(getText('longitude', 'longitude')) || 0,
-            type: type,
-            divCode: divCode,
-            times
-          });
-        }
-        
-        if (useLocation && lat && lon) {
-          const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-            const R = 6371; // km
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-          };
-          
-          let filtered = parsedResults.filter(item => {
-            if (!item.lat || !item.lng) return false;
-            const dist = getDistance(lat, lon, item.lat, item.lng);
-            item.distance = dist;
-            return dist <= 5;
-          });
-          
-          filtered.sort((a, b) => (a.distance || 0) - (b.distance || 0));
-          
-          if (filtered.length === 0 && parsedResults.length > 0) {
-            setError('반경 5km 이내에 검색 결과가 없습니다.');
+          if (useLocation && lat && lon) {
+            let filtered = parsedResults.filter(item => {
+              if (!item.lat || !item.lng) return false;
+              const dist = getDistance(lat, lon, item.lat, item.lng);
+              item.distance = dist;
+              return dist <= 5;
+            });
+            
+            filtered.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+            
+            if (filtered.length === 0 && parsedResults.length > 0) {
+              setError('반경 5km 이내에 검색 결과가 없습니다.');
+            }
+            setRawResults(filtered);
+          } else {
+            setRawResults(parsedResults);
           }
-          setRawResults(filtered);
-        } else {
-          setRawResults(parsedResults);
         }
       } catch (err) {
         console.error(err);
@@ -246,7 +286,6 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
         setIsSearching(false);
       }
     };
-
     if (useLocation) {
       if (targetPage > 1 && lastCoords) {
         performSearch(lastCoords.lat, lastCoords.lon);
