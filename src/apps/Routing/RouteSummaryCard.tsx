@@ -32,28 +32,36 @@ export function RouteSummaryCard({ route, onClick, isSelected, onShowMap }: Rout
           <span style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.7)' }}>분</span>
         </div>
         
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ display: 'flex', gap: '6px' }}>
-            {route.tags.map(tag => (
-              <span key={tag} style={{
-                background: tag === '최적' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)',
-                color: tag === '최적' ? '#10b981' : '#ccc',
-                padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold'
-              }}>
-                {tag}
-              </span>
-            ))}
+            {route.tags.map(tag => {
+              let bg = 'rgba(255,255,255,0.1)';
+              let color = '#ccc';
+              if (tag === '최적') { bg = 'rgba(16, 185, 129, 0.2)'; color = '#10b981'; }
+              else if (tag === '지하철') { bg = 'rgba(168, 85, 247, 0.15)'; color = '#c084fc'; }
+              else if (tag === '버스') { bg = 'rgba(59, 130, 246, 0.15)'; color = '#60a5fa'; }
+              else if (tag === '버스+지하철') { bg = 'rgba(245, 158, 11, 0.15)'; color = '#fbbf24'; }
+
+              return (
+                <span key={tag} style={{
+                  background: bg, color: color,
+                  padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold'
+                }}>
+                  {tag}
+                </span>
+              );
+            })}
           </div>
           {isSelected && (
             <button 
               onClick={(e) => { e.stopPropagation(); onShowMap?.(); }}
               style={{
                 background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '8px', padding: '6px', color: '#fff', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s'
+                borderRadius: '8px', padding: '4px 8px', color: '#fff', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', height: '24px'
               }}
             >
-              <Map size={16} />
+              <Map size={14} />
             </button>
           )}
         </div>
