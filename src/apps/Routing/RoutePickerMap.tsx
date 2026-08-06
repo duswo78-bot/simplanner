@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, useMapEvents, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, useMapEvents, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Navigation } from 'lucide-react';
@@ -69,6 +69,23 @@ function MapController({ setPos, centerTo, gpsTrigger, selectedRoute, autoGps }:
   return null;
 }
 
+function MapResizer() {
+  const map = useMap();
+  useEffect(() => {
+    // Repeatedly invalidate size while the CSS transition (height change) is happening
+    const interval = setInterval(() => {
+      map.invalidateSize();
+    }, 30);
+    setTimeout(() => {
+      clearInterval(interval);
+      map.invalidateSize();
+    }, 400); // clear after 300ms transition ends
+    
+    return () => clearInterval(interval);
+  }, [map]);
+  return null;
+}
+
 export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps, readonly }: RoutePickerMapProps) {
   const [center, setCenter] = useState<[number, number]>([37.5665, 126.9780]); // Default: Seoul City Hall
   const [gpsTrigger, setGpsTrigger] = useState(0);
@@ -95,6 +112,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
           attribution='&copy; V-World'
         />
         <MapController setPos={setCenter} centerTo={centerTo} gpsTrigger={gpsTrigger} selectedRoute={selectedRoute} autoGps={autoGps} />
+        <MapResizer />
         
         {/* Render Route Polylines */}
         {selectedRoute && selectedRoute.steps.map(step => {
@@ -123,7 +141,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
       {/* GPS Button */}
       <button 
         onClick={handleGpsClick}
-        style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 1000, background: 'rgba(255,255,255,0.9)', color: '#000', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.3)', cursor: 'pointer' }}
+        style={{ position: 'absolute', bottom: readonly ? '12px' : '64px', right: '12px', zIndex: 1000, background: 'rgba(255,255,255,0.9)', color: '#000', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.3)', cursor: 'pointer' }}
       >
         <Navigation size={20} />
       </button>
