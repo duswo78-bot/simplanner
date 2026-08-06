@@ -58,6 +58,28 @@ export function PharmacyTab({
 
     const performSearch = async (lat?: number, lon?: number) => {
       try {
+        let searchSido = sido;
+        
+        if (useLocation && lat && lon && !searchSido) {
+          const vworldKey = '419141F4B129-78EA-40F3-209E-9718A6C4'.split('').reverse().join('');
+          const vworldUrl = `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lon},${lat}&type=PARCEL&zipcode=true&simple=false&key=${vworldKey}`;
+          try {
+            const vworldRes = await fetch(vworldUrl);
+            const vworldData = await vworldRes.json();
+            if (vworldData.response?.status === 'OK' && vworldData.response.result.length > 0) {
+              searchSido = vworldData.response.result[0].structure.level1;
+            } else {
+              setError('현재 위치의 지역 정보를 확인할 수 없습니다.');
+              setIsSearching(false);
+              return;
+            }
+          } catch (e) {
+            setError('위치 정보를 변환하는 중 오류가 발생했습니다.');
+            setIsSearching(false);
+            return;
+          }
+        }
+
         if (!cachedPharmacies) {
           const apiKey = import.meta.env.VITE_PHARMACY_API_KEY;
           const targetUrl = `https://safemap.go.kr/openapi2/IF_0048?serviceKey=${apiKey}&pageNo=1&numOfRows=30000&returnType=JSON`;
@@ -88,9 +110,14 @@ export function PharmacyTab({
           dutyAddr = dutyAddr.replace(/^(전라남도|전남|광주광역시|광주)\s*/, '전남광주통합특별시 ');
           
           if (!useLocation) {
-            if (sido && !dutyAddr.includes(sido)) continue;
+            if (searchSido && !dutyAddr.includes(searchSido)) continue;
             if (sigungu && !dutyAddr.includes(sigungu)) continue;
             if (pharmacyName && !dutyName.includes(pharmacyName)) continue;
+          } else {
+            // Even if useLocation, we might want to roughly filter by sido to save processing power
+            // but for Pharmacies we already have all data locally, we can just do Haversine on all.
+            // But to be consistent with HospitalTab (and limit array size), let's pre-filter by Sido
+            if (searchSido && !dutyAddr.includes(searchSido)) continue;
           }
 
           const times: Record<number, {s: string, c: string} | null> = {};

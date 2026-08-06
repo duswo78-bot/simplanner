@@ -60,29 +60,48 @@ export function HospitalTab({
     const performSearch = async (lat?: number, lon?: number) => {
       try {
         const apiKey = import.meta.env.VITE_HOSPITAL_API_KEY;
+        let searchSido = sido;
+        
+        // If GPS is used and we don't have a sido, use VWorld Reverse Geocoding
+        if (useLocation && lat && lon && !searchSido) {
+          const vworldKey = '419141F4B129-78EA-40F3-209E-9718A6C4'.split('').reverse().join('');
+          const vworldUrl = `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lon},${lat}&type=PARCEL&zipcode=true&simple=false&key=${vworldKey}`;
+          try {
+            const vworldRes = await fetch(vworldUrl);
+            const vworldData = await vworldRes.json();
+            if (vworldData.response?.status === 'OK' && vworldData.response.result.length > 0) {
+              searchSido = vworldData.response.result[0].structure.level1;
+            } else {
+              setError('현재 위치의 지역 정보를 확인할 수 없습니다.');
+              setIsSearching(false);
+              return;
+            }
+          } catch (e) {
+            setError('위치 정보를 변환하는 중 오류가 발생했습니다.');
+            setIsSearching(false);
+            return;
+          }
+        }
+
         let urls: string[] = [];
         
-        if (useLocation && lat && lon) {
-          urls.push(`https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncLcinfoInqire?serviceKey=${apiKey}&WGS84_LON=${lon}&WGS84_LAT=${lat}&pageNo=1&numOfRows=2000`);
-        } else {
-          if (sido === '전남광주통합특별시') {
-            let url1 = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent('전라남도')}&pageNo=1&numOfRows=2000`;
-            let url2 = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent('광주광역시')}&pageNo=1&numOfRows=2000`;
-            if (sigungu) {
-              url1 += `&Q1=${encodeURIComponent(sigungu)}`;
-              url2 += `&Q1=${encodeURIComponent(sigungu)}`;
-            }
-            if (pharmacyName) {
-              url1 += `&QN=${encodeURIComponent(pharmacyName)}`;
-              url2 += `&QN=${encodeURIComponent(pharmacyName)}`;
-            }
-            urls.push(url1, url2);
-          } else {
-            let url = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent(sido)}&pageNo=1&numOfRows=2000`;
-            if (sigungu) url += `&Q1=${encodeURIComponent(sigungu)}`;
-            if (pharmacyName) url += `&QN=${encodeURIComponent(pharmacyName)}`;
-            urls.push(url);
+        if (searchSido === '전남광주통합특별시') {
+          let url1 = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent('전라남도')}&pageNo=1&numOfRows=2000`;
+          let url2 = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent('광주광역시')}&pageNo=1&numOfRows=2000`;
+          if (!useLocation && sigungu) {
+            url1 += `&Q1=${encodeURIComponent(sigungu)}`;
+            url2 += `&Q1=${encodeURIComponent(sigungu)}`;
           }
+          if (!useLocation && pharmacyName) {
+            url1 += `&QN=${encodeURIComponent(pharmacyName)}`;
+            url2 += `&QN=${encodeURIComponent(pharmacyName)}`;
+          }
+          urls.push(url1, url2);
+        } else {
+          let url = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent(searchSido)}&pageNo=1&numOfRows=2000`;
+          if (!useLocation && sigungu) url += `&Q1=${encodeURIComponent(sigungu)}`;
+          if (!useLocation && pharmacyName) url += `&QN=${encodeURIComponent(pharmacyName)}`;
+          urls.push(url);
         }
         
         let allItems: any[] = [];
@@ -155,17 +174,6 @@ export function HospitalTab({
           }
           
           const times: Record<number, {s: string, c: string} | null> = {};
-          
-          // Location API returns startTime and endTime for today instead of dutyTime1~8
-          const startTime = getText('startTime');
-          const endTime = getText('endTime');
-          
-          if (startTime && endTime) {
-            const now = new Date();
-            const todayDayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
-            times[todayDayOfWeek] = { s: startTime, c: endTime };
-          }
-          
           for (let d = 1; d <= 8; d++) {
             const s = getText(`dutyTime${d}s`, `dutytime${d}s`);
             const c = getText(`dutyTime${d}c`, `dutytime${d}c`);
@@ -179,8 +187,8 @@ export function HospitalTab({
             name: dutyName,
             address: getText('dutyAddr', 'dutyaddr').replace(/^(전라남도|전남|광주광역시|광주)\s*/, '전남광주통합특별시 '),
             tel: getText('dutyTel1', 'dutytel1'),
-            lat: parseFloat(getText('wgs84Lat', 'lat')) || parseFloat(getText('latitude', 'latitude')) || 0,
-            lng: parseFloat(getText('wgs84Lon', 'lon')) || parseFloat(getText('longitude', 'longitude')) || 0,
+            lat: parseFloat(getText('wgs84Lat', 'lat')) || 0,
+            lng: parseFloat(getText('wgs84Lon', 'lon')) || 0,
             type: type,
             divCode: divCode,
             times
@@ -198,7 +206,7 @@ export function HospitalTab({
           filtered.sort((a, b) => (a.distance || 0) - (b.distance || 0));
           
           if (filtered.length === 0 && parsedResults.length > 0) {
-            setError('반경 5km 이내에 검색 결과가 없습니다.');
+            setError('반경 5km 이내에 병원이 없습니다.');
           }
           setRawResults(filtered);
         } else {
