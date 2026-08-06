@@ -130,7 +130,7 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
             const response = await fetch(proxyUrl);
             const data = await response.json();
             
-            if (data.header?.resultCode !== '00') {
+            if (data.header?.resultCode !== '00' && data.header?.resultMsg !== 'NORMAL_SERVICE') {
               setError(`API 오류: ${data.header?.errorMsg || data.header?.resultMsg}`);
               setIsSearching(false);
               return;
