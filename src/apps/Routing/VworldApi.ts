@@ -32,7 +32,7 @@ export async function searchPlaces(keyword: string): Promise<POI[]> {
   if (!keyword) return [];
   
   // VWorld Search API (search type: PLACE)
-  const url = `https://api.vworld.kr/req/search?service=search&request=search&version=2.0&crs=EPSG:4326&size=10&page=1&query=${encodeURIComponent(keyword)}&type=PLACE&format=jsonp&errorformat=jsonp&key=${VWORLD_API_KEY}`;
+  const url = `https://api.vworld.kr/req/search?service=search&request=search&version=2.0&crs=EPSG:4326&size=10&page=1&query=${encodeURIComponent(keyword)}&type=PLACE&format=json&errorformat=json&key=${VWORLD_API_KEY}`;
   
   try {
     const data = await fetchJsonp(url);
@@ -59,7 +59,7 @@ export async function searchPlaces(keyword: string): Promise<POI[]> {
 }
 
 export async function reverseGeocode(lat: number, lng: number): Promise<string> {
-  const url = `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lng},${lat}&format=jsonp&type=BOTH&zipcode=true&simple=false&key=${VWORLD_API_KEY}`;
+  const url = `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lng},${lat}&format=json&type=BOTH&zipcode=true&simple=false&key=${VWORLD_API_KEY}`;
   
   try {
     const data = await fetchJsonp(url);
