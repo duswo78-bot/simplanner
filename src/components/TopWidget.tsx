@@ -6,7 +6,7 @@ export function TopWidget() {
   return (
     <div className="top-widget glass-panel animate-fade-in">
       <div className="widget-header">
-        <h2>SimPlanner</h2>
+        <h2>simplanner</h2>
         <p className="subtitle">일정을 넘어 가족을 관리하다</p>
       </div>
       
