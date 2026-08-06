@@ -140,7 +140,8 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
           const itemsToProcess = cachedPharmacies || [];
           for (const item of itemsToProcess) {
             const dutyName = item.dutyname || '';
-            const dutyAddr = item.dutyaddr || '';
+            let dutyAddr = item.dutyaddr || '';
+            dutyAddr = dutyAddr.replace(/^(전라남도|전남|광주광역시|광주)\s*/, '전남광주통합특별시 ');
             
             if (!useLocation) {
               if (sido && !dutyAddr.includes(sido)) continue;
@@ -188,33 +189,60 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
         } else {
           // Use data.go.kr API for hospitals
           const apiKey = import.meta.env.VITE_HOSPITAL_API_KEY;
-          let url = '';
+          let urls: string[] = [];
           
           if (useLocation && lat && lon) {
-            url = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncLcinfoInqire?serviceKey=${apiKey}&WGS84_LON=${lon}&WGS84_LAT=${lat}&pageNo=1&numOfRows=2000`;
+            urls.push(`https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncLcinfoInqire?serviceKey=${apiKey}&WGS84_LON=${lon}&WGS84_LAT=${lat}&pageNo=1&numOfRows=2000`);
           } else {
-            url = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent(sido)}&pageNo=1&numOfRows=2000`;
-            if (sigungu) url += `&Q1=${encodeURIComponent(sigungu)}`;
-            if (pharmacyName) url += `&QN=${encodeURIComponent(pharmacyName)}`;
+            if (sido === '전남광주통합특별시') {
+              let url1 = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent('전라남도')}&pageNo=1&numOfRows=2000`;
+              let url2 = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent('광주광역시')}&pageNo=1&numOfRows=2000`;
+              if (sigungu) {
+                url1 += `&Q1=${encodeURIComponent(sigungu)}`;
+                url2 += `&Q1=${encodeURIComponent(sigungu)}`;
+              }
+              if (pharmacyName) {
+                url1 += `&QN=${encodeURIComponent(pharmacyName)}`;
+                url2 += `&QN=${encodeURIComponent(pharmacyName)}`;
+              }
+              urls.push(url1, url2);
+            } else {
+              let url = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire?serviceKey=${apiKey}&Q0=${encodeURIComponent(sido)}&pageNo=1&numOfRows=2000`;
+              if (sigungu) url += `&Q1=${encodeURIComponent(sigungu)}`;
+              if (pharmacyName) url += `&QN=${encodeURIComponent(pharmacyName)}`;
+              urls.push(url);
+            }
           }
           
-          const response = await fetch(url);
-          const text = await response.text();
-          
-          const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(text, "text/xml");
-          
-          const errMsgData = xmlDoc.getElementsByTagName("errMsg")[0]?.textContent;
-          const resultMsg = xmlDoc.getElementsByTagName("resultMsg")[0]?.textContent;
-          
-          if (errMsgData || (resultMsg && !resultMsg.includes('NORMAL') && resultMsg !== '정상' && resultMsg !== 'NORMAL SERVICE.')) {
-            setError(`API 오류: ${errMsgData || resultMsg}`);
-            setRawResults([]);
-            setIsSearching(false);
-            return;
-          }
+          let allItems: any[] = [];
+          for (const url of urls) {
+            const response = await fetch(url);
+            const text = await response.text();
+            
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(text, "text/xml");
+            
+            const errMsgData = xmlDoc.getElementsByTagName("errMsg")[0]?.textContent;
+            const resultMsg = xmlDoc.getElementsByTagName("resultMsg")[0]?.textContent;
+            
+            if (errMsgData || (resultMsg && !resultMsg.includes('NORMAL') && resultMsg !== '정상' && resultMsg !== 'NORMAL SERVICE.')) {
+              if (urls.length === 1) {
+                setError(`API 오류: ${errMsgData || resultMsg}`);
+                setRawResults([]);
+                setIsSearching(false);
+                return;
+              } else {
+                continue;
+              }
+            }
 
-          const items = xmlDoc.getElementsByTagName("item");
+            const items = xmlDoc.getElementsByTagName("item");
+            for (let i = 0; i < items.length; i++) {
+              allItems.push(items[i]);
+            }
+          }
+          
+          const items = allItems;
           let parsedResults: PharmacyData[] = [];
           
           for (let i = 0; i < items.length; i++) {
@@ -273,7 +301,7 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
             parsedResults.push({
               id: getText('hpid', 'hpid') || `id-${i}`,
               name: dutyName,
-              address: getText('dutyAddr', 'dutyaddr'),
+              address: getText('dutyAddr', 'dutyaddr').replace(/^(전라남도|전남|광주광역시|광주)\s*/, '전남광주통합특별시 '),
               tel: getText('dutyTel1', 'dutytel1'),
               lat: parseFloat(getText('wgs84Lat', 'lat')) || parseFloat(getText('latitude', 'latitude')) || 0,
               lng: parseFloat(getText('wgs84Lon', 'lon')) || parseFloat(getText('longitude', 'longitude')) || 0,
