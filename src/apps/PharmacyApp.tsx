@@ -125,9 +125,7 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
           if (!cachedPharmacies) {
             const apiKey = import.meta.env.VITE_PHARMACY_API_KEY;
             const targetUrl = `https://safemap.go.kr/openapi2/IF_0048?serviceKey=${apiKey}&pageNo=1&numOfRows=30000&returnType=JSON`;
-            // Use CORS proxy for browser access
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-            const response = await fetch(proxyUrl);
+            const response = await fetch(targetUrl);
             const data = await response.json();
             
             if (data.header?.resultCode !== '00' && data.header?.resultMsg !== 'NORMAL_SERVICE') {
