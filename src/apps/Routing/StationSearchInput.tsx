@@ -43,7 +43,13 @@ export function StationSearchInput({ placeholder, value, onSelect, iconColor = '
     const timerId = setTimeout(async () => {
       setIsLoading(true);
       const data = await searchPlaces(query);
-      setResults(data);
+      
+      if (data.length === 0) {
+        setResults([{ id: -1, name: '검색 결과 없음', address: '혹은 VWorld API 웹 도메인 미등록 상태입니다.', x: 0, y: 0 }]);
+      } else {
+        setResults(data);
+      }
+      
       setIsOpen(true);
       setIsLoading(false);
     }, 400); // 400ms debounce
@@ -52,6 +58,7 @@ export function StationSearchInput({ placeholder, value, onSelect, iconColor = '
   }, [query, value]);
 
   const handleSelect = (poi: POI) => {
+    if (poi.id === -1) return;
     setQuery(poi.name);
     setIsOpen(false);
 

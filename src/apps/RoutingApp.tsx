@@ -26,6 +26,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
   
   const [routes, setRoutes] = useState<RouteOption[]>([]);
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number] | undefined>(undefined);
 
   const [recentStations, setRecentStations] = useState<POI[]>([]);
 
@@ -50,18 +51,20 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
   const handleRecentClick = (poi: POI) => {
     if (!startPoi) {
       setStartPoi(poi);
+      setMapCenter([poi.y, poi.x]);
     } else {
       setEndPoi(poi);
+      setMapCenter([poi.y, poi.x]);
     }
   };
 
   const handleSearch = async () => {
+    setIsSearched(true);
     if (!startPoi || !endPoi) {
       setErrorMsg('출발지와 도착지를 모두 선택해주세요.');
       return;
     }
     
-    setIsSearched(true);
     setIsLoading(true);
     setErrorMsg('');
     setRoutes([]);
@@ -145,13 +148,13 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                   <StationSearchInput 
                     placeholder="출발지 (예: 서울역)"
                     value={startPoi}
-                    onSelect={setStartPoi}
+                    onSelect={(poi) => { setStartPoi(poi); setMapCenter([poi.y, poi.x]); }}
                     iconColor="#3b82f6"
                   />
                   <StationSearchInput 
                     placeholder="도착지 (예: 강남역)"
                     value={endPoi}
-                    onSelect={setEndPoi}
+                    onSelect={(poi) => { setEndPoi(poi); setMapCenter([poi.y, poi.x]); }}
                     iconColor="#ef4444"
                   />
                 </div>
@@ -202,7 +205,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
         {!isSearchCollapsed && (
           <div style={{ flexShrink: 0, position: 'relative', zIndex: 1, marginBottom: '12px' }}>
             <RoutePickerMap 
-              centerTo={startPoi ? [startPoi.y, startPoi.x] : endPoi ? [endPoi.y, endPoi.x] : undefined}
+              centerTo={mapCenter}
               selectedRoute={selectedRoute}
               onSelectStart={async (lat, lng) => {
                 const name = await reverseGeocode(lat, lng);
