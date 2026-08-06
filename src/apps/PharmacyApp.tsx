@@ -251,6 +251,17 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
             }
             
             const times: Record<number, {s: string, c: string} | null> = {};
+            
+            // Location API returns startTime and endTime for today instead of dutyTime1~8
+            const startTime = getText('startTime');
+            const endTime = getText('endTime');
+            
+            if (startTime && endTime) {
+              const now = new Date();
+              const todayDayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
+              times[todayDayOfWeek] = { s: startTime, c: endTime };
+            }
+            
             for (let d = 1; d <= 8; d++) {
               const s = getText(`dutyTime${d}s`, `dutytime${d}s`);
               const c = getText(`dutyTime${d}c`, `dutytime${d}c`);
