@@ -86,7 +86,7 @@ export function MealApp({ onBack }: MealAppProps) {
       setIsLoadingMeals(true);
       setMealError(null);
       try {
-        const apiKey = import.meta.env.VITE_MEAL_API_KEY;
+        const apiKey = import.meta.env.VITE_MEAL_API_KEY || '4027363c70984711b7cb0b491d50a922';
         const fromDate = formatDateStr(currentSunday);
         
         const saturday = new Date(currentSunday);
@@ -137,7 +137,7 @@ export function MealApp({ onBack }: MealAppProps) {
     setSearchResults([]);
 
     try {
-      const apiKey = import.meta.env.VITE_MEAL_API_KEY;
+      const apiKey = import.meta.env.VITE_MEAL_API_KEY || '4027363c70984711b7cb0b491d50a922';
       const url = `https://open.neis.go.kr/hub/schoolInfo?KEY=${apiKey}&Type=json&SCHUL_NM=${encodeURIComponent(searchQuery)}`;
       
       const response = await fetch(url);

@@ -81,7 +81,7 @@ export function PharmacyTab({
         }
 
         if (!cachedPharmacies) {
-          const apiKey = import.meta.env.VITE_PHARMACY_API_KEY;
+          const apiKey = import.meta.env.VITE_PHARMACY_API_KEY || 'G59O0BAI-G59O-G59O-G59O-G59O0BAIEV';
           const firstPageUrl = `https://safemap.go.kr/openapi2/IF_0048?serviceKey=${apiKey}&pageNo=1&numOfRows=1000&returnType=JSON`;
           
           try {

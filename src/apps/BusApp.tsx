@@ -56,7 +56,7 @@ export function BusApp({ onBack }: BusAppProps) {
       setAllRoutes([]);
 
       try {
-        const apiKey = import.meta.env.VITE_BUS_API_KEY;
+        const apiKey = import.meta.env.VITE_BUS_API_KEY || 'be%2FRM33gszR8YNJlRSxXsDx91aiCgzFtC3w6xMXZ1qOk3U5F%2Fc9qh6oXg9kMy1UFkpeNY0NB5aZE9DNgPnMSPw%3D%3D';
         // API는 numOfRows 최대 1000건까지 허용
         const url = `https://apis.data.go.kr/B551982/rte/mst_info?serviceKey=${apiKey}&stdgCd=${cityCode}&numOfRows=1000&pageNo=1&type=json`;
         
@@ -104,7 +104,7 @@ export function BusApp({ onBack }: BusAppProps) {
     setError(null);
     
     try {
-      const apiKey = import.meta.env.VITE_BUS_API_KEY;
+      const apiKey = import.meta.env.VITE_BUS_API_KEY || 'be%2FRM33gszR8YNJlRSxXsDx91aiCgzFtC3w6xMXZ1qOk3U5F%2Fc9qh6oXg9kMy1UFkpeNY0NB5aZE9DNgPnMSPw%3D%3D';
       // API는 numOfRows 최대 1000건까지 허용
       const url = `https://apis.data.go.kr/B551982/rte/rtm_loc_info?serviceKey=${apiKey}&stdgCd=${route.stdgCd}&numOfRows=1000&pageNo=1&type=json`;
       

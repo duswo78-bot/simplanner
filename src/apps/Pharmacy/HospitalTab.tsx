@@ -59,7 +59,7 @@ export function HospitalTab({
 
     const performSearch = async (lat?: number, lon?: number) => {
       try {
-        const apiKey = import.meta.env.VITE_HOSPITAL_API_KEY;
+        const apiKey = import.meta.env.VITE_HOSPITAL_API_KEY || 'be%2FRM33gszR8YNJlRSxXsDx91aiCgzFtC3w6xMXZ1qOk3U5F%2Fc9qh6oXg9kMy1UFkpeNY0NB5aZE9DNgPnMSPw%3D%3D';
         let searchSido = sido;
         
         // If GPS is used and we don't have a sido, use VWorld Reverse Geocoding

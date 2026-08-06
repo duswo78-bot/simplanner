@@ -47,7 +47,7 @@ export function PharmacyCard({ pharmacy, isHospital }: PharmacyCardProps) {
       setIsLoadingDept(true);
       const fetchDept = async () => {
         try {
-          const apiKey = import.meta.env.VITE_HOSPITAL_API_KEY;
+          const apiKey = import.meta.env.VITE_HOSPITAL_API_KEY || 'be%2FRM33gszR8YNJlRSxXsDx91aiCgzFtC3w6xMXZ1qOk3U5F%2Fc9qh6oXg9kMy1UFkpeNY0NB5aZE9DNgPnMSPw%3D%3D';
           const url = `https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlBassInfoInqire?serviceKey=${apiKey}&HPID=${pharmacy.id}`;
           const res = await fetch(url);
           const text = await res.text();
