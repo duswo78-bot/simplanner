@@ -27,9 +27,31 @@ export function RouteSummaryCard({ route, onClick, isSelected, onShowMap }: Rout
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-          <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#fff' }}>{route.totalTimeMinutes}</span>
-          <span style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.7)' }}>분</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+            <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#fff' }}>{route.totalTimeMinutes}</span>
+            <span style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.7)' }}>분</span>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
+            {route.steps.filter(s => s.type !== 'WALK').map((s, idx, arr) => (
+              <React.Fragment key={idx}>
+                <span style={{
+                  color: s.lineColor || '#fff',
+                  border: `1px solid ${s.lineColor ? s.lineColor + '80' : 'rgba(255,255,255,0.2)'}`,
+                  background: s.lineColor ? s.lineColor + '15' : 'rgba(255,255,255,0.05)',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  fontWeight: 'bold',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {s.lineName}
+                </span>
+                {idx < arr.length - 1 && <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>›</span>}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
