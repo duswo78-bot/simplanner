@@ -139,7 +139,7 @@ export function BusApp({ onBack }: BusAppProps) {
     <AppContainer title="대중교통" onBack={onBack}>
       
       {/* Top Tab Bar */}
-      <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '12px', padding: '4px', marginBottom: '8px' }}>
+      <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '12px', padding: '4px', marginBottom: '8px', flexShrink: 0 }}>
         <button 
           onClick={() => setActiveTab('ROUTE')}
           style={{ 
@@ -179,13 +179,13 @@ export function BusApp({ onBack }: BusAppProps) {
             // Route Search View
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
-          <div className="glass-panel" style={{ padding: '16px', borderRadius: '16px' }}>
+          <div className="glass-panel" style={{ padding: '8px 12px', borderRadius: '12px', marginBottom: '8px' }}>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
               <select 
                 value={cityCode} 
                 onChange={handleCityChange}
                 style={{ 
-                  flex: 1, padding: '12px', borderRadius: '12px', 
+                  flex: 1, padding: '10px 12px', borderRadius: '10px', 
                   background: 'rgba(0,0,0,0.3)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)',
                   outline: 'none', fontSize: '0.9rem', WebkitAppearance: 'none'
                 }}
@@ -206,7 +206,7 @@ export function BusApp({ onBack }: BusAppProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="버스 노선 번호 (예: 101)"
                 style={{ 
-                  width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', 
+                  width: '100%', padding: '10px 12px 10px 40px', borderRadius: '10px', 
                   background: 'rgba(0,0,0,0.3)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)',
                   outline: 'none', fontSize: '0.9rem', boxSizing: 'border-box'
                 }}

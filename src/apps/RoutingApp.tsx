@@ -101,7 +101,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         
         {/* Search Panel */}
-        <div className="glass-panel" style={{ position: 'relative', zIndex: 50, padding: '12px', borderRadius: '16px', marginBottom: '12px', flexShrink: 0 }}>
+        <div className="glass-panel" style={{ position: 'relative', zIndex: 50, padding: '8px 12px', borderRadius: '12px', marginBottom: '8px', flexShrink: 0 }}>
           {isSearchCollapsed ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, padding: '4px' }}>
@@ -121,7 +121,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
             </div>
           ) : (
             <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', fontWeight: 'bold', marginLeft: '4px' }}>경로 검색</span>
                 {startPoi && endPoi && (
                   <button onClick={() => setIsSearchCollapsed(true)} style={{ 
@@ -132,16 +132,16 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                   </button>
                 )}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {/* Timeline graphics */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', width: '20px' }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', border: '3px solid #3b82f6', background: '#1f2937' }} />
-                  <div style={{ width: '2px', height: '40px', background: 'rgba(255,255,255,0.2)' }} />
-                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', width: '20px' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: '2px solid #3b82f6', background: '#1f2937' }} />
+                  <div style={{ width: '2px', height: '32px', background: 'rgba(255,255,255,0.2)' }} />
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
                 </div>
 
                 {/* Inputs */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <StationSearchInput 
                     placeholder="출발지 (예: 서울역)"
                     value={startPoi}
@@ -171,7 +171,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
 
         {/* Recent Stations */}
         {recentStations.length > 0 && (
-          <div style={{ marginBottom: '12px', flexShrink: 0 }}>
+          <div style={{ marginBottom: '8px', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem' }}>
               <Clock size={12} />
               <span>자주 찾는 정류장</span>
@@ -238,7 +238,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
 
         {/* Results Area */}
         {isSearched && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {isLoading ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0' }}>
                 <Loader2 className="animate-spin" size={32} color="#fff" style={{ marginBottom: '16px' }} />
