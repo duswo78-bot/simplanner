@@ -319,7 +319,7 @@ export function PharmacyApp({ onBack }: PharmacyAppProps) {
     );
   };
 
-  const bgImage = searchType === 'pharmacy' ? '/SimPlanner/images/pharmacy_bg.jpg' : '/SimPlanner/images/hospital_bg.jpg';
+  const bgImage = searchType === 'pharmacy' ? `${import.meta.env.BASE_URL}images/pharmacy_bg.jpg` : `${import.meta.env.BASE_URL}images/hospital_bg.jpg`;
 
   return (
     <AppContainer title="약국/병원 찾기" onBack={onBack} bgImage={bgImage}>
