@@ -116,7 +116,9 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
             startStation: sub.startName || '출발 정류장',
             endStation: sub.endName || '도착 정류장',
             stationCount: sub.stationCount || 0,
-            pathCoords
+            pathCoords,
+            startStationId: sub.startID,
+            routeId: lineInfo.busID || lineInfo.subwayCode
           });
         }
       });
@@ -170,5 +172,27 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
   } catch (err) {
     console.error('Failed to fetch routes:', err);
     throw err;
+  }
+}
+
+export async function getRealtimeBusArrival(stationId: number, routeId: number): Promise<number | null> {
+  const url = `${BASE_URL}/realtimeStation?apiKey=${ODSAY_API_KEY}&stationID=${stationId}`;
+  
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    
+    if (data.error) return null;
+    if (data.result && data.result.real) {
+      const realList = data.result.real;
+      const target = realList.find((r: any) => String(r.routeId) === String(routeId));
+      if (target && target.arrival1 && target.arrival1.arrivalSec !== undefined) {
+        return Math.round(target.arrival1.arrivalSec / 60); // Return in minutes
+      }
+    }
+    return null;
+  } catch (e) {
+    console.error('Failed to fetch realtime bus info:', e);
+    return null;
   }
 }

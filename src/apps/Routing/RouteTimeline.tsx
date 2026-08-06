@@ -1,16 +1,59 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import type { RoutePathStep } from './RouteTypes';
 import { Footprints, Bus, Train } from 'lucide-react';
+import { getRealtimeBusArrival } from './OdsayApi';
 
 interface RouteTimelineProps {
   steps: RoutePathStep[];
 }
 
+function TransitStepDetails({ step }: { step: RoutePathStep }) {
+  const [arrivalMin, setArrivalMin] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (step.type === 'BUS' && step.startStationId && step.routeId) {
+      getRealtimeBusArrival(step.startStationId, step.routeId).then(min => {
+        if (min !== null) setArrivalMin(min);
+      });
+    }
+  }, [step]);
+
+  return (
+    <div style={{ 
+      marginTop: '12px', padding: '12px', borderRadius: '8px', 
+      background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: '2px solid #fff' }} />
+          <span style={{ color: '#fff', fontSize: '0.9rem' }}>{step.startStation} 승차</span>
+        </div>
+        {arrivalMin !== null && (
+          <span style={{ color: '#ef4444', fontSize: '0.85rem', fontWeight: 'bold', background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: '4px' }}>
+            약 {arrivalMin}분 후 도착
+          </span>
+        )}
+      </div>
+      
+      {step.stationCount && (
+        <div style={{ paddingLeft: '11px', borderLeft: '2px dotted rgba(255,255,255,0.2)', margin: '4px 0', height: '20px', display: 'flex', alignItems: 'center' }}>
+          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', paddingLeft: '12px' }}>
+            {step.stationCount}개 정류장 이동
+          </span>
+        </div>
+      )}
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#fff' }} />
+        <span style={{ color: '#fff', fontSize: '0.9rem' }}>{step.endStation} 하차</span>
+      </div>
+    </div>
+  );
+}
+
 export function RouteTimeline({ steps }: RouteTimelineProps) {
   return (
     <div style={{ padding: '8px 16px', position: 'relative' }}>
-      {/* Global vertical line removed, using per-step lines instead */}
-      
       {steps.map((step, idx) => {
         let Icon = Footprints;
         let iconColor = '#9ca3af';
@@ -68,28 +111,7 @@ export function RouteTimeline({ steps }: RouteTimelineProps) {
               </div>
               
               {step.type !== 'WALK' && step.startStation && (
-                <div style={{ 
-                  marginTop: '12px', padding: '12px', borderRadius: '8px', 
-                  background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: '2px solid #fff' }} />
-                    <span style={{ color: '#fff', fontSize: '0.9rem' }}>{step.startStation} 승차</span>
-                  </div>
-                  
-                  {step.stationCount && (
-                    <div style={{ paddingLeft: '11px', borderLeft: '2px dotted rgba(255,255,255,0.2)', margin: '4px 0', height: '20px', display: 'flex', alignItems: 'center' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', paddingLeft: '12px' }}>
-                        {step.stationCount}개 정류장 이동
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#fff' }} />
-                    <span style={{ color: '#fff', fontSize: '0.9rem' }}>{step.endStation} 하차</span>
-                  </div>
-                </div>
+                <TransitStepDetails step={step} />
               )}
             </div>
             

@@ -1,14 +1,15 @@
 import React from 'react';
 import type { RouteOption } from './RouteTypes';
-import { Clock, Coins, Activity } from 'lucide-react';
+import { Clock, Coins, Activity, Map } from 'lucide-react';
 
 interface RouteSummaryCardProps {
   route: RouteOption;
   onClick: () => void;
   isSelected?: boolean;
+  onShowMap?: () => void;
 }
 
-export function RouteSummaryCard({ route, onClick, isSelected }: RouteSummaryCardProps) {
+export function RouteSummaryCard({ route, onClick, isSelected, onShowMap }: RouteSummaryCardProps) {
   return (
     <div 
       className={`glass-panel ${isSelected ? 'selected' : ''}`}
@@ -31,16 +32,30 @@ export function RouteSummaryCard({ route, onClick, isSelected }: RouteSummaryCar
           <span style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.7)' }}>분</span>
         </div>
         
-        <div style={{ display: 'flex', gap: '6px' }}>
-          {route.tags.map(tag => (
-            <span key={tag} style={{
-              background: tag === '최적' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)',
-              color: tag === '최적' ? '#10b981' : '#ccc',
-              padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold'
-            }}>
-              {tag}
-            </span>
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {route.tags.map(tag => (
+              <span key={tag} style={{
+                background: tag === '최적' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)',
+                color: tag === '최적' ? '#10b981' : '#ccc',
+                padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold'
+              }}>
+                {tag}
+              </span>
+            ))}
+          </div>
+          {isSelected && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onShowMap?.(); }}
+              style={{
+                background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '8px', padding: '6px', color: '#fff', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s'
+              }}
+            >
+              <Map size={16} />
+            </button>
+          )}
         </div>
       </div>
       

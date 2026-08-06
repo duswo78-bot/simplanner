@@ -23,6 +23,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSearchCollapsed, setIsSearchCollapsed] = useState(false);
+  const [isMapForcedVisible, setIsMapForcedVisible] = useState(false);
   
   const [routes, setRoutes] = useState<RouteOption[]>([]);
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
@@ -77,6 +78,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
       if (foundRoutes.length > 0) {
         setSelectedRouteId(foundRoutes[0].id);
         setIsSearchCollapsed(true);
+        setIsMapForcedVisible(false);
       } else {
         setErrorMsg('경로를 찾을 수 없습니다.');
       }
@@ -114,7 +116,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                 <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
                 <span style={{ color: '#fff', fontSize: '0.95rem', fontWeight: 'bold' }}>{endPoi?.name}</span>
               </div>
-              <button onClick={() => setIsSearchCollapsed(false)} style={{ 
+              <button onClick={() => { setIsSearchCollapsed(false); setIsMapForcedVisible(false); }} style={{ 
                 background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%',
                 width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center',
                 color: '#fff', cursor: 'pointer'
@@ -206,11 +208,12 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
         )}
 
         {/* Route Picker Map & Search Button */}
-        {!isSearchCollapsed && (
+        {(!isSearchCollapsed || isMapForcedVisible) && (
           <div style={{ flexShrink: 0, position: 'relative', zIndex: 1, marginBottom: '12px' }}>
             <RoutePickerMap 
               centerTo={mapCenter}
               selectedRoute={selectedRoute}
+              autoGps={isMapForcedVisible}
               onSelectStart={async (lat, lng) => {
                 const name = await reverseGeocode(lat, lng);
                 setStartPoi({ id: Date.now(), name, x: lng, y: lat });
@@ -266,6 +269,11 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                       route={route} 
                       isSelected={selectedRouteId === route.id}
                       onClick={() => setSelectedRouteId(route.id)}
+                      onShowMap={() => {
+                        setIsMapForcedVisible(true);
+                        setIsSearchCollapsed(true);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
                     />
                     {selectedRouteId === route.id && (
                       <div style={{ 

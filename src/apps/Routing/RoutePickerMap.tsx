@@ -22,7 +22,7 @@ const pinHtml = `
 `;
 const pinIcon = L.divIcon({ html: pinHtml, className: 'custom-pin', iconSize: [0, 0], iconAnchor: [0, 0] });
 
-function MapController({ setPos, centerTo, gpsTrigger, selectedRoute }: { setPos: (pos: [number, number]) => void, centerTo?: [number, number], gpsTrigger: number, selectedRoute?: RouteOption | null }) {
+function MapController({ setPos, centerTo, gpsTrigger, selectedRoute, autoGps }: { setPos: (pos: [number, number]) => void, centerTo?: [number, number], gpsTrigger: number, selectedRoute?: RouteOption | null, autoGps?: boolean }) {
   const map = useMapEvents({
     moveend: (e) => {
       const c = e.target.getCenter();
@@ -38,7 +38,7 @@ function MapController({ setPos, centerTo, gpsTrigger, selectedRoute }: { setPos
   }, [centerTo, map, setPos]);
 
   useEffect(() => {
-    if (gpsTrigger > 0 && navigator.geolocation) {
+    if ((gpsTrigger > 0 || autoGps) && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const coords: [number, number] = [pos.coords.latitude, pos.coords.longitude];
@@ -48,7 +48,7 @@ function MapController({ setPos, centerTo, gpsTrigger, selectedRoute }: { setPos
         () => {}
       );
     }
-  }, [gpsTrigger, map, setPos]);
+  }, [gpsTrigger, autoGps, map, setPos]);
 
   useEffect(() => {
     if (selectedRoute) {
@@ -67,13 +67,13 @@ function MapController({ setPos, centerTo, gpsTrigger, selectedRoute }: { setPos
   return null;
 }
 
-export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute }: RoutePickerMapProps) {
+export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps }: RoutePickerMapProps) {
   const [center, setCenter] = useState<[number, number]>([37.5665, 126.9780]); // Default: Seoul City Hall
   const [gpsTrigger, setGpsTrigger] = useState(0);
   
   // Try to get user location
   useEffect(() => {
-    if (navigator.geolocation) {
+    if (navigator.geolocation && !autoGps) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setCenter([pos.coords.latitude, pos.coords.longitude]),
         () => {}
@@ -92,7 +92,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
           url="https://xdworld.vworld.kr/2d/Base/service/{z}/{x}/{y}.png"
           attribution='&copy; V-World'
         />
-        <MapController setPos={setCenter} centerTo={centerTo} gpsTrigger={gpsTrigger} selectedRoute={selectedRoute} />
+        <MapController setPos={setCenter} centerTo={centerTo} gpsTrigger={gpsTrigger} selectedRoute={selectedRoute} autoGps={autoGps} />
         
         {/* Render Route Polylines */}
         {selectedRoute && selectedRoute.steps.map(step => {
