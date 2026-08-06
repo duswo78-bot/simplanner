@@ -1,7 +1,7 @@
 import type { RouteOption, RoutePathStep } from './RouteTypes';
 
 const ODSAY_API_KEY = 'hBtPWXmpbhuZ5cOCZJjiQw'; // For demo. In prod use env var.
-const BASE_URL = '/api/odsay/v1/api';
+const BASE_URL = 'https://api.odsay.com/v1/api';
 
 export interface POI {
   id: number;
@@ -57,7 +57,7 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
       return [];
     }
 
-    const paths = data.result.path.map((path: any, index: number) => {
+    const paths = await Promise.all(data.result.path.map(async (path: any, index: number) => {
       
       const steps: RoutePathStep[] = [];
       let currentDuration = 0;
@@ -129,6 +129,33 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
 
       const transferCount = Math.max(0, (path.info.busTransitCount || 0) + (path.info.subwayTransitCount || 0) - 1);
 
+      // Fetch detailed graphical polylines
+      if (path.info.mapObj) {
+        try {
+          const laneUrl = `${BASE_URL}/loadLane?apiKey=${ODSAY_API_KEY}&mapObject=0:0@${path.info.mapObj}`;
+          const laneRes = await fetch(laneUrl);
+          const laneData = await laneRes.json();
+          if (laneData.result && laneData.result.lane) {
+            const lanes = laneData.result.lane;
+            let laneIdx = 0;
+            steps.forEach(step => {
+              if (step.type === 'BUS' || step.type === 'SUBWAY') {
+                if (lanes[laneIdx]) {
+                  const coords: [number, number][] = [];
+                  lanes[laneIdx].section.forEach((sec: any) => {
+                    sec.graphPos.forEach((pos: any) => coords.push([parseFloat(pos.y), parseFloat(pos.x)]));
+                  });
+                  if (coords.length > 0) step.pathCoords = coords;
+                }
+                laneIdx++;
+              }
+            });
+          }
+        } catch (e) {
+          console.error('Failed to load detailed lane for route', index, e);
+        }
+      }
+
       return {
         id: `route-${index}`,
         totalTimeMinutes: path.info.totalTime,
@@ -137,7 +164,7 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
         steps,
         tags
       } as RouteOption;
-    });
+    }));
 
     return paths;
   } catch (err) {

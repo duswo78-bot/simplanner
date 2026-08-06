@@ -1,13 +1,13 @@
 import type { POI } from './OdsayApi';
 
 // VWorld API Key (Need user to provide this in .env or hardcode)
-const VWORLD_API_KEY = import.meta.env.VITE_VWORLD_API_KEY || 'INSERT_YOUR_VWORLD_KEY_HERE';
+const VWORLD_API_KEY = import.meta.env.VITE_VWORLD_API_KEY || '4C6A8179-E902-3F04-AE87-921B4F141914';
 
 export async function searchPlaces(keyword: string): Promise<POI[]> {
   if (!keyword) return [];
   
   // VWorld Search API (search type: PLACE)
-  const url = `/api/vworld/req/search?service=search&request=search&version=2.0&crs=EPSG:4326&size=10&page=1&query=${encodeURIComponent(keyword)}&type=PLACE&format=json&errorformat=json&key=${VWORLD_API_KEY}`;
+  const url = `https://api.vworld.kr/req/search?service=search&request=search&version=2.0&crs=EPSG:4326&size=10&page=1&query=${encodeURIComponent(keyword)}&type=PLACE&format=json&errorformat=json&key=${VWORLD_API_KEY}`;
   
   try {
     const response = await fetch(url);
@@ -35,7 +35,7 @@ export async function searchPlaces(keyword: string): Promise<POI[]> {
 }
 
 export async function reverseGeocode(lat: number, lng: number): Promise<string> {
-  const url = `/api/vworld/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lng},${lat}&format=json&type=BOTH&zipcode=true&simple=false&key=${VWORLD_API_KEY}`;
+  const url = `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${lng},${lat}&format=json&type=BOTH&zipcode=true&simple=false&key=${VWORLD_API_KEY}`;
   
   try {
     const response = await fetch(url);
