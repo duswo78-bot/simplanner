@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, Loader2 } from 'lucide-react';
 import type { POI } from './OdsayApi';
 import { searchPlaces } from './VworldApi';
+import { searchStations } from './OdsayApi';
 
 interface StationSearchInputProps {
   placeholder: string;
@@ -42,10 +43,18 @@ export function StationSearchInput({ placeholder, value, onSelect, iconColor = '
 
     const timerId = setTimeout(async () => {
       setIsLoading(true);
-      const data = await searchPlaces(query);
+      let data = await searchPlaces(query);
       
-      if (data.length === 0) {
-        setResults([{ id: -1, name: '검색 결과 없음', address: '혹은 VWorld API 웹 도메인 미등록 상태입니다.', x: 0, y: 0 }]);
+      // Fallback to ODsay station search if Vworld returns no results
+      if (!data || data.length === 0) {
+        const odsayData = await searchStations(query);
+        if (odsayData && odsayData.length > 0) {
+          data = odsayData;
+        }
+      }
+      
+      if (!data || data.length === 0) {
+        setResults([{ id: -1, name: '검색 결과 없음', address: '명칭이나 정류장 이름을 다시 확인해주세요.', x: 0, y: 0 }]);
       } else {
         setResults(data);
       }
