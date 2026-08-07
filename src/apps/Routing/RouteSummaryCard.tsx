@@ -53,14 +53,23 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
           pointerEvents: 'auto',
           borderBottom: isMapVisible ? '1px solid rgba(255,255,255,0.05)' : 'none'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+          <style>{`
+            @keyframes pulse-border {
+              0% { border-color: rgba(16, 185, 129, 0.2); box-shadow: 0 0 0 rgba(16, 185, 129, 0); }
+              50% { border-color: rgba(16, 185, 129, 1); box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
+              100% { border-color: rgba(16, 185, 129, 0.2); box-shadow: 0 0 0 rgba(16, 185, 129, 0); }
+            }
+          `}</style>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            
+            {/* Left side: Time and Routes */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', flexShrink: 0 }}>
                 <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#fff' }}>{route.totalTimeMinutes}</span>
                 <span style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.7)' }}>분</span>
               </div>
               
-              <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'center', overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: '2px', scrollbarWidth: 'none' }}>
                 {route.steps.filter(s => s.type !== 'WALK').map((s, idx, arr) => (
                   <React.Fragment key={idx}>
                     <span style={{
@@ -72,36 +81,51 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
                       fontSize: '0.8rem',
                       fontWeight: 'bold',
                       whiteSpace: 'nowrap',
-                      filter: 'brightness(1.7) contrast(1.2)'
+                      filter: 'brightness(1.7) contrast(1.2)',
+                      flexShrink: 0
                     }}>
                       {s.lineName}
                     </span>
-                    {idx < arr.length - 1 && <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>›</span>}
+                    {idx < arr.length - 1 && <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem', flexShrink: 0 }}>›</span>}
                   </React.Fragment>
                 ))}
               </div>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                {route.tags.map(tag => {
+            {/* Right side: Tags and Map Button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, marginLeft: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                {route.tags.filter(t => t !== '최적').map(tag => {
                   let bg = 'rgba(255,255,255,0.1)';
                   let color = '#ccc';
-                  if (tag === '최적') { bg = 'rgba(16, 185, 129, 0.2)'; color = '#10b981'; }
-                  else if (tag === '전철') { bg = 'rgba(168, 85, 247, 0.15)'; color = '#c084fc'; }
+                  if (tag === '전철') { bg = 'rgba(168, 85, 247, 0.15)'; color = '#c084fc'; }
                   else if (tag === '버스') { bg = 'rgba(59, 130, 246, 0.15)'; color = '#60a5fa'; }
                   else if (tag === '버스+전철') { bg = 'rgba(245, 158, 11, 0.15)'; color = '#fbbf24'; }
 
                   return (
                     <span key={tag} style={{
                       background: bg, color: color,
-                      padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold'
+                      padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold',
+                      whiteSpace: 'nowrap'
                     }}>
                       {tag}
                     </span>
                   );
                 })}
+                
+                {route.tags.includes('최적') && (
+                  <span style={{
+                    color: '#10b981',
+                    padding: '2px 8px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold',
+                    border: '1px solid rgba(16, 185, 129, 0.2)',
+                    animation: 'pulse-border 1.5s infinite',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    최적
+                  </span>
+                )}
               </div>
+              
               {isSelected && (
                 <button 
                   onClick={(e) => { e.stopPropagation(); onShowMap?.(); }}
@@ -110,11 +134,11 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
                     border: isMapVisible ? '1px solid rgba(59, 130, 246, 0.8)' : '1px solid rgba(255,255,255,0.2)',
                     borderRadius: '8px', padding: '4px 8px', 
                     color: isMapVisible ? '#fff' : 'rgba(255,255,255,0.6)', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', height: '24px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', height: '32px',
                     boxShadow: isMapVisible ? '0 0 10px rgba(59, 130, 246, 0.3)' : 'none'
                   }}
                 >
-                  <Map size={14} />
+                  <Map size={16} />
                 </button>
               )}
             </div>

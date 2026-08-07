@@ -203,7 +203,7 @@ export async function getRealtimeBusArrival(stationId: number, routeId: number):
         }
       }
     }
-    return '운행 종료';
+    return '정보 없음';
   } catch (e) {
     console.error('Failed to fetch realtime bus info:', e);
     return '정보 없음';
