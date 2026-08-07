@@ -49,20 +49,6 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
     localStorage.setItem('recent_stations', JSON.stringify(newRecents));
   };
 
-  React.useEffect(() => {
-    if (navigator.geolocation && !startPoi && !isSearched) {
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        try {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          const name = await reverseGeocode(lat, lng);
-          setStartPoi(prev => prev ? prev : { id: Date.now(), name: name || '현재 위치', x: lng, y: lat });
-          setMapCenter([lat, lng]);
-        } catch (e) {}
-      }, () => {});
-    }
-  }, []);
-
   const handleRecentClick = (poi: POI) => {
     if (!startPoi) {
       setStartPoi(poi);
