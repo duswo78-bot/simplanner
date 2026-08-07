@@ -124,11 +124,12 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
             startStation: sub.startName || '출발 정류장',
             endStation: sub.endName || '도착 정류장',
             stationCount: sub.stationCount || 0,
-            pathCoords,
             startStationId: sub.startID,
             routeId: lineInfo.busID || lineInfo.subwayCode,
             localRouteId: lineInfo.busLocalBlID,
-            cityCode: lineInfo.busCityCode
+            cityCode: lineInfo.busCityCode,
+            startX: sub.startX,
+            startY: sub.startY
           });
         }
       });
@@ -185,27 +186,71 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
   }
 }
 
-export async function getRealtimeBusArrival(stationId: number, routeId: number, localRouteId?: string, cityCode?: number): Promise<number | string> {
+function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; 
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+export async function getRealtimeBusArrival(stationId: number, routeId: number, localRouteId?: string, cityCode?: number, startX?: number, startY?: number): Promise<number | string> {
   // Use public data API if Ulsan bus
   if (localRouteId && cityCode === 6000) {
     try {
       const apiKey = import.meta.env.VITE_BUS_API_KEY || 'be%2FRM33gszR8YNJlRSxXsDx91aiCgzFtC3w6xMXZ1qOk3U5F%2Fc9qh6oXg9kMy1UFkpeNY0NB5aZE9DNgPnMSPw%3D%3D';
       const stdgCd = '3100000000'; // Ulsan code
-      const url = `https://apis.data.go.kr/B551982/rte/rtm_loc_info?serviceKey=${apiKey}&stdgCd=${stdgCd}&numOfRows=1000&pageNo=1&type=json`;
       
-      const res = await fetch(url);
+      const firstUrl = `https://apis.data.go.kr/B551982/rte/rtm_loc_info?serviceKey=${apiKey}&stdgCd=${stdgCd}&numOfRows=1000&pageNo=1&type=json`;
+      const res = await fetch(firstUrl);
       const data = await res.json();
       
       if (data?.header?.resultCode === 'K0' || data?.header?.resultCode === '00') {
+        let allLocations: any[] = [];
         const items = data.body?.items?.item || [];
-        const arr = Array.isArray(items) ? items : [items];
-        const activeBuses = arr.filter((b: any) => b.rteId === localRouteId);
+        allLocations = Array.isArray(items) ? items : [items];
+        
+        const totalCount = parseInt(data.body?.totalCount || '0', 10);
+        if (totalCount > 1000) {
+          const totalPages = Math.ceil(totalCount / 1000);
+          const promises = [];
+          for (let page = 2; page <= totalPages; page++) {
+            const nextUrl = `https://apis.data.go.kr/B551982/rte/rtm_loc_info?serviceKey=${apiKey}&stdgCd=${stdgCd}&numOfRows=1000&pageNo=${page}&type=json`;
+            promises.push(fetch(nextUrl).then(r => r.json()));
+          }
+          const results = await Promise.all(promises);
+          results.forEach(res => {
+            if (res?.header?.resultCode === 'K0' || res?.header?.resultCode === '00') {
+              let pageItems = res.body?.items?.item || [];
+              pageItems = Array.isArray(pageItems) ? pageItems : [pageItems];
+              allLocations = allLocations.concat(pageItems);
+            }
+          });
+        }
+
+        const activeBuses = allLocations.filter((b: any) => b.rteId === localRouteId);
         
         if (activeBuses.length > 0) {
-          // Public data API provides locations, not exact ETA.
+          if (startX !== undefined && startY !== undefined) {
+            let minDistance = Number.MAX_VALUE;
+            activeBuses.forEach(b => {
+              const d = getDistanceKm(startY, startX, parseFloat(b.lat), parseFloat(b.lot));
+              if (d < minDistance) minDistance = d;
+            });
+            
+            if (minDistance < 10) { // Only show ETA if closest bus is within 10km
+              if (minDistance < 0.1) return '곧 도착';
+              // Assume 15km/h average city speed -> 4 mins per km
+              const etaMinutes = Math.max(1, Math.ceil(minDistance * 4));
+              return `약 ${etaMinutes}분 후 도착 (${Math.round(minDistance * 10) / 10}km)`;
+            }
+          }
           return '운행중 (지도 참조)';
         } else {
-          return '차고지 대기'; // No buses active on the route right now
+          return '차고지 대기'; 
         }
       }
     } catch (e) {

@@ -13,7 +13,7 @@ function TransitStepDetails({ step }: { step: RoutePathStep }) {
   useEffect(() => {
     let mounted = true;
     if (step.type === 'BUS' && step.startStationId && step.routeId) {
-      getRealtimeBusArrival(step.startStationId, step.routeId, step.localRouteId, step.cityCode).then(info => {
+      getRealtimeBusArrival(step.startStationId, step.routeId, step.localRouteId, step.cityCode, step.startX, step.startY).then(info => {
         if (mounted && info !== null) setArrivalInfo(info);
       });
     }

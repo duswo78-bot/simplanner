@@ -18,6 +18,8 @@ export interface RoutePathStep {
   routeId?: number; // For ODsay real-time API
   localRouteId?: string; // Local public data route ID
   cityCode?: number; // Local city code
+  startX?: number; // Stop Longitude
+  startY?: number; // Stop Latitude
 }
 
 export interface RouteOption {
