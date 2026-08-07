@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, useMapEvents, Polyline, useMap, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, useMapEvents, Polyline, useMap, Marker, Popup, Pane } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Navigation } from 'lucide-react';
@@ -269,81 +269,85 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         {gpsLocation && <Marker position={gpsLocation} icon={gpsIcon} />}
         
         {/* Render Approaching Bus Paths (Gray Dotted Lines) FIRST so they stay behind */}
-        {selectedRoute && activeBuses.map(bus => {
-          const busStep = selectedRoute.steps.find(s => s.type === 'BUS' && s.localRouteId && String(s.localRouteId).replace(/[^0-9]/g, '') === bus.rteId);
-          if (busStep && busStep.fullPathCoords && busStep.fullPathCoords.length > 0) {
-            let minBusDist = Infinity;
-            let busIdx = 0;
-            busStep.fullPathCoords.forEach((coord, idx) => {
-              const d = Math.pow(coord[0] - bus.lat, 2) + Math.pow(coord[1] - bus.lng, 2);
-              if (d < minBusDist) { minBusDist = d; busIdx = idx; }
-            });
-
-            let minStartDist = Infinity;
-            let startIdx = 0;
-            if (busStep.startY && busStep.startX) {
+        <Pane name="gray-paths" style={{ zIndex: 400 }}>
+          {selectedRoute && activeBuses.map(bus => {
+            const busStep = selectedRoute.steps.find(s => s.type === 'BUS' && s.localRouteId && String(s.localRouteId).replace(/[^0-9]/g, '') === bus.rteId);
+            if (busStep && busStep.fullPathCoords && busStep.fullPathCoords.length > 0) {
+              let minBusDist = Infinity;
+              let busIdx = 0;
               busStep.fullPathCoords.forEach((coord, idx) => {
-                const d = Math.pow(coord[0] - busStep.startY!, 2) + Math.pow(coord[1] - busStep.startX!, 2);
-                if (d < minStartDist) { minStartDist = d; startIdx = idx; }
+                const d = Math.pow(coord[0] - bus.lat, 2) + Math.pow(coord[1] - bus.lng, 2);
+                if (d < minBusDist) { minBusDist = d; busIdx = idx; }
               });
+
+              let minStartDist = Infinity;
+              let startIdx = 0;
+              if (busStep.startY && busStep.startX) {
+                busStep.fullPathCoords.forEach((coord, idx) => {
+                  const d = Math.pow(coord[0] - busStep.startY!, 2) + Math.pow(coord[1] - busStep.startX!, 2);
+                  if (d < minStartDist) { minStartDist = d; startIdx = idx; }
+                });
+              }
+
+              const pathSegment = busIdx <= startIdx 
+                ? busStep.fullPathCoords.slice(busIdx, startIdx + 1)
+                : busStep.fullPathCoords.slice(startIdx, busIdx + 1);
+
+              if (pathSegment.length > 0) {
+                if (busIdx <= startIdx) pathSegment.unshift([bus.lat, bus.lng]);
+                else pathSegment.push([bus.lat, bus.lng]);
+              }
+
+              return (
+                <Polyline
+                  key={`path-${bus.id}`}
+                  positions={pathSegment.length > 0 ? pathSegment : [[bus.lat, bus.lng], [busStep.startY!, busStep.startX!]]}
+                  color="#9ca3af"
+                  weight={4}
+                  opacity={0.8}
+                  lineCap="round"
+                  lineJoin="round"
+                />
+              );
+            } else if (busStep && busStep.startX && busStep.startY) {
+              return (
+                <Polyline
+                  key={`path-${bus.id}`}
+                  positions={[
+                    [bus.lat, bus.lng],
+                    [busStep.startY, busStep.startX]
+                  ]}
+                  color="#9ca3af"
+                  weight={3}
+                  opacity={0.5}
+                  dashArray="4, 8"
+                  lineCap="round"
+                />
+              );
             }
-
-            const pathSegment = busIdx <= startIdx 
-              ? busStep.fullPathCoords.slice(busIdx, startIdx + 1)
-              : busStep.fullPathCoords.slice(startIdx, busIdx + 1);
-
-            if (pathSegment.length > 0) {
-              if (busIdx <= startIdx) pathSegment.unshift([bus.lat, bus.lng]);
-              else pathSegment.push([bus.lat, bus.lng]);
-            }
-
-            return (
-              <Polyline
-                key={`path-${bus.id}`}
-                positions={pathSegment.length > 0 ? pathSegment : [[bus.lat, bus.lng], [busStep.startY!, busStep.startX!]]}
-                color="#9ca3af"
-                weight={4}
-                opacity={0.8}
-                lineCap="round"
-                lineJoin="round"
-              />
-            );
-          } else if (busStep && busStep.startX && busStep.startY) {
-            return (
-              <Polyline
-                key={`path-${bus.id}`}
-                positions={[
-                  [bus.lat, bus.lng],
-                  [busStep.startY, busStep.startX]
-                ]}
-                color="#9ca3af"
-                weight={3}
-                opacity={0.5}
-                dashArray="4, 8"
-                lineCap="round"
-              />
-            );
-          }
-          return null;
-        })}
+            return null;
+          })}
+        </Pane>
 
         {/* Render Route Polylines SECOND so they are on top */}
-        {selectedRoute && selectedRoute.steps.map(step => {
-          if (!step.pathCoords || step.pathCoords.length === 0) return null;
-          const isWalk = step.type === 'WALK';
-          return (
-            <Polyline 
-              key={step.id} 
-              positions={step.pathCoords} 
-              color={isWalk ? '#9ca3af' : (step.lineColor || '#6c5ce7')} 
-              weight={isWalk ? 4 : 5} 
-              opacity={isWalk ? 0.9 : 1.0} 
-              lineCap="round"
-              lineJoin="round"
-              dashArray={isWalk ? "8, 10" : undefined}
-            />
-          );
-        })}
+        <Pane name="colored-paths" style={{ zIndex: 410 }}>
+          {selectedRoute && selectedRoute.steps.map(step => {
+            if (!step.pathCoords || step.pathCoords.length === 0) return null;
+            const isWalk = step.type === 'WALK';
+            return (
+              <Polyline 
+                key={step.id} 
+                positions={step.pathCoords} 
+                color={isWalk ? '#9ca3af' : (step.lineColor || '#6c5ce7')} 
+                weight={isWalk ? 4 : 5} 
+                opacity={isWalk ? 0.9 : 1.0} 
+                lineCap="round"
+                lineJoin="round"
+                dashArray={isWalk ? "8, 10" : undefined}
+              />
+            );
+          })}
+        </Pane>
 
         {/* Start/End Pins for Route Summary Map */}
         {readonly && selectedRoute && (() => {
