@@ -105,7 +105,7 @@ function MapController({ setPos, setGpsLoc, centerTo, gpsTrigger, selectedRoute,
   return null;
 }
 
-function MapResizer() {
+function MapResizer({ isMapVisible }: { isMapVisible?: boolean }) {
   const map = useMap();
   useEffect(() => {
     // Repeatedly invalidate size while the CSS transition (height change) is happening
@@ -118,11 +118,11 @@ function MapResizer() {
     }, 400); // clear after 300ms transition ends
     
     return () => clearInterval(interval);
-  }, [map]);
+  }, [map, isMapVisible]);
   return null;
 }
 
-export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps = false, readonly = false, onActiveBusesChange, ridingState, onMatchBus }: RoutePickerMapProps) {
+export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps = false, readonly = false, onActiveBusesChange, ridingState, onMatchBus, isMapVisible }: RoutePickerMapProps & { isMapVisible?: boolean }) {
   const [pos, setPos] = useState<[number, number]>([37.5665, 126.9780]);
   const [gpsLoc, setGpsLoc] = useState<[number, number] | null>(null);
   const [gpsTrigger, setGpsTrigger] = useState(0);
@@ -535,7 +535,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             }
           }
           return null;
-        })()}<MapResizer />
+        })()}<MapResizer isMapVisible={isMapVisible} />
         
         {gpsLoc && <Marker position={gpsLoc} icon={gpsIcon} />}
         

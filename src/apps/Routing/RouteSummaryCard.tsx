@@ -47,8 +47,18 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, rid
         flexDirection: 'column'
       }}
     >
-      {isMapVisible && (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
+      {(isSelected || ridingState?.routeId === route.id) && (
+        <div style={{ 
+          position: 'absolute', 
+          top: isMapVisible ? 0 : '-9999px', 
+          left: 0, 
+          right: 0, 
+          bottom: isMapVisible ? 0 : 'auto', 
+          height: isMapVisible ? 'auto' : '240px',
+          zIndex: 0,
+          visibility: isMapVisible ? 'visible' : 'hidden',
+          pointerEvents: isMapVisible ? 'auto' : 'none'
+        }}>
           <RoutePickerMap 
             readonly={true}
             autoGps={true}
@@ -58,6 +68,7 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, rid
             onActiveBusesChange={setActiveBuses}
             ridingState={ridingState}
             onMatchBus={onMatchBus}
+            isMapVisible={isMapVisible}
           />
         </div>
       )}
@@ -181,8 +192,8 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, rid
                 <span style={{ fontWeight: isMapVisible ? 'bold' : 'normal' }}>환승 {route.transferCount}회</span>
               </div>
               
-              {/* Riding Toggle Button - Only visible when expanded */}
-              {isMapVisible && (
+              {/* Riding Toggle Button - Visible when selected or riding */}
+              {(isSelected || ridingState?.routeId === route.id) && (
                 <button
                   onClick={(e) => { e.stopPropagation(); onToggleRiding?.(); }}
                   style={{
