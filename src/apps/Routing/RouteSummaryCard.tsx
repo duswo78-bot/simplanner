@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import type { RouteOption } from './RouteTypes';
 import { Clock, Coins, Activity, Map } from 'lucide-react';
 import { RoutePickerMap } from './RoutePickerMap';
@@ -12,8 +12,19 @@ interface RouteSummaryCardProps {
 }
 
 export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onShowMap }: RouteSummaryCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isMapVisible && cardRef.current) {
+      setTimeout(() => {
+        cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+  }, [isMapVisible]);
+
   return (
     <div 
+      ref={cardRef}
       className={`glass-panel ${isSelected ? 'selected' : ''}`}
       onClick={onClick}
       style={{
