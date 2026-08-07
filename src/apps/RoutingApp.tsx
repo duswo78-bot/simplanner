@@ -155,6 +155,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                       placeholder="출발지 (예: 서울역)"
                       value={startPoi}
                       onSelect={(poi) => { setStartPoi(poi); setMapCenter([poi.y, poi.x]); }}
+                      onClear={() => setStartPoi(null)}
                       iconColor="#3b82f6"
                     />
                   </div>
@@ -163,6 +164,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                       placeholder="도착지 (예: 강남역)"
                       value={endPoi}
                       onSelect={(poi) => { setEndPoi(poi); setMapCenter([poi.y, poi.x]); }}
+                      onClear={() => setEndPoi(null)}
                       iconColor="#ef4444"
                     />
                   </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, MapPin, Loader2 } from 'lucide-react';
+import { Search, MapPin, Loader2, X } from 'lucide-react';
 import type { POI } from './OdsayApi';
 import { searchPlaces } from './VworldApi';
 import { searchStations } from './OdsayApi';
@@ -8,6 +8,7 @@ interface StationSearchInputProps {
   placeholder: string;
   value: POI | null;
   onSelect: (poi: POI) => void;
+  onClear?: () => void;
   iconColor?: string;
 }
 
@@ -28,7 +29,7 @@ const POPULAR_POIS: POI[] = [
   { id: 90014, name: '해운대역', address: '부산광역시 해운대구 해운대로 620', x: 129.1586, y: 35.1587 },
 ];
 
-export function StationSearchInput({ placeholder, value, onSelect, iconColor = 'rgba(255,255,255,0.5)' }: StationSearchInputProps) {
+export function StationSearchInput({ placeholder, value, onSelect, onClear, iconColor = 'rgba(255,255,255,0.5)' }: StationSearchInputProps) {
   const [query, setQuery] = useState(value ? value.name : '');
   const [results, setResults] = useState<POI[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -38,6 +39,8 @@ export function StationSearchInput({ placeholder, value, onSelect, iconColor = '
   useEffect(() => {
     if (value) {
       setQuery(value.name);
+    } else {
+      setQuery('');
     }
   }, [value]);
 
@@ -138,6 +141,12 @@ export function StationSearchInput({ placeholder, value, onSelect, iconColor = '
     setIsOpen(true);
   };
 
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setQuery('');
+    if (onClear) onClear();
+  };
+
   return (
     <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
       <Search size={18} color={iconColor} style={{ position: 'absolute', left: '12px', top: '14px' }} />
@@ -152,14 +161,21 @@ export function StationSearchInput({ placeholder, value, onSelect, iconColor = '
         }}
         placeholder={placeholder}
         style={{ 
-          width: '100%', padding: '12px 12px 12px 40px', borderRadius: '12px', 
+          width: '100%', padding: '12px 36px 12px 40px', borderRadius: '12px', 
           background: 'rgba(0,0,0,0.3)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)',
           outline: 'none', fontSize: '0.9rem', boxSizing: 'border-box'
         }}
       />
-      {isLoading && (
+      {isLoading ? (
         <Loader2 size={16} color="rgba(255,255,255,0.5)" className="animate-spin" style={{ position: 'absolute', right: '12px', top: '15px' }} />
-      )}
+      ) : query && onClear ? (
+        <X 
+          size={16} 
+          color="rgba(255,255,255,0.5)" 
+          style={{ position: 'absolute', right: '12px', top: '15px', cursor: 'pointer' }}
+          onClick={handleClear}
+        />
+      ) : null}
 
       {isOpen && results.length > 0 && (
         <div style={{
