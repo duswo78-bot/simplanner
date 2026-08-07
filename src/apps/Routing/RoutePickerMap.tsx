@@ -130,7 +130,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
 
   // Riding Mode: Auto-match and lock center to bus
   useEffect(() => {
-    if (ridingState?.routeId === selectedRoute?.id && activeBuses.length > 0) {
+    if (ridingState && selectedRoute && ridingState.routeId === selectedRoute.id && activeBuses.length > 0) {
       if (!ridingState.matchedBusId && onMatchBus && gpsLoc) {
         // Auto-match closest bus to GPS (or just the closest approaching bus)
         const approaching = activeBuses.filter(b => !b.isPassed);
@@ -630,13 +630,13 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
       {!readonly && (
         <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', display: 'flex', gap: '8px', zIndex: 1000 }}>
           <button
-            onClick={() => onSelectStart(center[0], center[1])}
+            onClick={() => onSelectStart(pos[0], pos[1])}
             style={{ flex: 1, background: '#3b82f6', color: '#fff', border: 'none', padding: '8px 0', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer' }}
           >
             출발지로 설정
           </button>
           <button
-            onClick={() => onSelectEnd(center[0], center[1])}
+            onClick={() => onSelectEnd(pos[0], pos[1])}
             style={{ flex: 1, background: '#ef4444', color: '#fff', border: 'none', padding: '8px 0', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer' }}
           >
             도착지로 설정
