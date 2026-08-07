@@ -1,0 +1,92 @@
+.calc-chassis {
+  background-image: url('/calculator_bg.jpg');
+  background-size: cover;
+  background-position: center;
+  border-radius: 24px;
+  padding: 28px 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.2), inset 0 -2px 10px rgba(0,0,0,0.5);
+  border: 1px solid #111;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.calc-chassis::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.3) 100%);
+  pointer-events: none;
+}
+
+.calc-display {
+  background: linear-gradient(180deg, #1f2937, #0f172a);
+  border-radius: 12px;
+  padding: 16px 20px;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  box-shadow: inset 0 4px 12px rgba(0,0,0,1), 0 1px 1px rgba(255,255,255,0.15);
+  border: 2px solid #000;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glass reflection on display */
+.calc-display::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0));
+  pointer-events: none;
+}
+
+.calc-keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 14px;
+  min-height: 280px;
+}
+
+.calc-btn {
+  background: linear-gradient(180deg, #4b5563, #374151);
+  border: 1px solid #111;
+  border-radius: 12px;
+  color: #f3f4f6;
+  font-size: 1.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 2px 2px rgba(255,255,255,0.1), 0 4px 8px rgba(0,0,0,0.5), 0 2px 3px rgba(0,0,0,0.4);
+  text-shadow: 0 -1px 0 rgba(0,0,0,0.5);
+  transition: all 0.05s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.calc-btn:active {
+  transform: translateY(3px);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.6), 0 1px 1px rgba(0,0,0,0.3);
+}
+
+.calc-btn.op-top {
+  background: linear-gradient(180deg, #64748b, #475569);
+}
+
+.calc-btn.op-right {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+  box-shadow: inset 0 2px 2px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.5);
+  color: #fff;
+}
+
+.calc-btn.op-right:active {
+  background: linear-gradient(180deg, #d97706, #b45309);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
+}

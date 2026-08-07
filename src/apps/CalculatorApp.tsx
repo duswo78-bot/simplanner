@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppContainer } from '../components/AppContainer';
+import './CalculatorApp.css';
 import { Save, Share2, Trash2 } from 'lucide-react';
 
 interface CalculatorAppProps {
@@ -119,76 +120,47 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
     setSavedList(savedList.filter(item => item.id !== id));
   };
 
-  const buttonStyle = {
-    background: 'rgba(255,255,255,0.1)',
-    border: 'none',
-    borderRadius: '16px',
-    color: '#fff',
-    fontSize: '1.2rem',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    transition: 'background 0.1s',
-  };
 
-  const opStyle = {
-    ...buttonStyle,
-    background: 'rgba(245, 158, 11, 0.8)',
-    color: '#fff',
-  };
-
-  const topOpStyle = {
-    ...buttonStyle,
-    background: 'rgba(255,255,255,0.2)',
-    color: '#e2e8f0',
-  };
 
   return (
     <AppContainer title="계산기" onBack={onBack}>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '16px', gap: '12px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '16px', gap: '16px' }}>
         
-        {/* Display */}
-        <div style={{ 
-          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'flex-end',
-          padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '20px', minHeight: '80px'
-        }}>
-          <div style={{ color: '#fff', fontSize: expression.length > 15 ? '1.5rem' : '2.5rem', fontWeight: 'bold', wordBreak: 'break-all', textAlign: 'right', lineHeight: 1.2 }}>
-            {expression || '0'}
+        <div className="calc-chassis">
+          {/* Display */}
+          <div className="calc-display">
+            <div style={{ color: '#fff', fontSize: expression.length > 15 ? '1.5rem' : '2.5rem', fontWeight: 'bold', wordBreak: 'break-all', textAlign: 'right', lineHeight: 1.2, position: 'relative', zIndex: 1 }}>
+              {expression || '0'}
+            </div>
           </div>
-        </div>
 
-        {/* Keypad */}
-        <div style={{ 
-          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'repeat(5, 1fr)', 
-          gap: '8px', minHeight: '280px'
-        }}>
-          <button style={topOpStyle} onClick={handleClear}>C</button>
-          <button style={topOpStyle} onClick={() => handleInput('(')}>(</button>
-          <button style={topOpStyle} onClick={() => handleInput(')')}>)</button>
-          <button style={opStyle} onClick={() => handleInput('÷')}>÷</button>
-          
-          <button style={buttonStyle} onClick={() => handleInput('7')}>7</button>
-          <button style={buttonStyle} onClick={() => handleInput('8')}>8</button>
-          <button style={buttonStyle} onClick={() => handleInput('9')}>9</button>
-          <button style={opStyle} onClick={() => handleInput('×')}>×</button>
-          
-          <button style={buttonStyle} onClick={() => handleInput('4')}>4</button>
-          <button style={buttonStyle} onClick={() => handleInput('5')}>5</button>
-          <button style={buttonStyle} onClick={() => handleInput('6')}>6</button>
-          <button style={opStyle} onClick={() => handleInput('-')}>-</button>
-          
-          <button style={buttonStyle} onClick={() => handleInput('1')}>1</button>
-          <button style={buttonStyle} onClick={() => handleInput('2')}>2</button>
-          <button style={buttonStyle} onClick={() => handleInput('3')}>3</button>
-          <button style={opStyle} onClick={() => handleInput('+')}>+</button>
-          
-          <button style={buttonStyle} onClick={() => handleInput('0')}>0</button>
-          <button style={buttonStyle} onClick={() => handleInput('.')}>.</button>
-          <button style={buttonStyle} onClick={() => handleInput('%')}>%</button>
-          <button style={opStyle} onClick={handleEqual}>=</button>
+          {/* Keypad */}
+          <div className="calc-keypad">
+            <button className="calc-btn op-top" onClick={handleClear}>C</button>
+            <button className="calc-btn op-top" onClick={() => handleInput('(')}>(</button>
+            <button className="calc-btn op-top" onClick={() => handleInput(')')}>)</button>
+            <button className="calc-btn op-right" onClick={() => handleInput('÷')}>÷</button>
+            
+            <button className="calc-btn" onClick={() => handleInput('7')}>7</button>
+            <button className="calc-btn" onClick={() => handleInput('8')}>8</button>
+            <button className="calc-btn" onClick={() => handleInput('9')}>9</button>
+            <button className="calc-btn op-right" onClick={() => handleInput('×')}>×</button>
+            
+            <button className="calc-btn" onClick={() => handleInput('4')}>4</button>
+            <button className="calc-btn" onClick={() => handleInput('5')}>5</button>
+            <button className="calc-btn" onClick={() => handleInput('6')}>6</button>
+            <button className="calc-btn op-right" onClick={() => handleInput('-')}>-</button>
+            
+            <button className="calc-btn" onClick={() => handleInput('1')}>1</button>
+            <button className="calc-btn" onClick={() => handleInput('2')}>2</button>
+            <button className="calc-btn" onClick={() => handleInput('3')}>3</button>
+            <button className="calc-btn op-right" onClick={() => handleInput('+')}>+</button>
+            
+            <button className="calc-btn" onClick={() => handleInput('0')}>0</button>
+            <button className="calc-btn" onClick={() => handleInput('.')}>.</button>
+            <button className="calc-btn" onClick={() => handleInput('%')}>%</button>
+            <button className="calc-btn op-right" onClick={handleEqual}>=</button>
+          </div>
         </div>
         
         {/* Save Bar */}
