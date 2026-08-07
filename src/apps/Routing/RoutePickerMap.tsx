@@ -26,6 +26,7 @@ interface RoutePickerMapProps {
   selectedRoute?: RouteOption | null;
   autoGps?: boolean;
   readonly?: boolean;
+  onActiveBusesChange?: (buses: any[]) => void;
 }
 
 const pinHtml = `
@@ -114,12 +115,13 @@ function MapResizer() {
   return null;
 }
 
-export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps, readonly }: RoutePickerMapProps) {
+export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps, readonly, onActiveBusesChange }: RoutePickerMapProps) {
   const [center, setCenter] = useState<[number, number]>([37.5665, 126.9780]); // Default: Seoul City Hall
   const [gpsLocation, setGpsLocation] = useState<[number, number] | null>(null);
   const [gpsTrigger, setGpsTrigger] = useState(0);
   
   const [activeBuses, setActiveBuses] = useState<any[]>([]);
+  const [displayBuses, setDisplayBuses] = useState<any[]>([]);
 
   // Try to get user location
   useEffect(() => {
@@ -225,7 +227,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             busesWithDist.sort((a: any, b: any) => a.dist - b.dist);
             const closest = busesWithDist.slice(0, 3);
             
-            setActiveBuses(closest.map((item: any) => {
+            const newActiveBuses = closest.map((item: any) => {
               const rteId = String(item.bus.rteId);
               const step = busSteps.find(s => String(s.localRouteId).replace(/[^0-9]/g, '') === rteId);
               let distKm = undefined;
@@ -239,9 +241,12 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
                 rteId: rteId,
                 lineName: step?.lineName || '버스',
                 speed: item.bus.oprSpd,
-                distKm: distKm
+                distKm: distKm,
+                lastUpdate: Date.now()
               };
-            }));
+            });
+            setActiveBuses(newActiveBuses);
+            if (onActiveBusesChange) onActiveBusesChange(newActiveBuses);
           }
         }
       } catch (e) {
@@ -250,12 +255,88 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
     };
 
     fetchBuses();
-    const interval = setInterval(fetchBuses, 5000);
+    const interval = setInterval(fetchBuses, 10000);
     return () => {
       mounted = false;
       clearInterval(interval);
     };
   }, [selectedRoute, readonly]);
+
+  // Interpolation loop for smooth movement
+  useEffect(() => {
+    if (activeBuses.length === 0) {
+      setDisplayBuses([]);
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      const now = Date.now();
+      setDisplayBuses(prevDisplay => {
+        return activeBuses.map(activeBus => {
+          // If no speed, or no last update, just stay at current
+          if (!activeBus.speed || !activeBus.lastUpdate) {
+            return { ...activeBus };
+          }
+          
+          const timeElapsedMs = now - activeBus.lastUpdate;
+          const timeElapsedHours = timeElapsedMs / (1000 * 60 * 60);
+          const distanceToMoveKm = activeBus.speed * timeElapsedHours;
+          const distanceToMoveDegrees = distanceToMoveKm / 111; // rough conversion from km to degrees
+
+          // Try to find the step to interpolate along its path
+          const step = selectedRoute?.steps.find(s => 
+            s.type === 'BUS' && 
+            s.localRouteId && 
+            String(s.localRouteId).replace(/[^0-9]/g, '') === activeBus.rteId
+          );
+
+          let newLat = activeBus.lat;
+          let newLng = activeBus.lng;
+
+          // Simple predictive interpolation: move towards the next coordinate on the path, or just move towards destination
+          if (step && step.pathCoords && step.pathCoords.length > 0) {
+            // Find closest point on path
+            let minDist = Infinity;
+            let closestIdx = 0;
+            for (let i = 0; i < step.pathCoords.length; i++) {
+              const d = Math.pow(step.pathCoords[i][0] - activeBus.lat, 2) + Math.pow(step.pathCoords[i][1] - activeBus.lng, 2);
+              if (d < minDist) {
+                minDist = d;
+                closestIdx = i;
+              }
+            }
+            
+            // Move towards the next point in the path (assume index decreases towards boarding stop if we are approaching it, or just use boarding stop)
+            // Actually, we are just waiting for the bus, so it moves TOWARDS step.startY/step.startX
+            if (step.startY && step.startX) {
+              const dy = step.startY - activeBus.lat;
+              const dx = step.startX - activeBus.lng;
+              const distToTarget = Math.sqrt(dy * dy + dx * dx);
+              
+              if (distToTarget > 0) {
+                const ratio = Math.min(1, distanceToMoveDegrees / distToTarget);
+                newLat = activeBus.lat + dy * ratio;
+                newLng = activeBus.lng + dx * ratio;
+              }
+            }
+          }
+
+          return {
+            ...activeBus,
+            lat: newLat,
+            lng: newLng
+          };
+        });
+      });
+    }, 100);
+
+    return () => clearInterval(intervalId);
+  }, [activeBuses, selectedRoute]);
+
+  // Set initial display buses immediately when activeBuses updates
+  useEffect(() => {
+    setDisplayBuses(activeBuses);
+  }, [activeBuses]);
 
   const handleGpsClick = () => {
     setGpsTrigger(prev => prev + 1);
@@ -328,7 +409,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         })()}
 
         {/* Real-time Bus Markers */}
-        {activeBuses.map(bus => (
+        {displayBuses.map(bus => (
           <Marker key={bus.id} position={[bus.lat, bus.lng]} icon={busIcon} zIndexOffset={1000}>
             <Popup closeButton={false} autoPan={false} className="compact-popup">
               <div style={{ padding: '0', textAlign: 'center', margin: 0, lineHeight: '1.2', display: 'flex', flexDirection: 'column', gap: '2px' }}>

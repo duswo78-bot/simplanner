@@ -5,12 +5,38 @@ import { getRealtimeBusArrival } from './OdsayApi';
 
 interface RouteTimelineProps {
   steps: RoutePathStep[];
+  activeBuses?: any[];
 }
 
-function TransitStepDetails({ step }: { step: RoutePathStep }) {
+function TransitStepDetails({ step, activeBuses }: { step: RoutePathStep, activeBuses?: any[] }) {
   const [arrivalInfo, setArrivalInfo] = useState<number | string | null>(null);
 
   useEffect(() => {
+    if (step.type === 'BUS' && activeBuses && activeBuses.length > 0) {
+      const rteId = step.localRouteId ? String(step.localRouteId).replace(/[^0-9]/g, '') : '';
+      const busesForRoute = activeBuses.filter(b => b.rteId === rteId);
+      if (busesForRoute.length > 0) {
+        // Find closest bus
+        const closest = busesForRoute.reduce((prev, curr) => 
+          (prev.distKm !== undefined && curr.distKm !== undefined && prev.distKm < curr.distKm) ? prev : curr
+        );
+        
+        if (closest.distKm !== undefined && !Number.isNaN(closest.distKm) && closest.distKm !== Infinity) {
+          // Assume ~20km/h average speed in city if we don't use real speed, but let's use actual speed or 20
+          const speed = (closest.speed && closest.speed > 0) ? closest.speed : 20;
+          const hours = closest.distKm / speed;
+          const minutes = Math.ceil(hours * 60);
+          if (minutes === 0 || closest.distKm < 0.1) {
+             setArrivalInfo('곧 도착');
+          } else {
+             setArrivalInfo(`약 ${minutes}분 후 도착 (${closest.distKm.toFixed(1)}km)`);
+          }
+          return;
+        }
+      }
+    }
+    
+    // Fallback if no active buses or not a bus
     let mounted = true;
     if (step.type === 'BUS' && step.startStationId && step.routeId) {
       let endX = undefined;
@@ -21,11 +47,17 @@ function TransitStepDetails({ step }: { step: RoutePathStep }) {
         endX = lastPoint[1];
       }
       getRealtimeBusArrival(step.startStationId, step.routeId, step.localRouteId, step.cityCode, step.startX, step.startY, endX, endY).then(info => {
-        if (mounted && info !== null) setArrivalInfo(info);
+        if (mounted && info !== null) {
+          if (typeof info === 'number') {
+            setArrivalInfo(`약 ${info}분 후 도착`);
+          } else {
+            setArrivalInfo(info);
+          }
+        }
       });
     }
     return () => { mounted = false; };
-  }, [step]);
+  }, [step, activeBuses]);
 
   return (
     <div style={{ 
@@ -37,13 +69,13 @@ function TransitStepDetails({ step }: { step: RoutePathStep }) {
           <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: '2px solid #fff' }} />
           <span style={{ color: '#fff', fontSize: '0.9rem' }}>{step.startStation} 승차</span>
         </div>
-        {arrivalInfo !== null && typeof arrivalInfo === 'number' && (
-          <span style={{ color: '#ef4444', fontSize: '0.85rem', fontWeight: 'bold', background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: '4px' }}>
-            약 {arrivalInfo}분 후 도착
-          </span>
-        )}
-        {arrivalInfo !== null && typeof arrivalInfo === 'string' && (
-          <span style={{ color: '#9ca3af', fontSize: '0.85rem', fontWeight: 'bold', background: 'rgba(156,163,175,0.15)', padding: '2px 6px', borderRadius: '4px' }}>
+        {arrivalInfo !== null && (
+          <span style={{ 
+            color: typeof arrivalInfo === 'string' && arrivalInfo.includes('도착') ? '#ef4444' : '#9ca3af', 
+            fontSize: '0.85rem', fontWeight: 'bold', 
+            background: typeof arrivalInfo === 'string' && arrivalInfo.includes('도착') ? 'rgba(239,68,68,0.15)' : 'rgba(156,163,175,0.15)', 
+            padding: '2px 6px', borderRadius: '4px' 
+          }}>
             {arrivalInfo}
           </span>
         )}
@@ -65,7 +97,7 @@ function TransitStepDetails({ step }: { step: RoutePathStep }) {
   );
 }
 
-export function RouteTimeline({ steps }: RouteTimelineProps) {
+export function RouteTimeline({ steps, activeBuses }: RouteTimelineProps) {
   return (
     <div style={{ padding: '8px 16px', position: 'relative' }}>
       {steps.map((step, idx) => {
@@ -125,7 +157,7 @@ export function RouteTimeline({ steps }: RouteTimelineProps) {
               </div>
               
               {step.type !== 'WALK' && step.startStation && (
-                <TransitStepDetails step={step} />
+                <TransitStepDetails step={step} activeBuses={activeBuses} />
               )}
             </div>
             

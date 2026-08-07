@@ -1,18 +1,22 @@
 import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import type { RouteOption } from './RouteTypes';
 import { Clock, Coins, Activity, Map } from 'lucide-react';
 import { RoutePickerMap } from './RoutePickerMap';
 
 interface RouteSummaryCardProps {
   route: RouteOption;
-  onClick: () => void;
   isSelected?: boolean;
+  onClick?: () => void;
   isMapVisible?: boolean;
   onShowMap?: () => void;
+  onSelectStart?: (lat: number, lng: number) => void;
+  onSelectEnd?: (lat: number, lng: number) => void;
 }
 
-export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onShowMap }: RouteSummaryCardProps) {
+export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onShowMap, onSelectStart, onSelectEnd }: RouteSummaryCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [activeBuses, setActiveBuses] = useState<any[]>([]);
 
   useEffect(() => {
     if (isMapVisible && cardRef.current) {
@@ -47,8 +51,9 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
             readonly={true}
             autoGps={true}
             selectedRoute={route}
-            onSelectStart={() => {}}
-            onSelectEnd={() => {}}
+            onSelectStart={onSelectStart || (() => {})}
+            onSelectEnd={onSelectEnd || (() => {})}
+            onActiveBusesChange={setActiveBuses}
           />
         </div>
       )}
