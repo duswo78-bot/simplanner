@@ -266,7 +266,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         })}
 
         {/* Render Approaching Bus Paths (Gray Dotted Lines) */}
-        {!readonly && selectedRoute && activeBuses.map(bus => {
+        {selectedRoute && activeBuses.map(bus => {
           const busStep = selectedRoute.steps.find(s => s.type === 'BUS' && s.localRouteId && String(s.localRouteId).replace(/[^0-9]/g, '') === bus.rteId);
           if (busStep && busStep.startX && busStep.startY) {
             return (
