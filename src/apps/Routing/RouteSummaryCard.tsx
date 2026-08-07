@@ -123,18 +123,6 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
                     </span>
                   );
                 })}
-                
-                {route.tags.includes('최적') && (
-                  <span style={{
-                    color: '#10b981',
-                    padding: '2px 8px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold',
-                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                    animation: 'pulse-border 1.5s infinite',
-                    whiteSpace: 'nowrap'
-                  }}>
-                    최적
-                  </span>
-                )}
               </div>
               
               {isSelected && (
@@ -172,19 +160,34 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
           pointerEvents: 'auto',
           borderTop: isMapVisible ? '1px solid rgba(255,255,255,0.05)' : 'none'
         }}>
-          <div style={{ display: 'flex', gap: '16px', color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Coins size={14} />
-              <span style={{ fontWeight: isMapVisible ? 'bold' : 'normal' }}>{route.totalFare.toLocaleString()}원</span>
+          {/* Bottom Info: Fare and Transfers */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', gap: '16px', color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Coins size={14} color="#8b5cf6" />
+                <span style={{ fontWeight: isMapVisible ? 'bold' : 'normal' }}>{route.totalFare.toLocaleString()}원</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Activity size={14} color="#3b82f6" />
+                <span style={{ fontWeight: isMapVisible ? 'bold' : 'normal' }}>환승 {route.transferCount}회</span>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Activity size={14} />
-              <span style={{ fontWeight: isMapVisible ? 'bold' : 'normal' }}>환승 {route.transferCount}회</span>
-            </div>
+            
+            {route.tags.includes('최적') && (
+              <span style={{
+                color: '#10b981',
+                padding: '2px 8px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold',
+                border: '1px solid rgba(16, 185, 129, 0.2)',
+                animation: 'pulse-border 1.5s infinite',
+                whiteSpace: 'nowrap'
+              }}>
+                최적
+              </span>
+            )}
           </div>
           
           {/* Mini graphical route overview */}
-          <div style={{ marginTop: '16px', display: 'flex', gap: '4px', height: '6px', borderRadius: '3px', overflow: 'hidden', filter: 'brightness(1.3)' }}>
+          <div style={{ display: 'flex', gap: '4px', height: '6px', borderRadius: '3px', overflow: 'hidden', filter: 'brightness(1.3)' }}>
             {route.steps.map((step, idx) => {
               let bg = '#6b7280';
               if (step.type === 'BUS') bg = step.lineColor || '#3b82f6';

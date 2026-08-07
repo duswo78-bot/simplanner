@@ -76,7 +76,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
       setRoutes(foundRoutes);
       
       if (foundRoutes.length > 0) {
-        setSelectedRouteId(foundRoutes[0].id);
+        setSelectedRouteId(null);
         setIsSearchCollapsed(true);
         setIsMapForcedVisible(false);
       } else {
