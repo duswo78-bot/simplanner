@@ -325,6 +325,11 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                   </div>
                 ))}
               </>
+            ) : isSearched ? (
+              <div style={{ padding: '48px 24px', textAlign: 'center', color: '#888' }}>
+                <p style={{ fontSize: '1.1rem', marginBottom: '8px', color: '#e5e7eb', fontWeight: 'bold' }}>경로를 찾을 수 없습니다.</p>
+                <p style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>출발지와 도착지의 거리가 너무 멀거나 (시외 구간),<br/>연결되는 대중교통 노선이 존재하지 않을 수 있습니다.</p>
+              </div>
             ) : null}
           </div>
         )}
