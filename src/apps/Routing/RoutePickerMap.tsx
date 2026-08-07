@@ -143,11 +143,30 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         const res = await fetch(url);
         const data = await res.json();
         if (data?.header?.resultCode === 'K0' || data?.header?.resultCode === '00') {
+          let allLocations: any[] = [];
           const items = data.body?.items?.item || [];
-          const arr = Array.isArray(items) ? items : [items];
+          allLocations = Array.isArray(items) ? items : [items];
+          
+          const totalCount = parseInt(data.body?.totalCount || '0', 10);
+          if (totalCount > 1000) {
+            const totalPages = Math.ceil(totalCount / 1000);
+            const promises = [];
+            for (let page = 2; page <= totalPages; page++) {
+              const nextUrl = `https://apis.data.go.kr/B551982/rte/rtm_loc_info?serviceKey=${apiKey}&stdgCd=${stdgCd}&numOfRows=1000&pageNo=${page}&type=json`;
+              promises.push(fetch(nextUrl).then(r => r.json()));
+            }
+            const results = await Promise.all(promises);
+            results.forEach(res => {
+              if (res?.header?.resultCode === 'K0' || res?.header?.resultCode === '00') {
+                let pageItems = res.body?.items?.item || [];
+                pageItems = Array.isArray(pageItems) ? pageItems : [pageItems];
+                allLocations = allLocations.concat(pageItems);
+              }
+            });
+          }
           
           const localRouteIds = busSteps.map(s => s.localRouteId);
-          const buses = arr.filter((b: any) => localRouteIds.includes(b.rteId));
+          const buses = allLocations.filter((b: any) => localRouteIds.includes(b.rteId));
           
           if (mounted) {
             setActiveBuses(buses.map((b: any) => ({

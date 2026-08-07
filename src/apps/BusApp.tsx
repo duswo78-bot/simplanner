@@ -112,11 +112,30 @@ export function BusApp({ onBack }: BusAppProps) {
       const data = await response.json();
 
       if (data?.header?.resultCode === 'K0' || data?.header?.resultCode === '00') {
+        let allLocations: BusLocation[] = [];
         const items = data.body?.items?.item || [];
-        const arr = Array.isArray(items) ? items : [items];
+        allLocations = Array.isArray(items) ? items : [items];
+        
+        const totalCount = parseInt(data.body?.totalCount || '0', 10);
+        if (totalCount > 1000) {
+          const totalPages = Math.ceil(totalCount / 1000);
+          const promises = [];
+          for (let page = 2; page <= totalPages; page++) {
+            const nextUrl = `https://apis.data.go.kr/B551982/rte/rtm_loc_info?serviceKey=${apiKey}&stdgCd=${route.stdgCd}&numOfRows=1000&pageNo=${page}&type=json`;
+            promises.push(fetch(nextUrl).then(r => r.json()));
+          }
+          const results = await Promise.all(promises);
+          results.forEach(res => {
+            if (res?.header?.resultCode === 'K0' || res?.header?.resultCode === '00') {
+              let pageItems = res.body?.items?.item || [];
+              pageItems = Array.isArray(pageItems) ? pageItems : [pageItems];
+              allLocations = allLocations.concat(pageItems);
+            }
+          });
+        }
         
         // Filter buses that belong to this route
-        const activeBuses = arr.filter((b: BusLocation) => b.rteId === route.rteId);
+        const activeBuses = allLocations.filter((b: BusLocation) => b.rteId === route.rteId);
         setLocations(activeBuses);
       } else {
         setError(`API 오류: ${data?.header?.resultMsg || '알 수 없는 오류'}`);
