@@ -510,7 +510,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         />
         {/* If Riding, lock map center to matched bus */}
         {(() => {
-          if (ridingState?.routeId === selectedRoute?.id && ridingState.matchedBusId) {
+          if (ridingState && selectedRoute && ridingState.routeId === selectedRoute.id && ridingState.matchedBusId) {
             const matchedBus = activeBuses.find(b => b.id === ridingState.matchedBusId);
             if (matchedBus) {
               return <MapController setPos={setPos} centerTo={[matchedBus.lat, matchedBus.lng]} gpsTrigger={0} />;
