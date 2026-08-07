@@ -47,12 +47,13 @@ export function Launcher({ onAppClick }: LauncherProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5,
+        delay: 2000,
+        tolerance: 5,
       },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 250,
+        delay: 2000,
         tolerance: 5,
       },
     }),
