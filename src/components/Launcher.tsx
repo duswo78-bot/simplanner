@@ -31,6 +31,9 @@ const INITIAL_APPS: AppData[] = [
   { id: 'app-bus', name: '대중교통', icon: 'Bus', color: 'linear-gradient(135deg, #eab308, #ca8a04)' },
   { id: 'app-meals', name: '급식', icon: 'Utensils', color: 'linear-gradient(135deg, #f43f5e, #e11d48)' },
   { id: 'app-card', name: '카드/이체', icon: 'CreditCard', color: 'linear-gradient(135deg, #6366f1, #4f46e5)' },
+  { id: 'app-cart', name: '장보기', icon: 'ShoppingCart', color: 'linear-gradient(135deg, #a3e635, #65a30d)' },
+  { id: 'app-car', name: '차량 관리', icon: 'Car', color: 'linear-gradient(135deg, #94a3b8, #475569)' },
+  { id: 'app-delivery', name: '택배/배송', icon: 'Package', color: 'linear-gradient(135deg, #fb923c, #c2410c)' },
   { id: 'app-settings', name: '설정', icon: 'Settings', color: 'linear-gradient(135deg, #64748b, #475569)' },
 ];
 
