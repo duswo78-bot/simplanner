@@ -165,8 +165,8 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             });
           }
           
-          const localRouteIds = busSteps.map(s => s.localRouteId);
-          const buses = allLocations.filter((b: any) => localRouteIds.includes(b.rteId));
+          const localRouteIds = busSteps.map(s => String(s.localRouteId).replace(/[^0-9]/g, ''));
+          const buses = allLocations.filter((b: any) => localRouteIds.includes(String(b.rteId)));
           
           if (mounted) {
             setActiveBuses(buses.map((b: any) => ({

@@ -231,7 +231,8 @@ export async function getRealtimeBusArrival(stationId: number, routeId: number, 
           });
         }
 
-        const activeBuses = allLocations.filter((b: any) => b.rteId === localRouteId);
+        const cleanLocalRouteId = String(localRouteId).replace(/[^0-9]/g, '');
+        const activeBuses = allLocations.filter((b: any) => String(b.rteId) === cleanLocalRouteId);
         
         if (activeBuses.length > 0) {
           if (startX !== undefined && startY !== undefined) {
