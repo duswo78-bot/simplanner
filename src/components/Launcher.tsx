@@ -34,6 +34,8 @@ const INITIAL_APPS: AppData[] = [
   { id: 'app-cart', name: '장보기', icon: 'ShoppingCart', color: 'linear-gradient(135deg, #a3e635, #65a30d)' },
   { id: 'app-car', name: '차량 관리', icon: 'Car', color: 'linear-gradient(135deg, #94a3b8, #475569)' },
   { id: 'app-delivery', name: '택배/배송', icon: 'Package', color: 'linear-gradient(135deg, #fb923c, #c2410c)' },
+  { id: 'app-restaurant', name: '맛집 추천', icon: 'MapPin', color: 'linear-gradient(135deg, #ec4899, #be185d)' },
+  { id: 'app-calculator', name: '계산기', icon: 'Calculator', color: 'linear-gradient(135deg, #38bdf8, #0284c7)' },
   { id: 'app-settings', name: '설정', icon: 'Settings', color: 'linear-gradient(135deg, #64748b, #475569)' },
 ];
 

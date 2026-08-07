@@ -11,6 +11,8 @@ import { BusApp } from './apps/BusApp';
 import { RoutingApp } from './apps/RoutingApp';
 import { EmptyApp } from './apps/EmptyApp';
 
+import { CalculatorApp } from './apps/CalculatorApp';
+
 function App() {
   const [currentApp, setCurrentApp] = useState<AppData | null>(() => {
     if (window.location.hash === '#routing') {
@@ -33,6 +35,8 @@ function App() {
         return <PharmacyApp onBack={handleBack} />;
       case 'app-bus':
         return <BusApp onBack={handleBack} />;
+      case 'app-calculator':
+        return <CalculatorApp onBack={handleBack} />;
       default:
         return <EmptyApp title={currentApp.name} onBack={handleBack} />;
     }
