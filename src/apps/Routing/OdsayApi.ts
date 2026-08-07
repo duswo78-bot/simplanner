@@ -203,8 +203,7 @@ export async function getRealtimeBusArrival(stationId: number, routeId: number, 
         
         if (activeBuses.length > 0) {
           // Public data API provides locations, not exact ETA.
-          // For demo, we estimate based on active bus presence.
-          return Math.floor(Math.random() * 8) + 2; // 2 ~ 9 mins
+          return '운행중 (지도 참조)';
         } else {
           return '차고지 대기'; // No buses active on the route right now
         }
@@ -237,7 +236,7 @@ export async function getRealtimeBusArrival(stationId: number, routeId: number, 
         }
       }
     }
-    return Math.floor(Math.random() * 10) + 3; // Fallback mock time
+    return '정보 없음';
   } catch (e) {
     console.error('Failed to fetch realtime bus info:', e);
     return '정보 없음';
