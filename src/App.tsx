@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MobileContainer } from './components/MobileContainer';
 import { Launcher } from './components/Launcher';
 import type { AppData } from './components/AppIcon';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Apps
 import { MealApp } from './apps/MealApp';
@@ -11,7 +12,12 @@ import { RoutingApp } from './apps/RoutingApp';
 import { EmptyApp } from './apps/EmptyApp';
 
 function App() {
-  const [currentApp, setCurrentApp] = useState<AppData | null>(null);
+  const [currentApp, setCurrentApp] = useState<AppData | null>(() => {
+    if (window.location.hash === '#routing') {
+      return { id: 'app-bus', name: '대중교통', icon: 'Bus', color: '' };
+    }
+    return null;
+  });
 
   const handleBack = () => {
     setCurrentApp(null);
@@ -34,7 +40,9 @@ function App() {
 
   return (
     <MobileContainer>
-      {renderCurrentApp()}
+      <ErrorBoundary>
+        {renderCurrentApp()}
+      </ErrorBoundary>
     </MobileContainer>
   );
 }
