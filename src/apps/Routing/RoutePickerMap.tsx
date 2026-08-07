@@ -326,7 +326,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         {/* Real-time Bus Markers */}
         {activeBuses.map(bus => (
           <Marker key={bus.id} position={[bus.lat, bus.lng]} icon={busIcon} zIndexOffset={1000}>
-            <Popup closeButton={false} autoPan={false}>
+            <Popup closeButton={false} autoPan={false} className="compact-popup">
               <div style={{ padding: '0', textAlign: 'center', margin: 0, lineHeight: '1.2', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <div>
                   <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#10b981' }}>{bus.lineName}</span>

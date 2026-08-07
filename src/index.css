@@ -91,3 +91,12 @@ body {
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Compact Popup */
+.compact-popup .leaflet-popup-content-wrapper {
+  padding: 4px;
+  border-radius: 8px;
+}
+.compact-popup .leaflet-popup-content {
+  margin: 4px;
+}
