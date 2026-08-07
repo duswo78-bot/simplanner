@@ -234,7 +234,8 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
                 lng: parseFloat(item.bus.lot),
                 rteId: rteId,
                 lineName: step?.lineName || '버스',
-                speed: item.bus.oprSpd
+                speed: item.bus.oprSpd,
+                distKm: Math.sqrt(item.dist) * 111
               };
             }));
           }
@@ -366,10 +367,15 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         {/* Real-time Bus Markers */}
         {activeBuses.map(bus => (
           <Marker key={bus.id} position={[bus.lat, bus.lng]} icon={busIcon} zIndexOffset={1000}>
-            <Popup closeButton={false}>
-              <div style={{ padding: '2px 4px', textAlign: 'center', margin: 0 }}>
-                <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#10b981' }}>{bus.lineName}</div>
-                {bus.speed !== undefined && <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>{bus.speed} km/h</div>}
+            <Popup closeButton={false} autoPan={false}>
+              <div style={{ padding: '0', textAlign: 'center', margin: 0, lineHeight: '1.2', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div>
+                  <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#10b981' }}>{bus.lineName}</span>
+                  {bus.speed !== undefined && <span style={{ fontSize: '12px', color: '#666', marginLeft: '4px' }}>{bus.speed}km/h</span>}
+                </div>
+                <div style={{ fontSize: '11px', color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
+                  {bus.distKm !== undefined ? `${bus.distKm.toFixed(1)}km 남음` : '위치 파악중'}
+                </div>
               </div>
             </Popup>
           </Marker>
