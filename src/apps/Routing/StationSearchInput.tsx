@@ -101,6 +101,19 @@ export function StationSearchInput({ placeholder, value, onSelect, onClear, icon
           combined.push(item);
         }
       });
+      
+      // Sort by relevance: exact match first, starts-with second
+      combined.sort((a, b) => {
+        const aExact = a.name === q ? 1 : 0;
+        const bExact = b.name === q ? 1 : 0;
+        if (aExact !== bExact) return bExact - aExact;
+        
+        const aStarts = a.name.startsWith(q) ? 1 : 0;
+        const bStarts = b.name.startsWith(q) ? 1 : 0;
+        if (aStarts !== bStarts) return bStarts - aStarts;
+        
+        return 0;
+      });
 
       if (combined.length === 0) {
         setResults([{ id: -1, name: '검색 결과 없음', address: '명칭이나 정류장 이름을 다시 확인해주세요.', x: 0, y: 0 }]);
