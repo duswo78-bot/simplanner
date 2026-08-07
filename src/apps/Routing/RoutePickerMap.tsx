@@ -181,10 +181,10 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
           const validBuses = buses.filter((b: any) => {
             const rteId = String(b.rteId);
             const step = busSteps.find(s => String(s.localRouteId).replace(/[^0-9]/g, '') === rteId);
-            if (!step || !step.pathCoords || step.pathCoords.length === 0) return true;
+            if (!step || !step.startY || !step.startX) return true;
             
-            const startY = step.pathCoords[0][0];
-            const startX = step.pathCoords[0][1];
+            const startY = step.startY;
+            const startX = step.startX;
             
             const R = 6371; 
             const dLat = (startY - parseFloat(b.lat)) * Math.PI / 180;
@@ -193,7 +193,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             const dist = R * c;
             
-            if (dist < 0.3) return true;
+            if (dist < 0.05) return true;
             
             if (b.oprDrct) {
               const toRad = (deg: number) => deg * Math.PI / 180;
