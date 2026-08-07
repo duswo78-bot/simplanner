@@ -5,6 +5,20 @@ import 'leaflet/dist/leaflet.css';
 import { MapPin, Navigation } from 'lucide-react';
 import type { RouteOption } from './RouteTypes';
 
+const busHtml = `
+  <div style="width: 28px; height: 28px; background-color: #10b981; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>
+    </svg>
+  </div>
+`;
+const busIcon = L.divIcon({ html: busHtml, className: 'custom-bus-pin', iconSize: [28, 28], iconAnchor: [14, 14] });
+
+const startHtml = `<div style="width: 14px; height: 14px; background-color: #3b82f6; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.4);"></div>`;
+const endHtml = `<div style="width: 14px; height: 14px; background-color: #ef4444; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.4);"></div>`;
+const startIcon = L.divIcon({ html: startHtml, className: 'start-pin', iconSize: [14, 14], iconAnchor: [7, 7] });
+const endIcon = L.divIcon({ html: endHtml, className: 'end-pin', iconSize: [14, 14], iconAnchor: [7, 7] });
+
 interface RoutePickerMapProps {
   onSelectStart: (lat: number, lng: number) => void;
   onSelectEnd: (lat: number, lng: number) => void;
@@ -97,6 +111,8 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
   const [gpsLocation, setGpsLocation] = useState<[number, number] | null>(null);
   const [gpsTrigger, setGpsTrigger] = useState(0);
   
+  const [activeBuses, setActiveBuses] = useState<any[]>([]);
+
   // Try to get user location
   useEffect(() => {
     if (navigator.geolocation && !autoGps) {
@@ -109,6 +125,50 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
       );
     }
   }, []);
+
+  // Fetch real-time bus locations
+  useEffect(() => {
+    if (!selectedRoute || !readonly) return;
+    
+    const busSteps = selectedRoute.steps.filter(s => s.type === 'BUS' && s.localRouteId && s.cityCode === 6000);
+    if (busSteps.length === 0) return;
+
+    let mounted = true;
+    const fetchBuses = async () => {
+      try {
+        const apiKey = import.meta.env.VITE_BUS_API_KEY || 'be%2FRM33gszR8YNJlRSxXsDx91aiCgzFtC3w6xMXZ1qOk3U5F%2Fc9qh6oXg9kMy1UFkpeNY0NB5aZE9DNgPnMSPw%3D%3D';
+        const stdgCd = '3100000000';
+        const url = `https://apis.data.go.kr/B551982/rte/rtm_loc_info?serviceKey=${apiKey}&stdgCd=${stdgCd}&numOfRows=1000&pageNo=1&type=json`;
+        
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data?.header?.resultCode === 'K0' || data?.header?.resultCode === '00') {
+          const items = data.body?.items?.item || [];
+          const arr = Array.isArray(items) ? items : [items];
+          
+          const localRouteIds = busSteps.map(s => s.localRouteId);
+          const buses = arr.filter((b: any) => localRouteIds.includes(b.rteId));
+          
+          if (mounted) {
+            setActiveBuses(buses.map((b: any) => ({
+              id: b.vhclNo,
+              lat: parseFloat(b.lat),
+              lng: parseFloat(b.lot)
+            })));
+          }
+        }
+      } catch (e) {
+        // silently fail
+      }
+    };
+
+    fetchBuses();
+    const interval = setInterval(fetchBuses, 10000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [selectedRoute, readonly]);
 
   const handleGpsClick = () => {
     setGpsTrigger(prev => prev + 1);
@@ -141,6 +201,25 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             />
           );
         })}
+
+        {/* Start/End Pins for Route Summary Map */}
+        {readonly && selectedRoute && (() => {
+          const startPos = selectedRoute.steps.find(s => s.pathCoords && s.pathCoords.length > 0)?.pathCoords?.[0];
+          const endPosList = selectedRoute.steps.filter(s => s.pathCoords && s.pathCoords.length > 0);
+          const endPos = endPosList && endPosList.length > 0 ? endPosList[endPosList.length - 1].pathCoords?.slice(-1)[0] : undefined;
+          
+          return (
+            <>
+              {startPos && <Marker position={startPos} icon={startIcon} zIndexOffset={500} />}
+              {endPos && <Marker position={endPos} icon={endIcon} zIndexOffset={500} />}
+            </>
+          );
+        })()}
+
+        {/* Real-time Bus Markers */}
+        {activeBuses.map(bus => (
+          <Marker key={bus.id} position={[bus.lat, bus.lng]} icon={busIcon} zIndexOffset={1000} />
+        ))}
       </MapContainer>
       
       {/* Center Crosshair / Pin Overlay */}

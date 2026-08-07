@@ -7,7 +7,7 @@ import { searchTransitRoute } from './Routing/OdsayApi';
 import type { POI } from './Routing/OdsayApi';
 import { StationSearchInput } from './Routing/StationSearchInput';
 import { RoutePickerMap } from './Routing/RoutePickerMap';
-import { MapPin, Search, ArrowDownUp, Loader2, X, Clock, Minus, Plus, ArrowRight } from 'lucide-react';
+import { MapPin, Search, ArrowDownUp, Loader2, X, Clock, Minus, Edit2, ArrowRight } from 'lucide-react';
 import { reverseGeocode } from './Routing/VworldApi';
 
 interface RoutingAppProps {
@@ -121,7 +121,7 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                 width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center',
                 color: '#fff', cursor: 'pointer'
               }}>
-                <Plus size={16} />
+                <Edit2 size={16} />
               </button>
             </div>
           ) : (
