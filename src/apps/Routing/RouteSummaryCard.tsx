@@ -1,4 +1,3 @@
-import React, { useRef, useEffect } from 'react';
 import React, { useRef, useEffect, useState } from 'react';
 import type { RouteOption } from './RouteTypes';
 import { Clock, Coins, Activity, Map } from 'lucide-react';
