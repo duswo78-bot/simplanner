@@ -279,7 +279,6 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
                 color="#9ca3af"
                 weight={3}
                 opacity={0.8}
-                dashArray="6, 8"
                 lineCap="round"
               />
             );
