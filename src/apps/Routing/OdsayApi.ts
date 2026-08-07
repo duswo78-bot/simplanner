@@ -156,11 +156,21 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
       // Fetch detailed graphical polylines
       if (path.info.mapObj) {
         try {
-          const laneUrl = `${BASE_URL}/loadLane?apiKey=${ODSAY_API_KEY}&mapObject=0:0@${path.info.mapObj}`;
-          const laneRes = await fetch(laneUrl);
-          const laneData = await laneRes.json();
-          if (laneData.result && laneData.result.lane) {
+          const mapObjParts = path.info.mapObj.split('@');
+          const idAndClass = mapObjParts.length > 1 ? mapObjParts[1].split(':').slice(0, 2).join(':') : '';
+
+          const partialLaneUrl = `${BASE_URL}/loadLane?apiKey=${ODSAY_API_KEY}&mapObject=0:0@${path.info.mapObj}`;
+          const fullLaneUrl = idAndClass ? `${BASE_URL}/loadLane?apiKey=${ODSAY_API_KEY}&mapObject=0:0@${idAndClass}:-1:-1` : null;
+          
+          const promises = [fetch(partialLaneUrl).then(r => r.json())];
+          if (fullLaneUrl) promises.push(fetch(fullLaneUrl).then(r => r.json()));
+
+          const [laneData, fullLaneData] = await Promise.all(promises);
+
+          if (laneData?.result?.lane) {
             const lanes = laneData.result.lane;
+            const fullLanes = fullLaneData?.result?.lane;
+            
             let laneIdx = 0;
             steps.forEach(step => {
               if (step.type === 'BUS' || step.type === 'SUBWAY') {
@@ -170,6 +180,14 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
                     sec.graphPos.forEach((pos: any) => coords.push([parseFloat(pos.y), parseFloat(pos.x)]));
                   });
                   if (coords.length > 0) step.pathCoords = coords;
+                }
+                
+                if (fullLanes && fullLanes[laneIdx]) {
+                  const fullCoords: [number, number][] = [];
+                  fullLanes[laneIdx].section.forEach((sec: any) => {
+                    sec.graphPos.forEach((pos: any) => fullCoords.push([parseFloat(pos.y), parseFloat(pos.x)]));
+                  });
+                  if (fullCoords.length > 0) step.fullPathCoords = fullCoords;
                 }
                 laneIdx++;
               }

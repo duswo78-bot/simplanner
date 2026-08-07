@@ -14,6 +14,7 @@ export interface RoutePathStep {
   endStation?: string;
   stationCount?: number;
   pathCoords?: [number, number][]; // [lat, lng] array for drawing polyline
+  fullPathCoords?: [number, number][]; // [lat, lng] array for the full route polyline
   startStationId?: number; // For ODsay real-time API
   routeId?: number; // For ODsay real-time API
   localRouteId?: string; // Local public data route ID
