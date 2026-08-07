@@ -215,9 +215,9 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
               const rteId = String(b.rteId);
               const step = busSteps.find(s => String(s.localRouteId).replace(/[^0-9]/g, '') === rteId);
               let dist = Infinity;
-              if (step?.pathCoords?.[0]) {
-                const dy = step.pathCoords[0][0] - parseFloat(b.lat);
-                const dx = step.pathCoords[0][1] - parseFloat(b.lot);
+              if (step?.startY && step?.startX) {
+                const dy = step.startY - parseFloat(b.lat);
+                const dx = step.startX - parseFloat(b.lot);
                 dist = dy * dy + dx * dx;
               }
               return { bus: b, dist };
@@ -228,6 +228,10 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             setActiveBuses(closest.map((item: any) => {
               const rteId = String(item.bus.rteId);
               const step = busSteps.find(s => String(s.localRouteId).replace(/[^0-9]/g, '') === rteId);
+              let distKm = undefined;
+              if (item.dist !== Infinity && !Number.isNaN(item.dist)) {
+                distKm = Math.sqrt(item.dist) * 111;
+              }
               return {
                 id: item.bus.vhclNo,
                 lat: parseFloat(item.bus.lat),
@@ -235,7 +239,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
                 rteId: rteId,
                 lineName: step?.lineName || '버스',
                 speed: item.bus.oprSpd,
-                distKm: Math.sqrt(item.dist) * 111
+                distKm: distKm
               };
             }));
           }
@@ -333,7 +337,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
                   {bus.speed !== undefined && <span style={{ fontSize: '12px', color: '#666', marginLeft: '4px' }}>{bus.speed}km/h</span>}
                 </div>
                 <div style={{ fontSize: '11px', color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
-                  {bus.distKm !== undefined ? `${bus.distKm.toFixed(1)}km 남음` : '위치 파악중'}
+                  {bus.distKm !== undefined && !Number.isNaN(bus.distKm) && bus.distKm !== Infinity ? `${bus.distKm.toFixed(1)}km 남음` : '위치 파악중'}
                 </div>
               </div>
             </Popup>
