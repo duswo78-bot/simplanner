@@ -210,11 +210,26 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
           });
           
           if (mounted) {
-            setActiveBuses(validBuses.map((b: any) => ({
-              id: b.vhclNo,
-              lat: parseFloat(b.lat),
-              lng: parseFloat(b.lot),
-              rteId: String(b.rteId)
+            // Sort by distance to boarding station and limit to 3 closest
+            const busesWithDist = validBuses.map((b: any) => {
+              const rteId = String(b.rteId);
+              const step = busSteps.find(s => String(s.localRouteId).replace(/[^0-9]/g, '') === rteId);
+              let dist = Infinity;
+              if (step?.pathCoords?.[0]) {
+                const dy = step.pathCoords[0][0] - parseFloat(b.lat);
+                const dx = step.pathCoords[0][1] - parseFloat(b.lot);
+                dist = dy * dy + dx * dx;
+              }
+              return { bus: b, dist };
+            });
+            busesWithDist.sort((a: any, b: any) => a.dist - b.dist);
+            const closest = busesWithDist.slice(0, 3);
+            
+            setActiveBuses(closest.map((item: any) => ({
+              id: item.bus.vhclNo,
+              lat: parseFloat(item.bus.lat),
+              lng: parseFloat(item.bus.lot),
+              rteId: String(item.bus.rteId)
             })));
           }
         }

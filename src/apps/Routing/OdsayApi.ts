@@ -156,16 +156,21 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
       // Fetch detailed graphical polylines
       if (path.info.mapObj) {
         try {
-          const mapObjParts = path.info.mapObj.split('@');
-          const idAndClass = mapObjParts.length > 1 ? mapObjParts[1].split(':').slice(0, 2).join(':') : '';
+          // mapObj format: "ID:Class:Start:End" or "ID:Class:Start:End@ID2:Class2:Start2:End2"
+          const segments = path.info.mapObj.split('@');
+          // Build full route mapObj for each segment: ID:Class:-1:-1
+          const fullSegments = segments.map((seg: string) => {
+            const parts = seg.split(':');
+            return `${parts[0]}:${parts[1]}:-1:-1`;
+          });
 
           const partialLaneUrl = `${BASE_URL}/loadLane?apiKey=${ODSAY_API_KEY}&mapObject=0:0@${path.info.mapObj}`;
-          const fullLaneUrl = idAndClass ? `${BASE_URL}/loadLane?apiKey=${ODSAY_API_KEY}&mapObject=0:0@${idAndClass}:-1:-1` : null;
+          const fullLaneUrl = `${BASE_URL}/loadLane?apiKey=${ODSAY_API_KEY}&mapObject=0:0@${fullSegments.join('@')}`;
           
-          const promises = [fetch(partialLaneUrl).then(r => r.json())];
-          if (fullLaneUrl) promises.push(fetch(fullLaneUrl).then(r => r.json()));
-
-          const [laneData, fullLaneData] = await Promise.all(promises);
+          const [laneData, fullLaneData] = await Promise.all([
+            fetch(partialLaneUrl).then(r => r.json()),
+            fetch(fullLaneUrl).then(r => r.json())
+          ]);
 
           if (laneData?.result?.lane) {
             const lanes = laneData.result.lane;
