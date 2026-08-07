@@ -14,11 +14,8 @@ interface SavedCalc {
 }
 
 export function CalculatorApp({ onBack }: CalculatorAppProps) {
-  const [display, setDisplay] = useState('0');
-  const [equation, setEquation] = useState('');
-  const [prevValue, setPrevValue] = useState<string | null>(null);
-  const [operator, setOperator] = useState<string | null>(null);
-  const [waitingForNewValue, setWaitingForNewValue] = useState(false);
+  const [expression, setExpression] = useState('');
+  const [justEvaluated, setJustEvaluated] = useState(false);
 
   // For saving history
   const [lastCalc, setLastCalc] = useState<{ eq: string; res: string } | null>(null);
@@ -39,90 +36,47 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
     localStorage.setItem('calculator_saved', JSON.stringify(savedList));
   }, [savedList]);
 
-  const handleNum = (num: string) => {
-    if (waitingForNewValue) {
-      setDisplay(num);
-      setWaitingForNewValue(false);
-    } else {
-      setDisplay(display === '0' ? num : display + num);
+  const evaluate = (expr: string) => {
+    let formattedExpr = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/%/g, '/100');
+    try {
+      // eslint-disable-next-line no-new-func
+      const res = new Function('return ' + formattedExpr)();
+      if (res === Infinity || Number.isNaN(res) || typeof res !== 'number') return 'Error';
+      return String(Math.round(res * 100000000) / 100000000);
+    } catch (e) {
+      return 'Error';
     }
   };
 
-  const handleDot = () => {
-    if (waitingForNewValue) {
-      setDisplay('0.');
-      setWaitingForNewValue(false);
+  const handleInput = (val: string) => {
+    if (justEvaluated) {
+      if (['+', '-', '×', '÷'].includes(val)) {
+        setExpression(expression + val);
+      } else {
+        setExpression(val);
+      }
+      setJustEvaluated(false);
       return;
     }
-    if (!display.includes('.')) {
-      setDisplay(display + '.');
-    }
-  };
-
-  const calculate = (a: number, b: number, op: string) => {
-    switch (op) {
-      case '+': return a + b;
-      case '-': return a - b;
-      case '×': return a * b;
-      case '÷': return a / b;
-      default: return b;
-    }
-  };
-
-  const handleOp = (op: string) => {
-    const currentValue = parseFloat(display);
-
-    if (prevValue === null) {
-      setPrevValue(display);
-      setEquation(display + ' ' + op);
-    } else if (operator) {
-      const result = calculate(parseFloat(prevValue), currentValue, operator);
-      setDisplay(String(result));
-      setPrevValue(String(result));
-      setEquation(String(result) + ' ' + op);
-    }
-
-    setOperator(op);
-    setWaitingForNewValue(true);
+    setExpression(prev => (prev === 'Error' ? val : prev + val));
   };
 
   const handleEqual = () => {
-    if (operator && prevValue !== null) {
-      const currentValue = parseFloat(display);
-      const result = calculate(parseFloat(prevValue), currentValue, operator);
-      
-      const fullEq = `${prevValue} ${operator} ${currentValue}`;
-      const resStr = String(result);
-      
-      setDisplay(resStr);
-      setEquation('');
-      setPrevValue(null);
-      setOperator(null);
-      setWaitingForNewValue(true);
-      
-      setLastCalc({ eq: fullEq, res: resStr });
+    if (!expression || expression === 'Error') return;
+    const res = evaluate(expression);
+    if (res !== 'Error') {
+      setLastCalc({ eq: expression, res });
+      setExpression(res);
+      setJustEvaluated(true);
+    } else {
+      setExpression('Error');
+      setJustEvaluated(true);
     }
   };
 
   const handleClear = () => {
-    setDisplay('0');
-    setEquation('');
-    setPrevValue(null);
-    setOperator(null);
-    setWaitingForNewValue(false);
-  };
-
-  const handleDelete = () => {
-    if (waitingForNewValue) return;
-    setDisplay(display.length > 1 ? display.slice(0, -1) : '0');
-  };
-
-  const handlePlusMinus = () => {
-    setDisplay(String(parseFloat(display) * -1));
-  };
-
-  const handlePercent = () => {
-    setDisplay(String(parseFloat(display) / 100));
+    setExpression('');
+    setJustEvaluated(false);
   };
 
   const handleSave = () => {
@@ -201,11 +155,8 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
           display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'flex-end',
           padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '20px', minHeight: '80px'
         }}>
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1rem', minHeight: '1.2rem', marginBottom: '4px' }}>
-            {equation}
-          </div>
-          <div style={{ color: '#fff', fontSize: display.length > 10 ? '2rem' : '3rem', fontWeight: 'bold', wordBreak: 'break-all', textAlign: 'right', lineHeight: 1 }}>
-            {display}
+          <div style={{ color: '#fff', fontSize: expression.length > 15 ? '1.5rem' : '2.5rem', fontWeight: 'bold', wordBreak: 'break-all', textAlign: 'right', lineHeight: 1.2 }}>
+            {expression || '0'}
           </div>
         </div>
 
@@ -215,27 +166,28 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
           gap: '8px', minHeight: '280px'
         }}>
           <button style={topOpStyle} onClick={handleClear}>C</button>
-          <button style={topOpStyle} onClick={handlePlusMinus}>+/-</button>
-          <button style={topOpStyle} onClick={handlePercent}>%</button>
-          <button style={opStyle} onClick={() => handleOp('÷')}>÷</button>
+          <button style={topOpStyle} onClick={() => handleInput('(')}>(</button>
+          <button style={topOpStyle} onClick={() => handleInput(')')}>)</button>
+          <button style={opStyle} onClick={() => handleInput('÷')}>÷</button>
           
-          <button style={buttonStyle} onClick={() => handleNum('7')}>7</button>
-          <button style={buttonStyle} onClick={() => handleNum('8')}>8</button>
-          <button style={buttonStyle} onClick={() => handleNum('9')}>9</button>
-          <button style={opStyle} onClick={() => handleOp('×')}>×</button>
+          <button style={buttonStyle} onClick={() => handleInput('7')}>7</button>
+          <button style={buttonStyle} onClick={() => handleInput('8')}>8</button>
+          <button style={buttonStyle} onClick={() => handleInput('9')}>9</button>
+          <button style={opStyle} onClick={() => handleInput('×')}>×</button>
           
-          <button style={buttonStyle} onClick={() => handleNum('4')}>4</button>
-          <button style={buttonStyle} onClick={() => handleNum('5')}>5</button>
-          <button style={buttonStyle} onClick={() => handleNum('6')}>6</button>
-          <button style={opStyle} onClick={() => handleOp('-')}>-</button>
+          <button style={buttonStyle} onClick={() => handleInput('4')}>4</button>
+          <button style={buttonStyle} onClick={() => handleInput('5')}>5</button>
+          <button style={buttonStyle} onClick={() => handleInput('6')}>6</button>
+          <button style={opStyle} onClick={() => handleInput('-')}>-</button>
           
-          <button style={buttonStyle} onClick={() => handleNum('1')}>1</button>
-          <button style={buttonStyle} onClick={() => handleNum('2')}>2</button>
-          <button style={buttonStyle} onClick={() => handleNum('3')}>3</button>
-          <button style={opStyle} onClick={() => handleOp('+')}>+</button>
+          <button style={buttonStyle} onClick={() => handleInput('1')}>1</button>
+          <button style={buttonStyle} onClick={() => handleInput('2')}>2</button>
+          <button style={buttonStyle} onClick={() => handleInput('3')}>3</button>
+          <button style={opStyle} onClick={() => handleInput('+')}>+</button>
           
-          <button style={{ ...buttonStyle, gridColumn: 'span 2' }} onClick={() => handleNum('0')}>0</button>
-          <button style={buttonStyle} onClick={handleDot}>.</button>
+          <button style={buttonStyle} onClick={() => handleInput('0')}>0</button>
+          <button style={buttonStyle} onClick={() => handleInput('.')}>.</button>
+          <button style={buttonStyle} onClick={() => handleInput('%')}>%</button>
           <button style={opStyle} onClick={handleEqual}>=</button>
         </div>
         
