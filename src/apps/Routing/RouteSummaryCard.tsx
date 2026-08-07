@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import type { RouteOption } from './RouteTypes';
-import { Clock, Coins, Activity, Map } from 'lucide-react';
+import { Clock, Coins, Activity, Map, Navigation, Bus } from 'lucide-react';
 import { RoutePickerMap } from './RoutePickerMap';
 
 interface RouteSummaryCardProps {
