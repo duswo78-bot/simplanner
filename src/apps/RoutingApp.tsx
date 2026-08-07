@@ -28,6 +28,9 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
   const [routes, setRoutes] = useState<RouteOption[]>([]);
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>(undefined);
+  
+  // Riding State: keeps track of which route and which bus we are currently riding
+  const [ridingState, setRidingState] = useState<{ routeId: string, matchedBusId: string | null } | null>(null);
 
   const [recentStations, setRecentStations] = useState<POI[]>([]);
 
@@ -269,6 +272,19 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                       route={route} 
                       isSelected={selectedRouteId === route.id}
                       isMapVisible={selectedRouteId === route.id && isMapForcedVisible}
+                      ridingState={ridingState}
+                      onToggleRiding={() => {
+                        if (ridingState?.routeId === route.id) {
+                          setRidingState(null); // Turn off
+                        } else {
+                          setRidingState({ routeId: route.id, matchedBusId: null });
+                          setSelectedRouteId(route.id);
+                          setIsMapForcedVisible(true);
+                        }
+                      }}
+                      onMatchBus={(busId) => {
+                        setRidingState(prev => prev && prev.routeId === route.id ? { ...prev, matchedBusId: busId } : prev);
+                      }}
                       onClick={async () => {
                         if (selectedRouteId === route.id) {
                           // Toggle map if already selected
@@ -299,7 +315,11 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                         background: 'rgba(0,0,0,0.1)', borderRadius: '0 0 16px 16px',
                         border: '1px solid rgba(255,255,255,0.05)', borderTop: 'none'
                       }}>
-                        <RouteTimeline steps={route.steps} />
+                        <RouteTimeline 
+                          steps={route.steps} 
+                          isRiding={ridingState?.routeId === route.id}
+                          ridingBusId={ridingState?.routeId === route.id ? ridingState.matchedBusId : null}
+                        />
                       </div>
                     )}
                   </div>

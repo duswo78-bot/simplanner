@@ -32,6 +32,8 @@ interface RoutePickerMapProps {
   autoGps?: boolean;
   readonly?: boolean;
   onActiveBusesChange?: (buses: any[]) => void;
+  ridingState?: { routeId: string, matchedBusId: string | null } | null;
+  onMatchBus?: (busId: string) => void;
 }
 
 const pinHtml = `
@@ -120,12 +122,26 @@ function MapResizer() {
   return null;
 }
 
-export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps, readonly, onActiveBusesChange }: RoutePickerMapProps) {
-  const [center, setCenter] = useState<[number, number]>([37.5665, 126.9780]); // Default: Seoul City Hall
-  const [gpsLocation, setGpsLocation] = useState<[number, number] | null>(null);
+export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps = false, readonly = false, onActiveBusesChange, ridingState, onMatchBus }: RoutePickerMapProps) {
+  const [pos, setPos] = useState<[number, number]>([37.5665, 126.9780]);
+  const [gpsLoc, setGpsLoc] = useState<[number, number] | null>(null);
   const [gpsTrigger, setGpsTrigger] = useState(0);
-  
   const [activeBuses, setActiveBuses] = useState<any[]>([]);
+
+  // Riding Mode: Auto-match and lock center to bus
+  useEffect(() => {
+    if (ridingState?.routeId === selectedRoute?.id && activeBuses.length > 0) {
+      if (!ridingState.matchedBusId && onMatchBus && gpsLoc) {
+        // Auto-match closest bus to GPS (or just the closest approaching bus)
+        const approaching = activeBuses.filter(b => !b.isPassed);
+        if (approaching.length > 0) {
+          onMatchBus(approaching[0].id);
+        } else {
+          onMatchBus(activeBuses[0].id);
+        }
+      }
+    }
+  }, [ridingState, selectedRoute, activeBuses, gpsLoc, onMatchBus]);
   const [displayBuses, setDisplayBuses] = useState<any[]>([]);
 
   // Try to get user location
@@ -133,8 +149,8 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
     if (navigator.geolocation && !autoGps) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setCenter([pos.coords.latitude, pos.coords.longitude]);
-          setGpsLocation([pos.coords.latitude, pos.coords.longitude]);
+          setPos([pos.coords.latitude, pos.coords.longitude]);
+          setGpsLoc([pos.coords.latitude, pos.coords.longitude]);
         },
         () => {}
       );
@@ -474,15 +490,36 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
 
   return (
     <div style={{ position: 'relative', width: '100%', height: readonly ? '100%' : '220px', borderRadius: readonly ? '0' : '16px', overflow: 'hidden', border: readonly ? 'none' : '1px solid rgba(255,255,255,0.1)', marginBottom: readonly ? '0' : '16px' }}>
-      <MapContainer center={center} zoom={14} style={{ width: '100%', height: '100%' }} zoomControl={false}>
+      <MapContainer 
+        center={pos} 
+        zoom={15} 
+        style={{ width: '100%', height: '100%', background: '#1a1a1a', zIndex: 0 }}
+        zoomControl={false}
+      >
         <TileLayer
           url="https://xdworld.vworld.kr/2d/Base/service/{z}/{x}/{y}.png"
           attribution='&copy; V-World'
         />
-        <MapController setPos={setCenter} setGpsLoc={setGpsLocation} centerTo={centerTo} gpsTrigger={gpsTrigger} selectedRoute={selectedRoute} autoGps={autoGps} />
-        <MapResizer />
+        <MapController 
+          setPos={setPos} 
+          setGpsLoc={setGpsLoc} 
+          centerTo={centerTo} 
+          gpsTrigger={gpsTrigger}
+          selectedRoute={selectedRoute}
+          autoGps={autoGps}
+        />
+        {/* If Riding, lock map center to matched bus */}
+        {(() => {
+          if (ridingState?.routeId === selectedRoute?.id && ridingState.matchedBusId) {
+            const matchedBus = activeBuses.find(b => b.id === ridingState.matchedBusId);
+            if (matchedBus) {
+              return <MapController setPos={setPos} centerTo={[matchedBus.lat, matchedBus.lng]} gpsTrigger={0} />;
+            }
+          }
+          return null;
+        })()}<MapResizer />
         
-        {gpsLocation && <Marker position={gpsLocation} icon={gpsIcon} />}
+        {gpsLoc && <Marker position={gpsLoc} icon={gpsIcon} />}
         
         {/* Render Entire Bus Routes (Gray Lines) FIRST so they stay behind */}
         <Pane name="gray-paths" style={{ zIndex: 400 }}>

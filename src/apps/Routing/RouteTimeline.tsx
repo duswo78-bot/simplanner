@@ -6,30 +6,44 @@ import { getRealtimeBusArrival } from './OdsayApi';
 interface RouteTimelineProps {
   steps: RoutePathStep[];
   activeBuses?: any[];
+  isRiding?: boolean;
+  ridingBusId?: string | null;
 }
 
-function TransitStepDetails({ step, activeBuses }: { step: RoutePathStep, activeBuses?: any[] }) {
-  const [arrivalInfo, setArrivalInfo] = useState<number | string | null>(null);
+function TransitStepDetails({ step, activeBuses, isRiding, ridingBusId }: { step: RoutePathStep, activeBuses?: any[], isRiding?: boolean, ridingBusId?: string | null }) {
+  const [arrivalInfo, setArrivalInfo] = useState<string | null>(null);
+  const [hasVibrated, setHasVibrated] = useState(false);
 
   useEffect(() => {
     if (step.type === 'BUS' && activeBuses && activeBuses.length > 0) {
       const rteId = step.localRouteId ? String(step.localRouteId).replace(/[^0-9]/g, '') : '';
-      const busesForRoute = activeBuses.filter(b => b.rteId === rteId && !b.isPassed);
-      if (busesForRoute.length > 0) {
+      let targetBuses = activeBuses.filter(b => b.rteId === rteId && !b.isPassed);
+      if (isRiding && ridingBusId) {
+        targetBuses = targetBuses.filter(b => b.id === ridingBusId);
+      }
+      if (targetBuses.length > 0) {
         // Find closest bus
-        const closest = busesForRoute.reduce((prev, curr) => 
+        const closest = targetBuses.reduce((prev, curr) => 
           (prev.distKm !== undefined && curr.distKm !== undefined && prev.distKm < curr.distKm) ? prev : curr
         );
         
         if (closest.distKm !== undefined && !Number.isNaN(closest.distKm) && closest.distKm !== Infinity) {
-          // Assume ~20km/h average speed in city if we don't use real speed, but let's use actual speed or 20
           const speed = (closest.speed && closest.speed > 0) ? closest.speed : 20;
           const hours = closest.distKm / speed;
           const minutes = Math.ceil(hours * 60);
+          
           if (minutes === 0 || closest.distKm < 0.1) {
              setArrivalInfo('곧 도착');
+             if (isRiding && !hasVibrated) {
+               if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+               setHasVibrated(true);
+             }
           } else {
-             setArrivalInfo(`약 ${minutes}분 후 도착 (${closest.distKm.toFixed(1)}km)`);
+             setArrivalInfo(`약 ${minutes}분 후`);
+             if (isRiding && minutes <= 2 && !hasVibrated) {
+               if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+               setHasVibrated(true);
+             }
           }
           return;
         }
@@ -49,55 +63,77 @@ function TransitStepDetails({ step, activeBuses }: { step: RoutePathStep, active
       getRealtimeBusArrival(step.startStationId, step.routeId, step.localRouteId, step.cityCode, step.startX, step.startY, endX, endY).then(info => {
         if (mounted && info !== null) {
           if (typeof info === 'number') {
-            setArrivalInfo(`약 ${info}분 후 도착`);
+            setArrivalInfo(`약 ${info}분 후`);
+            if (isRiding && info <= 2 && !hasVibrated) {
+              if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+              setHasVibrated(true);
+            }
           } else {
             setArrivalInfo(info);
+            if (isRiding && info.includes('곧 도착') && !hasVibrated) {
+              if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+              setHasVibrated(true);
+            }
           }
         }
       });
     }
     return () => { mounted = false; };
-  }, [step, activeBuses]);
+  }, [step, activeBuses, isRiding, hasVibrated]);
 
   return (
     <div style={{ 
       marginTop: '12px', padding: '12px', borderRadius: '8px', 
       background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: '2px solid #fff' }} />
-          <span style={{ color: '#fff', fontSize: '0.9rem' }}>{step.startStation} 승차</span>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
+          <span style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {step.startStation} 승차
+          </span>
         </div>
-        {arrivalInfo !== null && (
+        {!isRiding && arrivalInfo && (
           <span style={{ 
-            color: typeof arrivalInfo === 'string' && arrivalInfo.includes('도착') ? '#ef4444' : '#9ca3af', 
-            fontSize: '0.85rem', fontWeight: 'bold', 
-            background: typeof arrivalInfo === 'string' && arrivalInfo.includes('도착') ? 'rgba(239,68,68,0.15)' : 'rgba(156,163,175,0.15)', 
-            padding: '2px 6px', borderRadius: '4px' 
+            background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', 
+            padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold',
+            whiteSpace: 'nowrap', flexShrink: 0
           }}>
             {arrivalInfo}
           </span>
         )}
       </div>
       
-      {step.stationCount && (
-        <div style={{ paddingLeft: '11px', borderLeft: '2px dotted rgba(255,255,255,0.2)', margin: '4px 0', height: '20px', display: 'flex', alignItems: 'center' }}>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', paddingLeft: '12px' }}>
-            {step.stationCount}개 정류장 이동
-          </span>
+      {step.passStopList && step.passStopList.length > 0 && (
+        <div style={{ margin: '8px 0 8px 16px', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '12px' }}>
+          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span>{step.passStopList.length}개 정류장 이동</span>
+          </div>
         </div>
       )}
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#fff' }} />
-        <span style={{ color: '#fff', fontSize: '0.9rem' }}>{step.endStation} 하차</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginTop: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
+          <span style={{ color: '#fff', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {step.endStation} 하차
+          </span>
+        </div>
+        {isRiding && arrivalInfo && (
+          <span style={{ 
+            background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', 
+            padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold',
+            whiteSpace: 'nowrap', flexShrink: 0
+          }}>
+            {arrivalInfo}
+          </span>
+        )}
       </div>
     </div>
   );
 }
 
-export function RouteTimeline({ steps, activeBuses }: RouteTimelineProps) {
+export function RouteTimeline({ steps, activeBuses, isRiding, ridingBusId }: RouteTimelineProps) {
   return (
     <div style={{ padding: '8px 16px', position: 'relative' }}>
       {steps.map((step, idx) => {
@@ -157,7 +193,7 @@ export function RouteTimeline({ steps, activeBuses }: RouteTimelineProps) {
               </div>
               
               {step.type !== 'WALK' && step.startStation && (
-                <TransitStepDetails step={step} activeBuses={activeBuses} />
+                <TransitStepDetails step={step} activeBuses={activeBuses} isRiding={isRiding} ridingBusId={ridingBusId} />
               )}
             </div>
             

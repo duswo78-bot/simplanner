@@ -8,12 +8,15 @@ interface RouteSummaryCardProps {
   isSelected?: boolean;
   onClick?: () => void;
   isMapVisible?: boolean;
+  ridingState?: { routeId: string, matchedBusId: string | null } | null;
+  onToggleRiding?: () => void;
+  onMatchBus?: (busId: string) => void;
   onShowMap?: () => void;
   onSelectStart?: (lat: number, lng: number) => void;
   onSelectEnd?: (lat: number, lng: number) => void;
 }
 
-export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onShowMap, onSelectStart, onSelectEnd }: RouteSummaryCardProps) {
+export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, ridingState, onToggleRiding, onMatchBus, onShowMap, onSelectStart, onSelectEnd }: RouteSummaryCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [activeBuses, setActiveBuses] = useState<any[]>([]);
 
@@ -53,6 +56,8 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
             onSelectStart={onSelectStart || (() => {})}
             onSelectEnd={onSelectEnd || (() => {})}
             onActiveBusesChange={setActiveBuses}
+            ridingState={ridingState}
+            onMatchBus={onMatchBus}
           />
         </div>
       )}
@@ -175,6 +180,23 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
                 <Activity size={14} color="#3b82f6" />
                 <span style={{ fontWeight: isMapVisible ? 'bold' : 'normal' }}>환승 {route.transferCount}회</span>
               </div>
+              
+              {/* Riding Toggle Button */}
+              <button
+                onClick={(e) => { e.stopPropagation(); onToggleRiding?.(); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  background: ridingState?.routeId === route.id ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                  border: ridingState?.routeId === route.id ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(255, 255, 255, 0.2)',
+                  color: ridingState?.routeId === route.id ? '#10b981' : '#fff',
+                  padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  pointerEvents: 'auto'
+                }}
+              >
+                <Navigation size={12} fill={ridingState?.routeId === route.id ? 'currentColor' : 'none'} />
+                {ridingState?.routeId === route.id ? '탑승중' : '탑승'}
+              </button>
             </div>
             
             {route.tags.includes('최적') && (
@@ -191,16 +213,55 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
           </div>
           
           {/* Mini graphical route overview */}
-          <div style={{ display: 'flex', gap: '4px', height: '6px', borderRadius: '3px', overflow: 'hidden', filter: 'brightness(1.3)' }}>
+          <div style={{ display: 'flex', gap: '4px', height: '6px', borderRadius: '3px', filter: 'brightness(1.3)', position: 'relative' }}>
             {route.steps.map((step, idx) => {
               let bg = '#6b7280';
               if (step.type === 'BUS') bg = step.lineColor || '#3b82f6';
               if (step.type === 'SUBWAY') bg = step.lineColor || '#10b981';
+              
+              // Calculate width percentage just for rendering the bus on top
+              const totalDuration = route.steps.reduce((acc, s) => acc + Math.max(1, s.durationMinutes), 0);
+              const durationSoFar = route.steps.slice(0, idx).reduce((acc, s) => acc + Math.max(1, s.durationMinutes), 0);
+              const stepPercent = Math.max(1, step.durationMinutes) / totalDuration;
+              const leftPercent = durationSoFar / totalDuration;
+
+              // Find if there's a matched bus on this step
+              const rteId = String(step.localRouteId).replace(/[^0-9]/g, '');
+              const matchedBus = ridingState?.routeId === route.id && ridingState.matchedBusId 
+                ? activeBuses.find(b => b.id === ridingState.matchedBusId && b.rteId === rteId)
+                : null;
+              
+              let busIconLeft = 0;
+              if (matchedBus && step.distance > 0 && matchedBus.distKm !== undefined) {
+                // Approximate progression along the step
+                const prog = Math.max(0, Math.min(1, 1 - (matchedBus.distKm / step.distance)));
+                busIconLeft = leftPercent * 100 + (prog * stepPercent * 100);
+              }
+
               return (
-                <div key={idx} style={{ 
-                  flex: Math.max(1, step.durationMinutes), 
-                  background: step.type === 'WALK' ? 'repeating-linear-gradient(45deg, #4b5563, #4b5563 2px, transparent 2px, transparent 4px)' : bg 
-                }} />
+                <React.Fragment key={idx}>
+                  <div style={{ 
+                    flex: Math.max(1, step.durationMinutes), 
+                    background: step.type === 'WALK' ? 'repeating-linear-gradient(45deg, #4b5563, #4b5563 2px, transparent 2px, transparent 4px)' : bg 
+                  }} />
+                  {matchedBus && (
+                    <div style={{
+                      position: 'absolute',
+                      left: `calc(${busIconLeft}% - 8px)`,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: '16px', height: '16px',
+                      background: step.lineColor || '#3b82f6',
+                      borderRadius: '50%',
+                      border: '2px solid white',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                      display: 'flex', justifyContent: 'center', alignItems: 'center',
+                      zIndex: 10
+                    }}>
+                      <Bus size={8} color="#fff" />
+                    </div>
+                  )}
+                </React.Fragment>
               );
             })}
           </div>
