@@ -369,6 +369,26 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             }
           }
 
+          // Anti-rubberbanding (prevent jumping backward)
+          const prevBus = prevDisplay.find(p => p.id === activeBus.id);
+          if (prevBus && step && step.startY && step.startX) {
+             const dyPrev = step.startY - prevBus.lat;
+             const dxPrev = step.startX - prevBus.lng;
+             const distPrevToTarget = Math.sqrt(dyPrev * dyPrev + dxPrev * dxPrev);
+
+             const dyNew = step.startY - newLat;
+             const dxNew = step.startX - newLng;
+             const distNewToTarget = Math.sqrt(dyNew * dyNew + dxNew * dxNew);
+
+             // If the new ideal position is further from the target than the previous position 
+             // (by more than ~5 meters), it means the bus jumped backward! 
+             // So we freeze the bus at its previous position until the ideal position catches up.
+             if (distNewToTarget > distPrevToTarget + 0.00005) {
+                newLat = prevBus.lat;
+                newLng = prevBus.lng;
+             }
+          }
+
           return {
             ...activeBus,
             lat: newLat,
@@ -381,9 +401,17 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
     return () => clearInterval(intervalId);
   }, [activeBuses, selectedRoute]);
 
-  // Set initial display buses immediately when activeBuses updates
+  // Set initial display buses only if they don't exist in displayBuses yet
   useEffect(() => {
-    setDisplayBuses(activeBuses);
+    setDisplayBuses(prev => {
+      const updated = [...prev];
+      activeBuses.forEach(ab => {
+        if (!updated.find(ub => ub.id === ab.id)) {
+          updated.push(ab);
+        }
+      });
+      return updated;
+    });
   }, [activeBuses]);
 
   const handleGpsClick = () => {
