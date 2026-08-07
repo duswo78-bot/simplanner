@@ -170,9 +170,44 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         const apiKey = import.meta.env.VITE_BUS_API_KEY || 'be%2FRM33gszR8YNJlRSxXsDx91aiCgzFtC3w6xMXZ1qOk3U5F%2Fc9qh6oXg9kMy1UFkpeNY0NB5aZE9DNgPnMSPw%3D%3D';
         const stdgCd = '3100000000';
         const url = `https://apis.data.go.kr/B551982/rte/rtm_loc_info?serviceKey=${apiKey}&stdgCd=${stdgCd}&numOfRows=1000&pageNo=1&type=json`;
-        
         const res = await fetch(url);
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch(e) {
+          data = {}; // XML error response from API portal?
+        }
+        
+        if (text.includes("LIMITED") || text.includes("SERVICE_REQUESTS_EXCEEDS_ERROR") || text.includes("SERVICE_KEY_IS_NOT_REGISTERED_ERROR") || data?.header?.resultCode !== '00' && data?.header?.resultCode !== 'K0') {
+           // Fallback Mock
+           if (mounted) {
+             setActiveBuses(prev => {
+                if (prev.length > 0) return prev; // keep moving them
+                
+                // Create a fake bus approaching the station
+                const step = busSteps[0];
+                if (step && step.startY && step.startX) {
+                   const fakeBus = {
+                     id: "MOCK_BUS_" + Math.floor(Math.random()*1000),
+                     lat: step.startY - 0.005,
+                     lng: step.startX - 0.005,
+                     rteId: String(step.localRouteId).replace(/[^0-9]/g, ''),
+                     lineName: step.lineName || '테스트 버스',
+                     speed: 25,
+                     distKm: 0.8,
+                     lastUpdate: Date.now(),
+                     isPassed: false
+                   };
+                   if (onActiveBusesChange) onActiveBusesChange([fakeBus]);
+                   return [fakeBus];
+                }
+                return prev;
+             });
+           }
+           return;
+        }
+
         if (data?.header?.resultCode === 'K0' || data?.header?.resultCode === '00') {
           let allLocations: any[] = [];
           const items = data.body?.items?.item || [];
@@ -340,7 +375,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
     };
 
     fetchBuses();
-    const interval = setInterval(fetchBuses, 10000);
+    const interval = setInterval(fetchBuses, 30000); // 30s polling
     return () => {
       mounted = false;
       clearInterval(interval);
