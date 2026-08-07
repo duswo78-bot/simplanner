@@ -213,7 +213,8 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             setActiveBuses(validBuses.map((b: any) => ({
               id: b.vhclNo,
               lat: parseFloat(b.lat),
-              lng: parseFloat(b.lot)
+              lng: parseFloat(b.lot),
+              rteId: String(b.rteId)
             })));
           }
         }
@@ -250,19 +251,40 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         {selectedRoute && selectedRoute.steps.map(step => {
           if (!step.pathCoords || step.pathCoords.length === 0) return null;
           const isWalk = step.type === 'WALK';
-          const isTransit = step.type === 'BUS' || step.type === 'SUBWAY';
           return (
             <Polyline 
               key={step.id} 
               positions={step.pathCoords} 
-              color={isWalk ? '#9ca3af' : (isTransit ? '#9ca3af' : (step.lineColor || '#6c5ce7'))} 
+              color={isWalk ? '#9ca3af' : (step.lineColor || '#6c5ce7')} 
               weight={isWalk ? 4 : 5} 
-              opacity={isWalk ? 0.9 : 0.4} 
+              opacity={isWalk ? 0.9 : 0.8} 
               lineCap="round"
               lineJoin="round"
               dashArray={isWalk ? "8, 10" : undefined}
             />
           );
+        })}
+
+        {/* Render Approaching Bus Paths (Gray Dotted Lines) */}
+        {!readonly && selectedRoute && activeBuses.map(bus => {
+          const busStep = selectedRoute.steps.find(s => s.type === 'BUS' && s.localRouteId && String(s.localRouteId).replace(/[^0-9]/g, '') === bus.rteId);
+          if (busStep && busStep.startX && busStep.startY) {
+            return (
+              <Polyline
+                key={`path-${bus.id}`}
+                positions={[
+                  [bus.lat, bus.lng],
+                  [busStep.startY, busStep.startX]
+                ]}
+                color="#9ca3af"
+                weight={3}
+                opacity={0.8}
+                dashArray="6, 8"
+                lineCap="round"
+              />
+            );
+          }
+          return null;
         })}
 
         {/* Start/End Pins for Route Summary Map */}
