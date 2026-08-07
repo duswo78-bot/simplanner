@@ -30,4 +30,6 @@ export interface RouteOption {
   transferCount: number;
   steps: RoutePathStep[];
   tags: string[];
+  mapObj?: string;
+  lanesLoaded?: boolean;
 }

@@ -3,7 +3,7 @@ import { AppContainer } from '../components/AppContainer';
 import { RouteSummaryCard } from './Routing/RouteSummaryCard';
 import { RouteTimeline } from './Routing/RouteTimeline';
 import type { RouteOption } from './Routing/RouteTypes';
-import { searchTransitRoute } from './Routing/OdsayApi';
+import { searchTransitRoute, loadRouteLanes } from './Routing/OdsayApi';
 import type { POI } from './Routing/OdsayApi';
 import { StationSearchInput } from './Routing/StationSearchInput';
 import { RoutePickerMap } from './Routing/RoutePickerMap';
@@ -269,9 +269,28 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                       route={route} 
                       isSelected={selectedRouteId === route.id}
                       isMapVisible={selectedRouteId === route.id && isMapForcedVisible}
-                      onClick={() => setSelectedRouteId(route.id)}
-                      onShowMap={() => {
-                        setIsMapForcedVisible(!isMapForcedVisible);
+                      onClick={async () => {
+                        if (selectedRouteId === route.id) {
+                          // Toggle map if already selected
+                        } else {
+                          setSelectedRouteId(route.id);
+                          if (!route.lanesLoaded) {
+                            const updatedRoute = await loadRouteLanes(route);
+                            setRoutes(prev => prev.map(r => r.id === updatedRoute.id ? updatedRoute : r));
+                          }
+                        }
+                      }}
+                      onShowMap={async () => {
+                        if (selectedRouteId === route.id) {
+                          setIsMapForcedVisible(!isMapForcedVisible);
+                        } else {
+                          setSelectedRouteId(route.id);
+                          if (!route.lanesLoaded) {
+                            const updatedRoute = await loadRouteLanes(route);
+                            setRoutes(prev => prev.map(r => r.id === updatedRoute.id ? updatedRoute : r));
+                          }
+                          setIsMapForcedVisible(true);
+                        }
                       }}
                     />
                     {selectedRouteId === route.id && (

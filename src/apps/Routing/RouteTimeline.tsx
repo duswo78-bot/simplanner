@@ -14,7 +14,7 @@ function TransitStepDetails({ step, activeBuses }: { step: RoutePathStep, active
   useEffect(() => {
     if (step.type === 'BUS' && activeBuses && activeBuses.length > 0) {
       const rteId = step.localRouteId ? String(step.localRouteId).replace(/[^0-9]/g, '') : '';
-      const busesForRoute = activeBuses.filter(b => b.rteId === rteId);
+      const busesForRoute = activeBuses.filter(b => b.rteId === rteId && !b.isPassed);
       if (busesForRoute.length > 0) {
         // Find closest bus
         const closest = busesForRoute.reduce((prev, curr) => 

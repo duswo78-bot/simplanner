@@ -5,14 +5,19 @@ import 'leaflet/dist/leaflet.css';
 import { MapPin, Navigation } from 'lucide-react';
 import type { RouteOption } from './RouteTypes';
 
-const busHtml = `
-  <div style="width: 28px; height: 28px; background-color: #10b981; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white;">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>
-    </svg>
-  </div>
-`;
-const busIcon = L.divIcon({ html: busHtml, className: 'custom-bus-pin', iconSize: [28, 28], iconAnchor: [14, 14] });
+const createBusIcon = (isPassed: boolean, color: string = '#10b981') => {
+  const bgColor = isPassed ? '#9ca3af' : color;
+  const opacity = isPassed ? '0.7' : '1';
+  const filter = isPassed ? 'grayscale(100%)' : 'none';
+  const html = `
+    <div style="width: 28px; height: 28px; background-color: ${bgColor}; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; opacity: ${opacity}; filter: ${filter};">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>
+      </svg>
+    </div>
+  `;
+  return L.divIcon({ html, className: 'custom-bus-pin', iconSize: [28, 28], iconAnchor: [14, 14] });
+};
 
 const startHtml = `<div style="width: 14px; height: 14px; background-color: #3b82f6; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.4);"></div>`;
 const endHtml = `<div style="width: 14px; height: 14px; background-color: #ef4444; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.4);"></div>`;
@@ -206,8 +211,12 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
                 }
               }
               
-              // Filter out buses that have passed the boarding station (with a small 2-vertex tolerance for GPS noise)
-              if (busIdx > targetIdx + 2) return false;
+              // Check if bus has passed the boarding station (with a small 2-vertex tolerance for GPS noise)
+              if (busIdx > targetIdx + 2) {
+                b.isPassed = true;
+              } else {
+                b.isPassed = false;
+              }
               return true;
             }
 
@@ -219,7 +228,10 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             const dist = R * c;
             
-            if (dist < 0.01) return true; // Keep if extremely close (10m)
+            if (dist < 0.01) {
+              b.isPassed = false;
+              return true; // Keep if extremely close (10m)
+            }
             
             if (b.oprDrct) {
               const toRad = (deg: number) => deg * Math.PI / 180;
@@ -232,13 +244,19 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
               const diff = Math.abs(parseFloat(b.oprDrct) - bearingToStart) % 360;
               const angleDiff = diff > 180 ? 360 - diff : diff;
               
-              if (angleDiff > 100) return false;
+              if (angleDiff > 100) {
+                b.isPassed = true;
+              } else {
+                b.isPassed = false;
+              }
+            } else {
+              b.isPassed = false;
             }
             return true;
           });
           
           if (mounted) {
-            // Sort by distance to boarding station and limit to 3 closest
+            // Group buses into approaching and passed
             const busesWithDist = validBuses.map((b: any) => {
               const rteId = String(b.rteId);
               const step = busSteps.find(s => String(s.localRouteId).replace(/[^0-9]/g, '') === rteId);
@@ -250,8 +268,14 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
               }
               return { bus: b, dist };
             });
-            busesWithDist.sort((a: any, b: any) => a.dist - b.dist);
-            const closest = busesWithDist.slice(0, 3);
+            const approaching = busesWithDist.filter((b: any) => !b.bus.isPassed).sort((a: any, b: any) => a.dist - b.dist);
+            const passed = busesWithDist.filter((b: any) => b.bus.isPassed).sort((a: any, b: any) => a.dist - b.dist);
+
+            const closest = [];
+            // Keep up to 1 approaching bus
+            if (approaching.length > 0) closest.push(approaching[0]);
+            // Keep up to 1 passed bus
+            if (passed.length > 0) closest.push(passed[0]);
             
             const newActiveBuses = closest.map((item: any) => {
               const rteId = String(item.bus.rteId);
@@ -268,7 +292,8 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
                 lineName: step?.lineName || '버스',
                 speed: item.bus.oprSpd,
                 distKm: distKm,
-                lastUpdate: Date.now()
+                lastUpdate: Date.now(),
+                isPassed: item.bus.isPassed
               };
             });
             setActiveBuses(newActiveBuses);
@@ -514,21 +539,24 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         })()}
 
         {/* Real-time Bus Markers */}
-        {displayBuses.map(bus => (
-          <Marker key={bus.id} position={[bus.lat, bus.lng]} icon={busIcon} zIndexOffset={1000}>
-            <Popup closeButton={false} autoPan={false} className="compact-popup">
-              <div style={{ padding: '0', textAlign: 'center', margin: 0, lineHeight: '1.2', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <div>
-                  <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#10b981' }}>{bus.lineName}</span>
-                  {bus.speed !== undefined && <span style={{ fontSize: '12px', color: '#666', marginLeft: '4px' }}>{bus.speed}km/h</span>}
+        {displayBuses.map(bus => {
+          const rteColor = selectedRoute?.steps.find(s => s.type === 'BUS' && String(s.localRouteId).replace(/[^0-9]/g, '') === bus.rteId)?.lineColor || '#3b82f6';
+          return (
+            <Marker key={bus.id} position={[bus.lat, bus.lng]} icon={createBusIcon(bus.isPassed, rteColor)} zIndexOffset={bus.isPassed ? 900 : 1000}>
+              <Popup closeButton={false} autoPan={false} className="compact-popup">
+                <div style={{ padding: '0', textAlign: 'center', margin: 0, lineHeight: '1.2', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <div>
+                    <span style={{ fontWeight: 'bold', fontSize: '13px', color: bus.isPassed ? '#9ca3af' : rteColor }}>{bus.lineName}</span>
+                    {!bus.isPassed && bus.speed !== undefined && <span style={{ fontSize: '12px', color: '#666', marginLeft: '4px' }}>{bus.speed}km/h</span>}
+                  </div>
+                  <div style={{ fontSize: '11px', color: bus.isPassed ? '#ef4444' : '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px', fontWeight: bus.isPassed ? 'bold' : 'normal' }}>
+                    {bus.isPassed ? '지나간 버스' : (bus.distKm !== undefined && !Number.isNaN(bus.distKm) && bus.distKm !== Infinity ? `${bus.distKm.toFixed(1)}km 남음` : '위치 파악중')}
+                  </div>
                 </div>
-                <div style={{ fontSize: '11px', color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
-                  {bus.distKm !== undefined && !Number.isNaN(bus.distKm) && bus.distKm !== Infinity ? `${bus.distKm.toFixed(1)}km 남음` : '위치 파악중'}
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
       
       {/* Center Crosshair / Pin Overlay */}

@@ -153,63 +153,17 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
 
       const transferCount = Math.max(0, (path.info.busTransitCount || 0) + (path.info.subwayTransitCount || 0) - 1);
 
-      // Fetch detailed graphical polylines
-      if (path.info.mapObj) {
-        try {
-          // mapObj format: "ID:Class:Start:End" or "ID:Class:Start:End@ID2:Class2:Start2:End2"
-          const segments = path.info.mapObj.split('@');
-          // Build full route mapObj for each segment: ID:Class:-1:-1
-          const fullSegments = segments.map((seg: string) => {
-            const parts = seg.split(':');
-            return `${parts[0]}:${parts[1]}:-1:-1`;
-          });
-
-          const partialLaneUrl = `${BASE_URL}/loadLane?apiKey=${ODSAY_API_KEY}&mapObject=0:0@${path.info.mapObj}`;
-          const fullLaneUrl = `${BASE_URL}/loadLane?apiKey=${ODSAY_API_KEY}&mapObject=0:0@${fullSegments.join('@')}`;
-          
-          const [laneData, fullLaneData] = await Promise.all([
-            fetch(partialLaneUrl).then(r => r.json()),
-            fetch(fullLaneUrl).then(r => r.json())
-          ]);
-
-          if (laneData?.result?.lane) {
-            const lanes = laneData.result.lane;
-            const fullLanes = fullLaneData?.result?.lane;
-            
-            let laneIdx = 0;
-            steps.forEach(step => {
-              if (step.type === 'BUS' || step.type === 'SUBWAY') {
-                if (lanes[laneIdx]) {
-                  const coords: [number, number][] = [];
-                  lanes[laneIdx].section.forEach((sec: any) => {
-                    sec.graphPos.forEach((pos: any) => coords.push([parseFloat(pos.y), parseFloat(pos.x)]));
-                  });
-                  if (coords.length > 0) step.pathCoords = coords;
-                }
-                
-                if (fullLanes && fullLanes[laneIdx]) {
-                  const fullCoords: [number, number][] = [];
-                  fullLanes[laneIdx].section.forEach((sec: any) => {
-                    sec.graphPos.forEach((pos: any) => fullCoords.push([parseFloat(pos.y), parseFloat(pos.x)]));
-                  });
-                  if (fullCoords.length > 0) step.fullPathCoords = fullCoords;
-                }
-                laneIdx++;
-              }
-            });
-          }
-        } catch (e) {
-          console.error('Failed to load detailed lane for route', index, e);
-        }
-      }
-
+      // Note: Detailed graphical polylines (loadLane) are now fetched lazily
+      // via loadRouteLanes() only when a user selects a route, saving API calls.
       return {
         id: `route-${index}`,
         totalTimeMinutes: path.info.totalTime,
         totalFare: path.info.payment,
         transferCount: transferCount,
         steps,
-        tags
+        tags,
+        mapObj: path.info.mapObj,
+        lanesLoaded: false
       } as RouteOption;
     }));
 
@@ -218,6 +172,58 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
     console.error('Failed to fetch routes:', err);
     throw err;
   }
+}
+
+export async function loadRouteLanes(route: RouteOption): Promise<RouteOption> {
+  if (route.lanesLoaded || !route.mapObj) return route;
+
+  try {
+    const segments = route.mapObj.split('@');
+    const fullSegments = segments.map((seg: string) => {
+      const parts = seg.split(':');
+      return `${parts[0]}:${parts[1]}:-1:-1`;
+    });
+
+    const partialLaneUrl = `${BASE_URL}/loadLane?apiKey=${ODSAY_API_KEY}&mapObject=0:0@${route.mapObj}`;
+    const fullLaneUrl = `${BASE_URL}/loadLane?apiKey=${ODSAY_API_KEY}&mapObject=0:0@${fullSegments.join('@')}`;
+    
+    const [laneData, fullLaneData] = await Promise.all([
+      fetch(partialLaneUrl).then(r => r.json()),
+      fetch(fullLaneUrl).then(r => r.json())
+    ]);
+
+    if (laneData?.result?.lane) {
+      const lanes = laneData.result.lane;
+      const fullLanes = fullLaneData?.result?.lane;
+      
+      let laneIdx = 0;
+      route.steps.forEach(step => {
+        if (step.type === 'BUS' || step.type === 'SUBWAY') {
+          if (lanes[laneIdx]) {
+            const coords: [number, number][] = [];
+            lanes[laneIdx].section.forEach((sec: any) => {
+              sec.graphPos.forEach((pos: any) => coords.push([parseFloat(pos.y), parseFloat(pos.x)]));
+            });
+            if (coords.length > 0) step.pathCoords = coords;
+          }
+          
+          if (fullLanes && fullLanes[laneIdx]) {
+            const fullCoords: [number, number][] = [];
+            fullLanes[laneIdx].section.forEach((sec: any) => {
+              sec.graphPos.forEach((pos: any) => fullCoords.push([parseFloat(pos.y), parseFloat(pos.x)]));
+            });
+            if (fullCoords.length > 0) step.fullPathCoords = fullCoords;
+          }
+          laneIdx++;
+        }
+      });
+    }
+    route.lanesLoaded = true;
+  } catch (e) {
+    console.error('Failed to load detailed lane for route', route.id, e);
+  }
+
+  return { ...route };
 }
 
 function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
