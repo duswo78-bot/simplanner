@@ -11,11 +11,13 @@ function TransitStepDetails({ step }: { step: RoutePathStep }) {
   const [arrivalInfo, setArrivalInfo] = useState<number | string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
     if (step.type === 'BUS' && step.startStationId && step.routeId) {
-      getRealtimeBusArrival(step.startStationId, step.routeId).then(info => {
-        if (info !== null) setArrivalInfo(info);
+      getRealtimeBusArrival(step.startStationId, step.routeId, step.localRouteId, step.cityCode).then(info => {
+        if (mounted && info !== null) setArrivalInfo(info);
       });
     }
+    return () => { mounted = false; };
   }, [step]);
 
   return (

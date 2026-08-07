@@ -16,6 +16,8 @@ export interface RoutePathStep {
   pathCoords?: [number, number][]; // [lat, lng] array for drawing polyline
   startStationId?: number; // For ODsay real-time API
   routeId?: number; // For ODsay real-time API
+  localRouteId?: string; // Local public data route ID
+  cityCode?: number; // Local city code
 }
 
 export interface RouteOption {
