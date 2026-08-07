@@ -104,10 +104,10 @@ function TransitStepDetails({ step, activeBuses, isRiding, ridingBusId }: { step
         )}
       </div>
       
-      {step.passStopList && step.passStopList.length > 0 && (
+      {step.stationCount && step.stationCount > 0 && (
         <div style={{ margin: '8px 0 8px 16px', borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '12px' }}>
           <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span>{step.passStopList.length}개 정류장 이동</span>
+            <span>{step.stationCount}개 정류장 이동</span>
           </div>
         </div>
       )}

@@ -232,9 +232,10 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, rid
                 : null;
               
               let busIconLeft = 0;
-              if (matchedBus && step.distance > 0 && matchedBus.distKm !== undefined) {
+              const stepDistKm = (step.distanceMeters || 0) / 1000;
+              if (matchedBus && stepDistKm > 0 && matchedBus.distKm !== undefined) {
                 // Approximate progression along the step
-                const prog = Math.max(0, Math.min(1, 1 - (matchedBus.distKm / step.distance)));
+                const prog = Math.max(0, Math.min(1, 1 - (matchedBus.distKm / stepDistKm)));
                 busIconLeft = leftPercent * 100 + (prog * stepPercent * 100);
               }
 
