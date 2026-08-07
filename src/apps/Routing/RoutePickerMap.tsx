@@ -141,7 +141,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
       {/* GPS Button */}
       <button 
         onClick={handleGpsClick}
-        style={{ position: 'absolute', bottom: readonly ? '12px' : '64px', right: '12px', zIndex: 1000, background: 'rgba(255,255,255,0.9)', color: '#000', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.3)', cursor: 'pointer' }}
+        style={{ position: 'absolute', bottom: readonly ? '100px' : '64px', right: '12px', zIndex: 1000, background: 'rgba(255,255,255,0.9)', color: '#000', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.3)', cursor: 'pointer' }}
       >
         <Navigation size={20} />
       </button>

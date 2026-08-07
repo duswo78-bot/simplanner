@@ -71,7 +71,8 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
                       borderRadius: '4px',
                       fontSize: '0.8rem',
                       fontWeight: 'bold',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap',
+                      filter: 'brightness(1.3)'
                     }}>
                       {s.lineName}
                     </span>
@@ -148,7 +149,7 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
           </div>
           
           {/* Mini graphical route overview */}
-          <div style={{ marginTop: '16px', display: 'flex', gap: '4px', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
+          <div style={{ marginTop: '16px', display: 'flex', gap: '4px', height: '6px', borderRadius: '3px', overflow: 'hidden', filter: 'brightness(1.3)' }}>
             {route.steps.map((step, idx) => {
               let bg = '#6b7280';
               if (step.type === 'BUS') bg = step.lineColor || '#3b82f6';
