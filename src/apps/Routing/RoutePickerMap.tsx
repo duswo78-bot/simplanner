@@ -278,7 +278,8 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             return { ...activeBus };
           }
           
-          const timeElapsedMs = now - activeBus.lastUpdate;
+          // Cap dead reckoning to max 60 seconds (60000 ms) to prevent infinite running during GPS loss
+          const timeElapsedMs = Math.min(now - activeBus.lastUpdate, 60000);
           const timeElapsedHours = timeElapsedMs / (1000 * 60 * 60);
           const distanceToMoveKm = activeBus.speed * timeElapsedHours;
           const distanceToMoveDegrees = distanceToMoveKm / 111; // rough conversion from km to degrees
@@ -319,16 +320,17 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
                }
             }
             
-            // Traverse the polyline from busIdx towards targetIdx until we've moved distanceToMoveDegrees
+            // Traverse the polyline from busIdx towards targetIdx (forward only)
             let currentLat = activeBus.lat;
             let currentLng = activeBus.lng;
             let remainingDist = distanceToMoveDegrees;
             let currentIdx = busIdx;
-            const direction = busIdx < targetIdx ? 1 : -1;
 
-            while (remainingDist > 0 && currentIdx !== targetIdx) {
-              const nextIdx = currentIdx + direction;
-              const nextPoint = step.fullPathCoords[nextIdx];
+            // Only move if we haven't reached or passed the target station
+            if (busIdx < targetIdx) {
+              while (remainingDist > 0 && currentIdx < targetIdx) {
+                const nextIdx = currentIdx + 1;
+                const nextPoint = step.fullPathCoords[nextIdx];
               const dy = nextPoint[0] - currentLat;
               const dx = nextPoint[1] - currentLng;
               const segmentDist = Math.sqrt(dy * dy + dx * dx);
@@ -352,6 +354,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
                 remainingDist = 0;
               }
             }
+          }
             
             newLat = currentLat;
             newLng = currentLng;
