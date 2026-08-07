@@ -186,6 +186,32 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             const startY = step.startY;
             const startX = step.startX;
             
+            if (step.fullPathCoords && step.fullPathCoords.length > 0) {
+              let minBusDist = Infinity;
+              let busIdx = 0;
+              for (let i = 0; i < step.fullPathCoords.length; i++) {
+                const d = Math.pow(step.fullPathCoords[i][0] - parseFloat(b.lat), 2) + Math.pow(step.fullPathCoords[i][1] - parseFloat(b.lot), 2);
+                if (d < minBusDist) {
+                  minBusDist = d;
+                  busIdx = i;
+                }
+              }
+              let minStationDist = Infinity;
+              let targetIdx = busIdx;
+              for (let i = 0; i < step.fullPathCoords.length; i++) {
+                const d = Math.pow(step.fullPathCoords[i][0] - step.startY, 2) + Math.pow(step.fullPathCoords[i][1] - step.startX, 2);
+                if (d < minStationDist) {
+                  minStationDist = d;
+                  targetIdx = i;
+                }
+              }
+              
+              // Filter out buses that have passed the boarding station (with a small 2-vertex tolerance for GPS noise)
+              if (busIdx > targetIdx + 2) return false;
+              return true;
+            }
+
+            // Fallback for when fullPathCoords is not available
             const R = 6371; 
             const dLat = (startY - parseFloat(b.lat)) * Math.PI / 180;
             const dLon = (startX - parseFloat(b.lot)) * Math.PI / 180;
@@ -193,7 +219,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             const dist = R * c;
             
-            if (dist < 0.05) return true;
+            if (dist < 0.01) return true; // Keep if extremely close (10m)
             
             if (b.oprDrct) {
               const toRad = (deg: number) => deg * Math.PI / 180;

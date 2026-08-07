@@ -286,7 +286,7 @@ export async function getRealtimeBusArrival(stationId: number, routeId: number, 
         if (startX !== undefined && startY !== undefined) {
           activeBuses = activeBuses.filter(b => {
             const dist = getDistanceKm(parseFloat(b.lat), parseFloat(b.lot), startY, startX);
-            if (dist < 0.05) return true; // Keep if very close to start
+            if (dist < 0.01) return true; // Keep if extremely close (10m)
             if (b.oprDrct) {
               const bearingToStart = getBearing(parseFloat(b.lat), parseFloat(b.lot), startY, startX);
               const diff = angleDiff(parseFloat(b.oprDrct), bearingToStart);
