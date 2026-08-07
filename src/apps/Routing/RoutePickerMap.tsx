@@ -58,19 +58,27 @@ function MapController({ setPos, setGpsLoc, centerTo, gpsTrigger, selectedRoute,
     }
   }, [centerTo, map, setPos]);
 
+  const [isLocating, setIsLocating] = useState(false);
+
   useEffect(() => {
-    if ((gpsTrigger > 0 || autoGps) && navigator.geolocation) {
+    if (gpsTrigger > 0 && navigator.geolocation) {
+      setIsLocating(true);
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const coords: [number, number] = [pos.coords.latitude, pos.coords.longitude];
           map.flyTo(coords, 15);
           setPos(coords);
           if (setGpsLoc) setGpsLoc(coords);
+          setIsLocating(false);
         },
-        () => {}
+        (err) => {
+          console.warn('Geolocation error:', err);
+          setIsLocating(false);
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );
     }
-  }, [gpsTrigger, autoGps, map, setPos, setGpsLoc]);
+  }, [gpsTrigger, map, setPos, setGpsLoc]);
 
   useEffect(() => {
     if (selectedRoute) {
@@ -168,8 +176,41 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
           const localRouteIds = busSteps.map(s => String(s.localRouteId).replace(/[^0-9]/g, ''));
           const buses = allLocations.filter((b: any) => localRouteIds.includes(String(b.rteId)));
           
+          const validBuses = buses.filter((b: any) => {
+            const rteId = String(b.rteId);
+            const step = busSteps.find(s => String(s.localRouteId).replace(/[^0-9]/g, '') === rteId);
+            if (!step || !step.pathCoords || step.pathCoords.length === 0) return true;
+            
+            const startY = step.pathCoords[0][0];
+            const startX = step.pathCoords[0][1];
+            
+            const R = 6371; 
+            const dLat = (startY - parseFloat(b.lat)) * Math.PI / 180;
+            const dLon = (startX - parseFloat(b.lot)) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(parseFloat(b.lat) * Math.PI / 180) * Math.cos(startY * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const dist = R * c;
+            
+            if (dist < 0.3) return true;
+            
+            if (b.oprDrct) {
+              const toRad = (deg: number) => deg * Math.PI / 180;
+              const toDeg = (rad: number) => rad * 180 / Math.PI;
+              const dLon2 = toRad(startX - parseFloat(b.lot));
+              const y = Math.sin(dLon2) * Math.cos(toRad(startY));
+              const x = Math.cos(toRad(parseFloat(b.lat))) * Math.sin(toRad(startY)) - Math.sin(toRad(parseFloat(b.lat))) * Math.cos(toRad(startY)) * Math.cos(dLon2);
+              const bearingToStart = (toDeg(Math.atan2(y, x)) + 360) % 360;
+              
+              const diff = Math.abs(parseFloat(b.oprDrct) - bearingToStart) % 360;
+              const angleDiff = diff > 180 ? 360 - diff : diff;
+              
+              if (angleDiff > 100) return false;
+            }
+            return true;
+          });
+          
           if (mounted) {
-            setActiveBuses(buses.map((b: any) => ({
+            setActiveBuses(validBuses.map((b: any) => ({
               id: b.vhclNo,
               lat: parseFloat(b.lat),
               lng: parseFloat(b.lot)
@@ -182,7 +223,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
     };
 
     fetchBuses();
-    const interval = setInterval(fetchBuses, 10000);
+    const interval = setInterval(fetchBuses, 5000);
     return () => {
       mounted = false;
       clearInterval(interval);
@@ -208,15 +249,18 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         {/* Render Route Polylines */}
         {selectedRoute && selectedRoute.steps.map(step => {
           if (!step.pathCoords || step.pathCoords.length === 0) return null;
+          const isWalk = step.type === 'WALK';
+          const isTransit = step.type === 'BUS' || step.type === 'SUBWAY';
           return (
             <Polyline 
               key={step.id} 
               positions={step.pathCoords} 
-              color={step.lineColor || '#6c5ce7'} 
-              weight={3} 
-              opacity={0.8} 
+              color={isWalk ? '#9ca3af' : (isTransit ? '#9ca3af' : (step.lineColor || '#6c5ce7'))} 
+              weight={isWalk ? 4 : 5} 
+              opacity={isWalk ? 0.9 : 0.4} 
               lineCap="round"
               lineJoin="round"
+              dashArray={isWalk ? "8, 10" : undefined}
             />
           );
         })}
@@ -250,10 +294,25 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
 
       {/* GPS Button */}
       <button 
-        onClick={handleGpsClick}
-        style={{ position: 'absolute', bottom: readonly ? '100px' : '64px', right: '12px', zIndex: 1000, background: 'rgba(255,255,255,0.9)', color: '#000', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.3)', cursor: 'pointer' }}
+        onClick={(e) => { e.stopPropagation(); handleGpsClick(); }}
+        onPointerDown={(e) => e.stopPropagation()}
+        style={{ 
+          position: 'absolute', bottom: readonly ? '110px' : '64px', right: '12px', zIndex: 1000, 
+          background: 'rgba(255,255,255,0.95)', color: '#3b82f6', border: '1px solid rgba(0,0,0,0.1)', 
+          borderRadius: '50%', width: '44px', height: '44px', display: 'flex', 
+          justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', cursor: 'pointer',
+          transition: 'transform 0.1s ease'
+        }}
+        onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.9)'; }}
+        onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+        onTouchStart={(e) => { e.currentTarget.style.transform = 'scale(0.9)'; }}
+        onTouchEnd={(e) => { 
+          e.currentTarget.style.transform = 'scale(1)'; 
+          e.stopPropagation(); 
+          handleGpsClick(); 
+        }}
       >
-        <Navigation size={20} />
+        <Navigation size={22} fill="currentColor" />
       </button>
 
       {/* Action Buttons */}

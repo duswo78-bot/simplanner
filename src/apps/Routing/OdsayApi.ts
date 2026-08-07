@@ -82,12 +82,23 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
               walkEnd = end.name || '도착지';
             }
 
+            let startCoord: [number, number] = [start.y, start.x];
+            let endCoord: [number, number] = [end.y, end.x];
+
+            if (subIdx > 0 && path.subPath[subIdx - 1]?.endY && path.subPath[subIdx - 1]?.endX) {
+              startCoord = [parseFloat(path.subPath[subIdx - 1].endY), parseFloat(path.subPath[subIdx - 1].endX)];
+            }
+            if (subIdx < path.subPath.length - 1 && path.subPath[subIdx + 1]?.startY && path.subPath[subIdx + 1]?.startX) {
+              endCoord = [parseFloat(path.subPath[subIdx + 1].startY), parseFloat(path.subPath[subIdx + 1].startX)];
+            }
+
             steps.push({
               id: `w-${index}-${subIdx}`,
               type: 'WALK',
               instruction: `도보 이동 (${walkStart} ➔ ${walkEnd})`,
               durationMinutes: sub.sectionTime,
-              distanceMeters: sub.distance
+              distanceMeters: sub.distance,
+              pathCoords: [startCoord, endCoord]
             });
           }
         } else if (sub.trafficType === 1 || sub.trafficType === 2) {
@@ -197,7 +208,22 @@ function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * c;
 }
 
-export async function getRealtimeBusArrival(stationId: number, routeId: number, localRouteId?: string, cityCode?: number, startX?: number, startY?: number): Promise<number | string> {
+function getBearing(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const toRad = (deg: number) => deg * Math.PI / 180;
+  const toDeg = (rad: number) => rad * 180 / Math.PI;
+  const dLon = toRad(lon2 - lon1);
+  const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+  const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+  const brng = toDeg(Math.atan2(y, x));
+  return (brng + 360) % 360;
+}
+
+function angleDiff(a: number, b: number) {
+  const diff = Math.abs(a - b) % 360;
+  return diff > 180 ? 360 - diff : diff;
+}
+
+export async function getRealtimeBusArrival(stationId: number, routeId: number, localRouteId?: string, cityCode?: number, startX?: number, startY?: number, endX?: number, endY?: number): Promise<number | string> {
   // Use public data API if Ulsan bus
   if (localRouteId && cityCode === 6000) {
     try {
@@ -232,7 +258,20 @@ export async function getRealtimeBusArrival(stationId: number, routeId: number, 
         }
 
         const cleanLocalRouteId = String(localRouteId).replace(/[^0-9]/g, '');
-        const activeBuses = allLocations.filter((b: any) => String(b.rteId) === cleanLocalRouteId);
+        let activeBuses = allLocations.filter((b: any) => String(b.rteId) === cleanLocalRouteId);
+        
+        if (startX !== undefined && startY !== undefined) {
+          activeBuses = activeBuses.filter(b => {
+            const dist = getDistanceKm(parseFloat(b.lat), parseFloat(b.lot), startY, startX);
+            if (dist < 0.3) return true; // Keep if very close to start
+            if (b.oprDrct) {
+              const bearingToStart = getBearing(parseFloat(b.lat), parseFloat(b.lot), startY, startX);
+              const diff = angleDiff(parseFloat(b.oprDrct), bearingToStart);
+              if (diff > 100) return false; // Opposite direction or passed
+            }
+            return true;
+          });
+        }
         
         if (activeBuses.length > 0) {
           if (startX !== undefined && startY !== undefined) {

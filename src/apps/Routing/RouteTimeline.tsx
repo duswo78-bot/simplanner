@@ -13,7 +13,14 @@ function TransitStepDetails({ step }: { step: RoutePathStep }) {
   useEffect(() => {
     let mounted = true;
     if (step.type === 'BUS' && step.startStationId && step.routeId) {
-      getRealtimeBusArrival(step.startStationId, step.routeId, step.localRouteId, step.cityCode, step.startX, step.startY).then(info => {
+      let endX = undefined;
+      let endY = undefined;
+      if (step.pathCoords && step.pathCoords.length > 0) {
+        const lastPoint = step.pathCoords[step.pathCoords.length - 1];
+        endY = lastPoint[0];
+        endX = lastPoint[1];
+      }
+      getRealtimeBusArrival(step.startStationId, step.routeId, step.localRouteId, step.cityCode, step.startX, step.startY, endX, endY).then(info => {
         if (mounted && info !== null) setArrivalInfo(info);
       });
     }
