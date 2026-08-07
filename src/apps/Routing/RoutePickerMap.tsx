@@ -294,30 +294,78 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
           let newLng = activeBus.lng;
 
           // Simple predictive interpolation: move towards the next coordinate on the path, or just move towards destination
-          if (step && step.pathCoords && step.pathCoords.length > 0) {
-            // Find closest point on path
-            let minDist = Infinity;
-            let closestIdx = 0;
-            for (let i = 0; i < step.pathCoords.length; i++) {
-              const d = Math.pow(step.pathCoords[i][0] - activeBus.lat, 2) + Math.pow(step.pathCoords[i][1] - activeBus.lng, 2);
-              if (d < minDist) {
-                minDist = d;
-                closestIdx = i;
+          if (step && step.fullPathCoords && step.fullPathCoords.length > 0) {
+            // Find closest point on full path to current bus location
+            let minBusDist = Infinity;
+            let busIdx = 0;
+            for (let i = 0; i < step.fullPathCoords.length; i++) {
+              const d = Math.pow(step.fullPathCoords[i][0] - activeBus.lat, 2) + Math.pow(step.fullPathCoords[i][1] - activeBus.lng, 2);
+              if (d < minBusDist) {
+                minBusDist = d;
+                busIdx = i;
+              }
+            }
+
+            // Find closest point on full path to boarding station
+            let targetIdx = busIdx; 
+            if (step.startY && step.startX) {
+               let minStationDist = Infinity;
+               for (let i = 0; i < step.fullPathCoords.length; i++) {
+                 const d = Math.pow(step.fullPathCoords[i][0] - step.startY, 2) + Math.pow(step.fullPathCoords[i][1] - step.startX, 2);
+                 if (d < minStationDist) {
+                   minStationDist = d;
+                   targetIdx = i;
+                 }
+               }
+            }
+            
+            // Traverse the polyline from busIdx towards targetIdx until we've moved distanceToMoveDegrees
+            let currentLat = activeBus.lat;
+            let currentLng = activeBus.lng;
+            let remainingDist = distanceToMoveDegrees;
+            let currentIdx = busIdx;
+            const direction = busIdx < targetIdx ? 1 : -1;
+
+            while (remainingDist > 0 && currentIdx !== targetIdx) {
+              const nextIdx = currentIdx + direction;
+              const nextPoint = step.fullPathCoords[nextIdx];
+              const dy = nextPoint[0] - currentLat;
+              const dx = nextPoint[1] - currentLng;
+              const segmentDist = Math.sqrt(dy * dy + dx * dx);
+
+              if (segmentDist === 0) {
+                currentIdx = nextIdx;
+                continue;
+              }
+
+              if (remainingDist >= segmentDist) {
+                // Move full segment
+                currentLat = nextPoint[0];
+                currentLng = nextPoint[1];
+                remainingDist -= segmentDist;
+                currentIdx = nextIdx;
+              } else {
+                // Move partial segment
+                const ratio = remainingDist / segmentDist;
+                currentLat += dy * ratio;
+                currentLng += dx * ratio;
+                remainingDist = 0;
               }
             }
             
-            // Move towards the next point in the path (assume index decreases towards boarding stop if we are approaching it, or just use boarding stop)
-            // Actually, we are just waiting for the bus, so it moves TOWARDS step.startY/step.startX
-            if (step.startY && step.startX) {
-              const dy = step.startY - activeBus.lat;
-              const dx = step.startX - activeBus.lng;
-              const distToTarget = Math.sqrt(dy * dy + dx * dx);
-              
-              if (distToTarget > 0) {
-                const ratio = Math.min(1, distanceToMoveDegrees / distToTarget);
-                newLat = activeBus.lat + dy * ratio;
-                newLng = activeBus.lng + dx * ratio;
-              }
+            newLat = currentLat;
+            newLng = currentLng;
+            
+          } else if (step && step.startY && step.startX) {
+            // Fallback: straight line to station
+            const dy = step.startY - activeBus.lat;
+            const dx = step.startX - activeBus.lng;
+            const distToTarget = Math.sqrt(dy * dy + dx * dx);
+            
+            if (distToTarget > 0) {
+              const ratio = Math.min(1, distanceToMoveDegrees / distToTarget);
+              newLat = activeBus.lat + dy * ratio;
+              newLng = activeBus.lng + dx * ratio;
             }
           }
 
