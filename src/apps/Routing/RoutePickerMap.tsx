@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, useMapEvents, Polyline, useMap, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, useMapEvents, Polyline, useMap, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Navigation } from 'lucide-react';
@@ -225,12 +225,18 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
             busesWithDist.sort((a: any, b: any) => a.dist - b.dist);
             const closest = busesWithDist.slice(0, 3);
             
-            setActiveBuses(closest.map((item: any) => ({
-              id: item.bus.vhclNo,
-              lat: parseFloat(item.bus.lat),
-              lng: parseFloat(item.bus.lot),
-              rteId: String(item.bus.rteId)
-            })));
+            setActiveBuses(closest.map((item: any) => {
+              const rteId = String(item.bus.rteId);
+              const step = busSteps.find(s => String(s.localRouteId).replace(/[^0-9]/g, '') === rteId);
+              return {
+                id: item.bus.vhclNo,
+                lat: parseFloat(item.bus.lat),
+                lng: parseFloat(item.bus.lot),
+                rteId: rteId,
+                lineName: step?.lineName || '버스',
+                speed: item.bus.oprSpd
+              };
+            }));
           }
         }
       } catch (e) {
@@ -262,25 +268,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         
         {gpsLocation && <Marker position={gpsLocation} icon={gpsIcon} />}
         
-        {/* Render Route Polylines */}
-        {selectedRoute && selectedRoute.steps.map(step => {
-          if (!step.pathCoords || step.pathCoords.length === 0) return null;
-          const isWalk = step.type === 'WALK';
-          return (
-            <Polyline 
-              key={step.id} 
-              positions={step.pathCoords} 
-              color={isWalk ? '#9ca3af' : (step.lineColor || '#6c5ce7')} 
-              weight={isWalk ? 4 : 5} 
-              opacity={isWalk ? 0.9 : 0.8} 
-              lineCap="round"
-              lineJoin="round"
-              dashArray={isWalk ? "8, 10" : undefined}
-            />
-          );
-        })}
-
-        {/* Render Approaching Bus Paths (Gray Dotted Lines) */}
+        {/* Render Approaching Bus Paths (Gray Dotted Lines) FIRST so they stay behind */}
         {selectedRoute && activeBuses.map(bus => {
           const busStep = selectedRoute.steps.find(s => s.type === 'BUS' && s.localRouteId && String(s.localRouteId).replace(/[^0-9]/g, '') === bus.rteId);
           if (busStep && busStep.fullPathCoords && busStep.fullPathCoords.length > 0) {
@@ -304,7 +292,6 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
               ? busStep.fullPathCoords.slice(busIdx, startIdx + 1)
               : busStep.fullPathCoords.slice(startIdx, busIdx + 1);
 
-            // If bus is very close, prepend its exact current location to make the line connect smoothly to the icon
             if (pathSegment.length > 0) {
               if (busIdx <= startIdx) pathSegment.unshift([bus.lat, bus.lng]);
               else pathSegment.push([bus.lat, bus.lng]);
@@ -340,6 +327,24 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
           return null;
         })}
 
+        {/* Render Route Polylines SECOND so they are on top */}
+        {selectedRoute && selectedRoute.steps.map(step => {
+          if (!step.pathCoords || step.pathCoords.length === 0) return null;
+          const isWalk = step.type === 'WALK';
+          return (
+            <Polyline 
+              key={step.id} 
+              positions={step.pathCoords} 
+              color={isWalk ? '#9ca3af' : (step.lineColor || '#6c5ce7')} 
+              weight={isWalk ? 4 : 5} 
+              opacity={isWalk ? 0.9 : 1.0} 
+              lineCap="round"
+              lineJoin="round"
+              dashArray={isWalk ? "8, 10" : undefined}
+            />
+          );
+        })}
+
         {/* Start/End Pins for Route Summary Map */}
         {readonly && selectedRoute && (() => {
           const startPos = selectedRoute.steps.find(s => s.pathCoords && s.pathCoords.length > 0)?.pathCoords?.[0];
@@ -356,7 +361,14 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
 
         {/* Real-time Bus Markers */}
         {activeBuses.map(bus => (
-          <Marker key={bus.id} position={[bus.lat, bus.lng]} icon={busIcon} zIndexOffset={1000} />
+          <Marker key={bus.id} position={[bus.lat, bus.lng]} icon={busIcon} zIndexOffset={1000}>
+            <Popup closeButton={false}>
+              <div style={{ padding: '2px 4px', textAlign: 'center', margin: 0 }}>
+                <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#10b981' }}>{bus.lineName}</div>
+                {bus.speed !== undefined && <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>{bus.speed} km/h</div>}
+              </div>
+            </Popup>
+          </Marker>
         ))}
       </MapContainer>
       
