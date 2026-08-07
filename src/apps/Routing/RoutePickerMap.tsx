@@ -312,8 +312,26 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
                 isPassed: item.bus.isPassed
               };
             });
-            setActiveBuses(newActiveBuses);
-            if (onActiveBusesChange) onActiveBusesChange(newActiveBuses);
+            
+            // Prevent backward movement by retaining max distKm
+            setActiveBuses(prev => {
+              const merged = newActiveBuses.map(b => {
+                const old = prev.find(p => p.id === b.id);
+                if (old && old.distKm !== undefined && b.distKm !== undefined) {
+                   // If bus isPassed (moving away), distKm should only increase
+                   if (b.isPassed && b.distKm < old.distKm) {
+                     return { ...b, lat: old.lat, lng: old.lng, distKm: old.distKm };
+                   }
+                   // If bus is approaching, distKm should only decrease
+                   if (!b.isPassed && b.distKm > old.distKm) {
+                     return { ...b, lat: old.lat, lng: old.lng, distKm: old.distKm };
+                   }
+                }
+                return b;
+              });
+              if (onActiveBusesChange) onActiveBusesChange(merged);
+              return merged;
+            });
           }
         }
       } catch (e) {
@@ -578,16 +596,18 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
         {/* Real-time Bus Markers */}
         {displayBuses.map(bus => {
           const rteColor = selectedRoute?.steps.find(s => s.type === 'BUS' && String(s.localRouteId).replace(/[^0-9]/g, '') === bus.rteId)?.lineColor || '#3b82f6';
+          const isRidingThisBus = ridingState?.routeId === selectedRoute?.id && ridingState?.matchedBusId === bus.id;
+          
           return (
-            <Marker key={bus.id} position={[bus.lat, bus.lng]} icon={createBusIcon(bus.isPassed, rteColor)} zIndexOffset={bus.isPassed ? 900 : 1000}>
+            <Marker key={bus.id} position={[bus.lat, bus.lng]} icon={createBusIcon(bus.isPassed && !isRidingThisBus, rteColor)} zIndexOffset={bus.isPassed && !isRidingThisBus ? 900 : 1000}>
               <Popup closeButton={false} autoPan={false} className="compact-popup">
                 <div style={{ padding: '0', textAlign: 'center', margin: 0, lineHeight: '1.2', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <div>
-                    <span style={{ fontWeight: 'bold', fontSize: '13px', color: bus.isPassed ? '#9ca3af' : rteColor }}>{bus.lineName}</span>
-                    {!bus.isPassed && bus.speed !== undefined && <span style={{ fontSize: '12px', color: '#666', marginLeft: '4px' }}>{bus.speed}km/h</span>}
+                    <span style={{ fontWeight: 'bold', fontSize: '13px', color: (bus.isPassed && !isRidingThisBus) ? '#9ca3af' : rteColor }}>{bus.lineName}</span>
+                    {(!bus.isPassed || isRidingThisBus) && bus.speed !== undefined && <span style={{ fontSize: '12px', color: '#666', marginLeft: '4px' }}>{bus.speed}km/h</span>}
                   </div>
-                  <div style={{ fontSize: '11px', color: bus.isPassed ? '#ef4444' : '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px', fontWeight: bus.isPassed ? 'bold' : 'normal' }}>
-                    {bus.isPassed ? '지나간 버스' : (bus.distKm !== undefined && !Number.isNaN(bus.distKm) && bus.distKm !== Infinity ? `${bus.distKm.toFixed(1)}km 남음` : '위치 파악중')}
+                  <div style={{ fontSize: '11px', color: isRidingThisBus ? '#10b981' : (bus.isPassed ? '#ef4444' : '#888'), whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px', fontWeight: (bus.isPassed || isRidingThisBus) ? 'bold' : 'normal' }}>
+                    {isRidingThisBus ? '탑승중' : (bus.isPassed ? '지나간 버스' : (bus.distKm !== undefined && !Number.isNaN(bus.distKm) && bus.distKm !== Infinity ? `${bus.distKm.toFixed(1)}km 남음` : '위치 파악중'))}
                   </div>
                 </div>
               </Popup>

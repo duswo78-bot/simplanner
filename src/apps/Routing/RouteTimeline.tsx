@@ -17,12 +17,30 @@ function TransitStepDetails({ step, activeBuses, isRiding, ridingBusId }: { step
   useEffect(() => {
     if (step.type === 'BUS' && activeBuses && activeBuses.length > 0) {
       const rteId = step.localRouteId ? String(step.localRouteId).replace(/[^0-9]/g, '') : '';
-      let targetBuses = activeBuses.filter(b => b.rteId === rteId && !b.isPassed);
+      
       if (isRiding && ridingBusId) {
-        targetBuses = targetBuses.filter(b => b.id === ridingBusId);
+        const ridingBus = activeBuses.find(b => b.id === ridingBusId && b.rteId === rteId);
+        if (ridingBus && ridingBus.distKm !== undefined && step.distanceMeters) {
+          const stepDistKm = step.distanceMeters / 1000;
+          const prog = Math.max(0, Math.min(1, ridingBus.distKm / stepDistKm));
+          const remainingMinutes = Math.ceil((1 - prog) * Math.max(1, step.durationMinutes));
+          
+          if (remainingMinutes <= 0) {
+            setArrivalInfo('도착');
+          } else {
+            setArrivalInfo(`약 ${remainingMinutes}분 후 도착`);
+            if (remainingMinutes <= 2 && !hasVibrated) {
+              if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+              setHasVibrated(true);
+            }
+          }
+          return;
+        }
       }
-      if (targetBuses.length > 0) {
-        // Find closest bus
+
+      let targetBuses = activeBuses.filter(b => b.rteId === rteId && !b.isPassed);
+      if (!isRiding && targetBuses.length > 0) {
+        // Find closest bus for waiting passenger
         const closest = targetBuses.reduce((prev, curr) => 
           (prev.distKm !== undefined && curr.distKm !== undefined && prev.distKm < curr.distKm) ? prev : curr
         );
@@ -34,16 +52,8 @@ function TransitStepDetails({ step, activeBuses, isRiding, ridingBusId }: { step
           
           if (minutes === 0 || closest.distKm < 0.1) {
              setArrivalInfo('곧 도착');
-             if (isRiding && !hasVibrated) {
-               if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-               setHasVibrated(true);
-             }
           } else {
              setArrivalInfo(`약 ${minutes}분 후`);
-             if (isRiding && minutes <= 2 && !hasVibrated) {
-               if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-               setHasVibrated(true);
-             }
           }
           return;
         }

@@ -181,22 +181,24 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, rid
                 <span style={{ fontWeight: isMapVisible ? 'bold' : 'normal' }}>환승 {route.transferCount}회</span>
               </div>
               
-              {/* Riding Toggle Button */}
-              <button
-                onClick={(e) => { e.stopPropagation(); onToggleRiding?.(); }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  background: ridingState?.routeId === route.id ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                  border: ridingState?.routeId === route.id ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(255, 255, 255, 0.2)',
-                  color: ridingState?.routeId === route.id ? '#10b981' : '#fff',
-                  padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold',
-                  cursor: 'pointer', transition: 'all 0.2s',
-                  pointerEvents: 'auto'
-                }}
-              >
-                <Navigation size={12} fill={ridingState?.routeId === route.id ? 'currentColor' : 'none'} />
-                {ridingState?.routeId === route.id ? '탑승중' : '탑승'}
-              </button>
+              {/* Riding Toggle Button - Only visible when expanded */}
+              {isMapVisible && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onToggleRiding?.(); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                    background: ridingState?.routeId === route.id ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                    border: ridingState?.routeId === route.id ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(255, 255, 255, 0.2)',
+                    color: ridingState?.routeId === route.id ? '#10b981' : '#fff',
+                    padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                    pointerEvents: 'auto'
+                  }}
+                >
+                  <Navigation size={12} fill={ridingState?.routeId === route.id ? 'currentColor' : 'none'} />
+                  {ridingState?.routeId === route.id ? '탑승중' : '탑승'}
+                </button>
+              )}
             </div>
             
             {route.tags.includes('최적') && (
@@ -234,8 +236,8 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, rid
               let busIconLeft = 0;
               const stepDistKm = (step.distanceMeters || 0) / 1000;
               if (matchedBus && stepDistKm > 0 && matchedBus.distKm !== undefined) {
-                // Approximate progression along the step
-                const prog = Math.max(0, Math.min(1, 1 - (matchedBus.distKm / stepDistKm)));
+                // Approximate progression along the step (distKm is distance from start station)
+                const prog = Math.max(0, Math.min(1, matchedBus.distKm / stepDistKm));
                 busIconLeft = leftPercent * 100 + (prog * stepPercent * 100);
               }
 
