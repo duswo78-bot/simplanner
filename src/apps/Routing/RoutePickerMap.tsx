@@ -248,7 +248,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
           </button>
           <button
             onClick={() => onSelectEnd(center[0], center[1])}
-            style={{ flex: 1, background: '#10b981', color: '#fff', border: 'none', padding: '8px 0', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer' }}
+            style={{ flex: 1, background: '#ef4444', color: '#fff', border: 'none', padding: '8px 0', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer' }}
           >
             도착지로 설정
           </button>
