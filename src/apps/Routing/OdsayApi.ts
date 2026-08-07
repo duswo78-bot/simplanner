@@ -132,9 +132,9 @@ export async function searchTransitRoute(start: POI, end: POI): Promise<RouteOpt
       });
       
       let tags: string[] = [];
-      if (path.pathType === 1) tags.push('지하철');
+      if (path.pathType === 1) tags.push('전철');
       if (path.pathType === 2) tags.push('버스');
-      if (path.pathType === 3) tags.push('버스+지하철');
+      if (path.pathType === 3) tags.push('버스+전철');
       if (index === 0) tags.unshift('최적');
 
       const transferCount = Math.max(0, (path.info.busTransitCount || 0) + (path.info.subwayTransitCount || 0) - 1);

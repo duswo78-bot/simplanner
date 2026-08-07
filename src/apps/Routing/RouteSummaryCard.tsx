@@ -72,7 +72,7 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
                       fontSize: '0.8rem',
                       fontWeight: 'bold',
                       whiteSpace: 'nowrap',
-                      filter: 'brightness(1.3)'
+                      filter: 'brightness(1.7) contrast(1.2)'
                     }}>
                       {s.lineName}
                     </span>
@@ -88,9 +88,9 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, onS
                   let bg = 'rgba(255,255,255,0.1)';
                   let color = '#ccc';
                   if (tag === '최적') { bg = 'rgba(16, 185, 129, 0.2)'; color = '#10b981'; }
-                  else if (tag === '지하철') { bg = 'rgba(168, 85, 247, 0.15)'; color = '#c084fc'; }
+                  else if (tag === '전철') { bg = 'rgba(168, 85, 247, 0.15)'; color = '#c084fc'; }
                   else if (tag === '버스') { bg = 'rgba(59, 130, 246, 0.15)'; color = '#60a5fa'; }
-                  else if (tag === '버스+지하철') { bg = 'rgba(245, 158, 11, 0.15)'; color = '#fbbf24'; }
+                  else if (tag === '버스+전철') { bg = 'rgba(245, 158, 11, 0.15)'; color = '#fbbf24'; }
 
                   return (
                     <span key={tag} style={{

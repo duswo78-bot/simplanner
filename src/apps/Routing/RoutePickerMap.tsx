@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, useMapEvents, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, useMapEvents, Polyline, useMap, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Navigation } from 'lucide-react';
@@ -24,7 +24,12 @@ const pinHtml = `
 `;
 const pinIcon = L.divIcon({ html: pinHtml, className: 'custom-pin', iconSize: [0, 0], iconAnchor: [0, 0] });
 
-function MapController({ setPos, centerTo, gpsTrigger, selectedRoute, autoGps }: { setPos: (pos: [number, number]) => void, centerTo?: [number, number], gpsTrigger: number, selectedRoute?: RouteOption | null, autoGps?: boolean }) {
+const gpsHtml = `
+  <div style="width: 16px; height: 16px; background-color: #3b82f6; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.4);"></div>
+`;
+const gpsIcon = L.divIcon({ html: gpsHtml, className: 'gps-pin', iconSize: [16, 16], iconAnchor: [8, 8] });
+
+function MapController({ setPos, setGpsLoc, centerTo, gpsTrigger, selectedRoute, autoGps }: { setPos: (pos: [number, number]) => void, setGpsLoc?: (pos: [number, number]) => void, centerTo?: [number, number], gpsTrigger: number, selectedRoute?: RouteOption | null, autoGps?: boolean }) {
   const map = useMapEvents({
     moveend: (e) => {
       const c = e.target.getCenter();
@@ -46,11 +51,12 @@ function MapController({ setPos, centerTo, gpsTrigger, selectedRoute, autoGps }:
           const coords: [number, number] = [pos.coords.latitude, pos.coords.longitude];
           map.flyTo(coords, 15);
           setPos(coords);
+          if (setGpsLoc) setGpsLoc(coords);
         },
         () => {}
       );
     }
-  }, [gpsTrigger, autoGps, map, setPos]);
+  }, [gpsTrigger, autoGps, map, setPos, setGpsLoc]);
 
   useEffect(() => {
     if (selectedRoute) {
@@ -88,13 +94,17 @@ function MapResizer() {
 
 export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps, readonly }: RoutePickerMapProps) {
   const [center, setCenter] = useState<[number, number]>([37.5665, 126.9780]); // Default: Seoul City Hall
+  const [gpsLocation, setGpsLocation] = useState<[number, number] | null>(null);
   const [gpsTrigger, setGpsTrigger] = useState(0);
   
   // Try to get user location
   useEffect(() => {
     if (navigator.geolocation && !autoGps) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => setCenter([pos.coords.latitude, pos.coords.longitude]),
+        (pos) => {
+          setCenter([pos.coords.latitude, pos.coords.longitude]);
+          setGpsLocation([pos.coords.latitude, pos.coords.longitude]);
+        },
         () => {}
       );
     }
@@ -111,8 +121,10 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
           url="https://xdworld.vworld.kr/2d/Base/service/{z}/{x}/{y}.png"
           attribution='&copy; V-World'
         />
-        <MapController setPos={setCenter} centerTo={centerTo} gpsTrigger={gpsTrigger} selectedRoute={selectedRoute} autoGps={autoGps} />
+        <MapController setPos={setCenter} setGpsLoc={setGpsLocation} centerTo={centerTo} gpsTrigger={gpsTrigger} selectedRoute={selectedRoute} autoGps={autoGps} />
         <MapResizer />
+        
+        {gpsLocation && <Marker position={gpsLocation} icon={gpsIcon} />}
         
         {/* Render Route Polylines */}
         {selectedRoute && selectedRoute.steps.map(step => {
@@ -122,7 +134,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
               key={step.id} 
               positions={step.pathCoords} 
               color={step.lineColor || '#6c5ce7'} 
-              weight={6} 
+              weight={3} 
               opacity={0.8} 
               lineCap="round"
               lineJoin="round"
