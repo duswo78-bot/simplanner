@@ -17,10 +17,10 @@ export interface SchoolInfo {
 }
 
 const BACKGROUND_IMAGES = [
-  '/images/school/bg1.jpg',
-  '/images/school/bg2.jpg',
-  '/images/school/bg3.jpg',
-  '/images/school/bg4.jpg',
+  `${import.meta.env.BASE_URL}images/school/bg1.jpg`,
+  `${import.meta.env.BASE_URL}images/school/bg2.jpg`,
+  `${import.meta.env.BASE_URL}images/school/bg3.jpg`,
+  `${import.meta.env.BASE_URL}images/school/bg4.jpg`,
 ];
 
 export function SchoolApp({ onBack }: SchoolAppProps) {
