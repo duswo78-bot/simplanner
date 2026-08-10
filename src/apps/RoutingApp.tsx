@@ -311,19 +311,6 @@ export function RoutingApp({ onBack, isEmbedded = false }: RoutingAppProps) {
                         }
                       }}
                     />
-                    {selectedRouteId === route.id && (
-                      <div style={{ 
-                        marginTop: '-8px', paddingTop: '16px', paddingBottom: '16px',
-                        background: 'rgba(0,0,0,0.1)', borderRadius: '0 0 16px 16px',
-                        border: '1px solid rgba(255,255,255,0.05)', borderTop: 'none'
-                      }}>
-                        <RouteTimeline 
-                          steps={route.steps} 
-                          isRiding={ridingState?.routeId === route.id}
-                          ridingBusId={ridingState?.routeId === route.id ? ridingState.matchedBusId : null}
-                        />
-                      </div>
-                    )}
                   </div>
                 ))}
               </>

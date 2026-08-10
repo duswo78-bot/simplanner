@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import type { RouteOption } from './RouteTypes';
 import { Clock, Coins, Activity, Map, Navigation, Bus } from 'lucide-react';
 import { RoutePickerMap } from './RoutePickerMap';
+import { RouteTimeline } from './RouteTimeline';
 
 interface RouteSummaryCardProps {
   route: RouteOption;
@@ -14,11 +15,13 @@ interface RouteSummaryCardProps {
   onShowMap?: () => void;
   onSelectStart?: (lat: number, lng: number) => void;
   onSelectEnd?: (lat: number, lng: number) => void;
+  onRefresh?: () => void;
 }
 
-export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, ridingState, onToggleRiding, onMatchBus, onShowMap, onSelectStart, onSelectEnd }: RouteSummaryCardProps) {
+export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, ridingState, onToggleRiding, onMatchBus, onShowMap, onSelectStart, onSelectEnd, onRefresh }: RouteSummaryCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [activeBuses, setActiveBuses] = useState<any[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     if (isMapVisible && cardRef.current) {
@@ -41,12 +44,12 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, rid
         border: isSelected ? '1px solid rgba(59, 130, 246, 0.8)' : '1px solid rgba(255, 255, 255, 0.1)',
         background: isMapVisible ? 'transparent' : (isSelected ? 'rgba(59, 130, 246, 0.1)' : 'rgba(20, 25, 30, 0.6)'),
         transition: 'all 0.3s ease',
-        position: 'relative',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column'
       }}
     >
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
       {(isSelected || ridingState?.routeId === route.id) && (
         <div style={{ 
           position: 'absolute', 
@@ -69,6 +72,7 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, rid
             ridingState={ridingState}
             onMatchBus={onMatchBus}
             isMapVisible={isMapVisible}
+            refreshTrigger={refreshTrigger}
           />
         </div>
       )}
@@ -212,17 +216,47 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, rid
               )}
             </div>
             
-            {route.tags.includes('최적') && (
-              <span style={{
-                color: '#10b981',
-                padding: '2px 8px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold',
-                border: '1px solid rgba(16, 185, 129, 0.2)',
-                animation: 'pulse-border 1.5s infinite',
-                whiteSpace: 'nowrap'
-              }}>
-                최적
-              </span>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {route.tags.includes('최적') && (
+                <span style={{
+                  color: '#10b981',
+                  padding: '2px 8px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold',
+                  border: '1px solid rgba(16, 185, 129, 0.2)',
+                  animation: 'pulse-border 1.5s infinite',
+                  whiteSpace: 'nowrap'
+                }}>
+                  최적
+                </span>
+              )}
+              {isSelected && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Provide some visual feedback
+                    const target = e.currentTarget;
+                    target.style.transform = 'rotate(180deg)';
+                    target.style.transition = 'transform 0.3s ease';
+                    setTimeout(() => {
+                      target.style.transform = 'rotate(0deg)';
+                      target.style.transition = 'none';
+                    }, 300);
+                    setRefreshTrigger(prev => prev + 1);
+                    onRefresh?.();
+                  }}
+                  style={{
+                    background: 'transparent', border: 'none',
+                    padding: '4px', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                    color: 'rgba(255,255,255,0.8)', cursor: 'pointer',
+                    pointerEvents: 'auto', outline: 'none'
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                    <path d="M3 3v5h5" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
           
           {/* Mini graphical route overview */}
@@ -282,6 +316,23 @@ export function RouteSummaryCard({ route, onClick, isSelected, isMapVisible, rid
         </div>
         
       </div> {/* End of relative zIndex 10 container */}
+      </div> {/* End of inner wrapper */}
+      
+      {/* Render Timeline inline so it can use activeBuses */}
+      {isSelected && (
+        <div style={{ 
+          marginTop: '0px', paddingTop: '16px', paddingBottom: '16px',
+          background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)'
+        }}>
+          <RouteTimeline 
+            steps={route.steps} 
+            activeBuses={activeBuses}
+            isRiding={ridingState?.routeId === route.id}
+            ridingBusId={ridingState?.routeId === route.id ? ridingState.matchedBusId : null}
+            refreshTrigger={refreshTrigger}
+          />
+        </div>
+      )}
     </div>
   );
 }

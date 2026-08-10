@@ -11,7 +11,7 @@ interface AppContainerProps {
 
 export function AppContainer({ title, onBack, children, bgImage }: AppContainerProps) {
   return (
-    <div className="app-view-container animate-fade-in" style={bgImage ? { background: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('${bgImage}') center center / cover no-repeat fixed` } : undefined}>
+    <div className="app-view-container animate-fade-in" style={bgImage ? { background: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('${bgImage}') center center / cover no-repeat fixed` } : undefined}>
       <header className="app-header">
         <button className="back-button" onClick={onBack} aria-label="Go back">
           <ChevronLeft size={28} color="#fff" />

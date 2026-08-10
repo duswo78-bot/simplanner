@@ -8,17 +8,23 @@ interface RouteTimelineProps {
   activeBuses?: any[];
   isRiding?: boolean;
   ridingBusId?: string | null;
+  refreshTrigger?: number;
 }
 
-function TransitStepDetails({ step, activeBuses, isRiding, ridingBusId }: { step: RoutePathStep, activeBuses?: any[], isRiding?: boolean, ridingBusId?: string | null }) {
+function TransitStepDetails({ step, activeBuses, isRiding, ridingBusId, refreshTrigger }: { step: RoutePathStep, activeBuses?: any[], isRiding?: boolean, ridingBusId?: string | null, refreshTrigger?: number }) {
   const [arrivalInfo, setArrivalInfo] = useState<string | null>(null);
   const [hasVibrated, setHasVibrated] = useState(false);
 
   useEffect(() => {
-    if (step.type === 'BUS' && activeBuses && activeBuses.length > 0) {
-      const rteId = step.localRouteId ? String(step.localRouteId).replace(/[^0-9]/g, '') : '';
-      
-      if (isRiding && ridingBusId) {
+    if (step.type !== 'BUS') return;
+
+    const rteId = step.localRouteId ? String(step.localRouteId).replace(/[^0-9]/g, '') : '';
+    let intervalId: ReturnType<typeof setInterval>;
+    let mounted = true;
+
+    // 1. Riding State: show time to destination (alighting station)
+    if (isRiding) {
+      if (activeBuses && activeBuses.length > 0 && ridingBusId) {
         const ridingBus = activeBuses.find(b => b.id === ridingBusId && b.rteId === rteId);
         if (ridingBus && ridingBus.distKm !== undefined && step.distanceMeters) {
           const stepDistKm = step.distanceMeters / 1000;
@@ -26,7 +32,7 @@ function TransitStepDetails({ step, activeBuses, isRiding, ridingBusId }: { step
           const remainingMinutes = Math.ceil((1 - prog) * Math.max(1, step.durationMinutes));
           
           if (remainingMinutes <= 0) {
-            setArrivalInfo('도착');
+            setArrivalInfo('곧 하차');
           } else {
             setArrivalInfo(`약 ${remainingMinutes}분 후 도착`);
             if (remainingMinutes <= 2 && !hasVibrated) {
@@ -37,10 +43,16 @@ function TransitStepDetails({ step, activeBuses, isRiding, ridingBusId }: { step
           return;
         }
       }
+      
+      // If we are riding but no bus is matched yet, show static travel time
+      setArrivalInfo(`약 ${step.durationMinutes}분 소요`);
+      return;
+    }
 
+    // 2. Not Riding (Waiting for bus): Check for close active buses
+    if (activeBuses && activeBuses.length > 0) {
       let targetBuses = activeBuses.filter(b => b.rteId === rteId && !b.isPassed);
-      if (!isRiding && targetBuses.length > 0) {
-        // Find closest bus for waiting passenger
+      if (targetBuses.length > 0) {
         const closest = targetBuses.reduce((prev, curr) => 
           (prev.distKm !== undefined && curr.distKm !== undefined && prev.distKm < curr.distKm) ? prev : curr
         );
@@ -59,37 +71,41 @@ function TransitStepDetails({ step, activeBuses, isRiding, ridingBusId }: { step
         }
       }
     }
-    
-    // Fallback if no active buses or not a bus
-    let mounted = true;
-    if (step.type === 'BUS' && step.startStationId && step.routeId) {
-      let endX = undefined;
-      let endY = undefined;
+
+    // 3. Fallback: Poll API for boarding ETA
+    if (step.startStationId && step.routeId) {
+      let endX: number | undefined = undefined;
+      let endY: number | undefined = undefined;
       if (step.pathCoords && step.pathCoords.length > 0) {
         const lastPoint = step.pathCoords[step.pathCoords.length - 1];
         endY = lastPoint[0];
         endX = lastPoint[1];
       }
-      getRealtimeBusArrival(step.startStationId, step.routeId, step.localRouteId, step.cityCode, step.startX, step.startY, endX, endY).then(info => {
-        if (mounted && info !== null) {
-          if (typeof info === 'number') {
-            setArrivalInfo(`약 ${info}분 후`);
-            if (isRiding && info <= 2 && !hasVibrated) {
-              if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-              setHasVibrated(true);
-            }
-          } else {
-            setArrivalInfo(info);
-            if (isRiding && info.includes('곧 도착') && !hasVibrated) {
-              if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-              setHasVibrated(true);
+
+      const fetchArrivalInfo = () => {
+        getRealtimeBusArrival(step.startStationId!, step.routeId!, step.localRouteId, step.cityCode, step.startX, step.startY, endX, endY).then(info => {
+          if (mounted && info !== null) {
+            if (typeof info === 'number') {
+              setArrivalInfo(`약 ${info}분 후`);
+            } else {
+              setArrivalInfo(info);
             }
           }
-        }
-      });
+        });
+      };
+
+      // Initial fetch
+      fetchArrivalInfo();
+      
+      // Poll every 10 seconds
+      intervalId = setInterval(fetchArrivalInfo, 10000);
     }
-    return () => { mounted = false; };
-  }, [step, activeBuses, isRiding, hasVibrated]);
+
+    return () => { 
+      mounted = false; 
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [step, activeBuses, isRiding, ridingBusId, hasVibrated, refreshTrigger]);
 
   return (
     <div style={{ 
@@ -143,7 +159,7 @@ function TransitStepDetails({ step, activeBuses, isRiding, ridingBusId }: { step
   );
 }
 
-export function RouteTimeline({ steps, activeBuses, isRiding, ridingBusId }: RouteTimelineProps) {
+export function RouteTimeline({ steps, activeBuses, isRiding, ridingBusId, refreshTrigger }: RouteTimelineProps) {
   return (
     <div style={{ padding: '8px 16px', position: 'relative' }}>
       {steps.map((step, idx) => {
@@ -203,7 +219,7 @@ export function RouteTimeline({ steps, activeBuses, isRiding, ridingBusId }: Rou
               </div>
               
               {step.type !== 'WALK' && step.startStation && (
-                <TransitStepDetails step={step} activeBuses={activeBuses} isRiding={isRiding} ridingBusId={ridingBusId} />
+                <TransitStepDetails step={step} activeBuses={activeBuses} isRiding={isRiding} ridingBusId={ridingBusId} refreshTrigger={refreshTrigger} />
               )}
             </div>
             

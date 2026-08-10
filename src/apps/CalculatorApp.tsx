@@ -117,10 +117,20 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
   };
 
   const handleDeleteSaved = (id: number) => {
-    setSavedList(savedList.filter(item => item.id !== id));
+    if (window.confirm('정말 이 계산 기록을 삭제하시겠습니까?')) {
+      setSavedList(savedList.filter(item => item.id !== id));
+    }
   };
 
 
+
+  const formatExpression = (expr: string) => {
+    return expr.replace(/\d+(?:\.\d+)?/g, (match) => {
+      const parts = match.split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return parts.join('.');
+    });
+  };
 
   return (
     <AppContainer title="계산기" onBack={onBack}>
@@ -129,8 +139,8 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
         <div className="calc-chassis">
           {/* Display */}
           <div className="calc-display">
-            <div style={{ color: '#fff', fontSize: expression.length > 15 ? '1.5rem' : '2.5rem', fontWeight: 'bold', wordBreak: 'break-all', textAlign: 'right', lineHeight: 1.2, position: 'relative', zIndex: 1 }}>
-              {expression || '0'}
+            <div style={{ color: '#fff', fontSize: formatExpression(expression).length > 15 ? '1.5rem' : '2.5rem', fontWeight: 'bold', wordBreak: 'break-all', textAlign: 'right', lineHeight: 1.2, position: 'relative', zIndex: 1 }}>
+              {formatExpression(expression) || '0'}
             </div>
           </div>
 
@@ -169,48 +179,53 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
           <button 
             onClick={handleSave}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: '6px', 
-              background: 'var(--accent-gradient)', color: '#fff', 
-              border: 'none', borderRadius: '12px', padding: '8px 16px', 
-              fontSize: '0.9rem', fontWeight: 'bold', cursor: 'pointer' 
+              display: 'flex', alignItems: 'center', gap: '8px', 
+              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', color: '#fff', 
+              border: 'none', borderRadius: '14px', padding: '10px 20px', 
+              fontSize: '1.05rem', fontWeight: 'bold', cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
             }}>
-            <Save size={16} /> 저장하기
+            <Save size={20} /> 저장하기
           </button>
         </div>
 
         {/* Saved List */}
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingBottom: '20px' }}>
+        <div className="saved-list-container">
           {savedList.length === 0 ? (
             <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px 0', fontSize: '0.9rem' }}>
               = 버튼을 눌러 계산을 완료한 후,<br/>저장하기 버튼을 눌러보세요!
             </div>
           ) : (
-            savedList.map((calc) => (
-              <div key={calc.id} style={{ 
-                background: 'var(--card-bg)', borderRadius: '12px', padding: '12px', 
-                border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{calc.name}</strong>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button 
-                      onClick={() => handleShare(calc)}
-                      style={{ background: 'none', border: 'none', color: '#38bdf8', padding: '4px', cursor: 'pointer' }}>
-                      <Share2 size={18} />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteSaved(calc.id)}
-                      style={{ background: 'none', border: 'none', color: '#f43f5e', padding: '4px', cursor: 'pointer' }}>
-                      <Trash2 size={18} />
-                    </button>
+            savedList.map((calc, index) => {
+              const pastelColors = ['#fca5a5', '#fcd34d', '#86efac', '#93c5fd', '#c4b5fd', '#fbcfe8'];
+              const borderColor = pastelColors[index % pastelColors.length];
+              return (
+                <div key={calc.id} className="notebook-card" style={{ borderLeftColor: borderColor }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>({new Date(calc.id).getMonth() + 1}/{new Date(calc.id).getDate()})</span>
+                      <strong style={{ color: '#1f2937', fontSize: '0.95rem' }}>{calc.name}</strong>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button 
+                        onClick={() => handleShare(calc)}
+                        style={{ background: 'none', border: 'none', color: '#0284c7', padding: '2px', cursor: 'pointer' }}>
+                        <Share2 size={16} />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteSaved(calc.id)}
+                        style={{ background: 'none', border: 'none', color: '#e11d48', padding: '2px', cursor: 'pointer' }}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
+                    <span style={{ color: '#4b5563', fontSize: '0.85rem', fontFamily: 'monospace' }}>{formatExpression(calc.equation)}</span>
+                    <strong style={{ color: '#dc2626', fontSize: '1.1rem' }}>{formatExpression(calc.result)}</strong>
                   </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{calc.equation}</span>
-                  <strong style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>{calc.result}</strong>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

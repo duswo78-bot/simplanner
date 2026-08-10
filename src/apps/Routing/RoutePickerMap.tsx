@@ -34,6 +34,7 @@ interface RoutePickerMapProps {
   onActiveBusesChange?: (buses: any[]) => void;
   ridingState?: { routeId: string, matchedBusId: string | null } | null;
   onMatchBus?: (busId: string) => void;
+  refreshTrigger?: number;
 }
 
 const pinHtml = `
@@ -122,7 +123,7 @@ function MapResizer({ isMapVisible }: { isMapVisible?: boolean }) {
   return null;
 }
 
-export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps = false, readonly = false, onActiveBusesChange, ridingState, onMatchBus, isMapVisible }: RoutePickerMapProps & { isMapVisible?: boolean }) {
+export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps = false, readonly = false, onActiveBusesChange, ridingState, onMatchBus, isMapVisible, refreshTrigger }: RoutePickerMapProps & { isMapVisible?: boolean }) {
   const [pos, setPos] = useState<[number, number]>([37.5665, 126.9780]);
   const [gpsLoc, setGpsLoc] = useState<[number, number] | null>(null);
   const [gpsTrigger, setGpsTrigger] = useState(0);
@@ -380,7 +381,7 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
       mounted = false;
       clearInterval(interval);
     };
-  }, [selectedRoute, readonly]);
+  }, [selectedRoute, readonly, refreshTrigger]);
 
   // Interpolation loop for smooth movement
   useEffect(() => {

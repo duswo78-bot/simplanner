@@ -10,8 +10,10 @@ import { PharmacyApp } from './apps/PharmacyApp';
 import { BusApp } from './apps/BusApp';
 import { RoutingApp } from './apps/RoutingApp';
 import { EmptyApp } from './apps/EmptyApp';
+import { SchoolApp } from './apps/School/SchoolApp';
 
 import { CalculatorApp } from './apps/CalculatorApp';
+import { GroceryApp } from './apps/Grocery/GroceryApp';
 
 function App() {
   const [currentApp, setCurrentApp] = useState<AppData | null>(() => {
@@ -21,14 +23,29 @@ function App() {
     return null;
   });
 
+  const [openApps, setOpenApps] = useState<AppData[]>(() => {
+    if (window.location.hash === '#routing') {
+      return [{ id: 'app-bus', name: '대중교통', icon: 'Bus', color: '' }];
+    }
+    return [];
+  });
+
+  const handleAppClick = (app: AppData) => {
+    setOpenApps(prev => {
+      if (!prev.find(a => a.id === app.id)) {
+        return [...prev, app];
+      }
+      return prev;
+    });
+    setCurrentApp(app);
+  };
+
   const handleBack = () => {
     setCurrentApp(null);
   };
 
-  const renderCurrentApp = () => {
-    if (!currentApp) return <Launcher onAppClick={setCurrentApp} />;
-
-    switch (currentApp.id) {
+  const renderAppContent = (app: AppData) => {
+    switch (app.id) {
       case 'app-meals':
         return <MealApp onBack={handleBack} />;
       case 'app-pharmacy':
@@ -37,15 +54,39 @@ function App() {
         return <BusApp onBack={handleBack} />;
       case 'app-calculator':
         return <CalculatorApp onBack={handleBack} />;
+      case 'app-school':
+        return <SchoolApp onBack={handleBack} />;
+      case 'app-cart':
+        return <GroceryApp onBack={handleBack} />;
       default:
-        return <EmptyApp title={currentApp.name} onBack={handleBack} />;
+        return <EmptyApp title={app.name} onBack={handleBack} />;
     }
   };
 
   return (
     <MobileContainer>
       <ErrorBoundary>
-        {renderCurrentApp()}
+        <div style={{ display: currentApp ? 'none' : 'block', height: '100%', width: '100%' }}>
+          <Launcher onAppClick={handleAppClick} />
+        </div>
+        
+        {openApps.map(app => (
+          <div 
+            key={app.id} 
+            style={{ 
+              display: currentApp?.id === app.id ? 'block' : 'none',
+              height: '100%',
+              width: '100%',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              zIndex: currentApp?.id === app.id ? 10 : -1,
+              backgroundColor: '#020617' // Default background to cover launcher if needed
+            }}
+          >
+            {renderAppContent(app)}
+          </div>
+        ))}
       </ErrorBoundary>
     </MobileContainer>
   );
