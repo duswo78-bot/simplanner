@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppContainer } from '../components/AppContainer';
 import './CalculatorApp.css';
-import { Save, Share2, Trash2 } from 'lucide-react';
+import { Save, Share2, Trash2, Sigma, Calculator, Delete } from 'lucide-react';
 
 interface CalculatorAppProps {
   onBack: () => void;
@@ -17,6 +17,7 @@ interface SavedCalc {
 export function CalculatorApp({ onBack }: CalculatorAppProps) {
   const [expression, setExpression] = useState('');
   const [justEvaluated, setJustEvaluated] = useState(false);
+  const [isEngineering, setIsEngineering] = useState(false);
 
   // For saving history
   const [lastCalc, setLastCalc] = useState<{ eq: string; res: string } | null>(null);
@@ -38,7 +39,31 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
   }, [savedList]);
 
   const evaluate = (expr: string) => {
-    let formattedExpr = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/%/g, '/100');
+    let formattedExpr = expr
+      .replace(/×/g, '*')
+      .replace(/÷/g, '/')
+      .replace(/%/g, '/100')
+      .replace(/asin\(/g, 'Math.asin(')
+      .replace(/acos\(/g, 'Math.acos(')
+      .replace(/atan\(/g, 'Math.atan(')
+      .replace(/sin\(/g, 'Math.sin(')
+      .replace(/cos\(/g, 'Math.cos(')
+      .replace(/tan\(/g, 'Math.tan(')
+      .replace(/abs\(/g, 'Math.abs(')
+      .replace(/√\(/g, 'Math.sqrt(')
+      .replace(/log\(/g, 'Math.log10(')
+      .replace(/ln\(/g, 'Math.log(')
+      .replace(/π/g, 'Math.PI')
+      .replace(/e/g, 'Math.E')
+      .replace(/\^/g, '**');
+
+    let openCount = (formattedExpr.match(/\(/g) || []).length;
+    let closeCount = (formattedExpr.match(/\)/g) || []).length;
+    while (openCount > closeCount) {
+      formattedExpr += ')';
+      closeCount++;
+    }
+
     try {
       // eslint-disable-next-line no-new-func
       const res = new Function('return ' + formattedExpr)();
@@ -80,6 +105,78 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
     setJustEvaluated(false);
   };
 
+  const handleNegate = () => {
+    if (justEvaluated && expression !== 'Error' && expression !== '') {
+      setExpression(expression.startsWith('-') ? expression.substring(1) : '-' + expression);
+      setJustEvaluated(false);
+      return;
+    }
+    
+    if (expression === 'Error' || expression === '') {
+      setExpression('-');
+      setJustEvaluated(false);
+      return;
+    }
+    
+    const negMatch = expression.match(/\(-\d+(\.\d+)?$/);
+    if (negMatch) {
+       const num = negMatch[0].substring(2);
+       setExpression(expression.slice(0, -negMatch[0].length) + num);
+       return;
+    }
+    
+    const numMatch = expression.match(/\d+(\.\d+)?$/);
+    if (numMatch) {
+       setExpression(expression.slice(0, -numMatch[0].length) + '(-' + numMatch[0]);
+       return;
+    }
+    
+    if (expression.endsWith('(-')) {
+       setExpression(expression.slice(0, -2));
+       return;
+    }
+    
+    setExpression(prev => prev + '(-');
+  };
+
+  const handleBackspace = () => {
+    if (justEvaluated || expression === 'Error') {
+      setExpression('');
+      setJustEvaluated(false);
+      return;
+    }
+    setExpression(prev => prev.slice(0, -1));
+  };
+
+  const handleParentheses = () => {
+    if (expression === 'Error') {
+      setExpression('(');
+      setJustEvaluated(false);
+      return;
+    }
+    
+    if (justEvaluated || expression === '') {
+      setExpression('(');
+      setJustEvaluated(false);
+      return;
+    }
+
+    const openCount = (expression.match(/\(/g) || []).length;
+    const closeCount = (expression.match(/\)/g) || []).length;
+    const lastChar = expression.slice(-1);
+    const isNumberOrClose = /[0-9)%]/.test(lastChar);
+
+    if (openCount > closeCount && isNumberOrClose) {
+      setExpression(prev => prev + ')');
+    } else {
+      if (isNumberOrClose) {
+        setExpression(prev => prev + '×(');
+      } else {
+        setExpression(prev => prev + '(');
+      }
+    }
+  };
+
   const handleSave = () => {
     if (!lastCalc) {
       alert('저장할 계산 결과가 없습니다. 먼저 계산을 완료( = )해 주세요.');
@@ -101,9 +198,11 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
   };
 
   const handleShare = async (calc: SavedCalc) => {
+    const dateObj = new Date(calc.id);
+    const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
     const shareData = {
       title: calc.name,
-      text: `[${calc.name}]\n계산 과정: ${calc.equation}\n결과: ${calc.result}`
+      text: `[${calc.name} (${dateStr})]\n계산 과정: ${calc.equation}\n결과: ${calc.result}`
     };
     try {
       if (navigator.share) {
@@ -132,23 +231,126 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
     });
   };
 
+  const headerAction = (
+    <button 
+      onClick={() => setIsEngineering(!isEngineering)}
+      style={{
+        background: 'none',
+        border: 'none',
+        color: isEngineering ? '#22d3ee' : '#fff',
+        cursor: 'pointer',
+        padding: '6px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '8px',
+        backgroundColor: isEngineering ? 'rgba(34, 211, 238, 0.2)' : 'rgba(255, 255, 255, 0.15)',
+        transition: 'all 0.2s',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+      }}
+      title={isEngineering ? "일반 계산기 모드" : "공학 계산기 모드"}
+    >
+      {isEngineering ? <Calculator size={20} /> : <Sigma size={20} />}
+    </button>
+  );
+
   return (
-    <AppContainer title="계산기" onBack={onBack}>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '16px', gap: '16px' }}>
+    <AppContainer title="계산기" onBack={onBack} headerAction={headerAction}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '5px', gap: '8px' }}>
         
         <div className="calc-chassis">
           {/* Display */}
           <div className="calc-display">
-            <div style={{ color: '#fff', fontSize: formatExpression(expression).length > 15 ? '1.5rem' : '2.5rem', fontWeight: 'bold', wordBreak: 'break-all', textAlign: 'right', lineHeight: 1.2, position: 'relative', zIndex: 1 }}>
-              {formatExpression(expression) || '0'}
-            </div>
+            {(() => {
+              const eqStr = justEvaluated && lastCalc ? `${formatExpression(lastCalc.eq)} =` : '';
+              const resStr = formatExpression(expression) || '0';
+              const isOverflow = eqStr.length + resStr.length > 18;
+              
+              let resFontSize = '2.5rem';
+              if (isOverflow) {
+                if (resStr.length > 25) resFontSize = '1rem';
+                else if (resStr.length > 15) resFontSize = '1.2rem';
+                else resFontSize = '1.8rem';
+              } else {
+                if (resStr.length > 30) resFontSize = '0.9rem';
+                else if (resStr.length > 22) resFontSize = '1.1rem';
+                else if (resStr.length > 16) resFontSize = '1.4rem';
+                else if (resStr.length > 11) resFontSize = '1.8rem';
+                else resFontSize = '2.5rem';
+              }
+
+              return (
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: isOverflow ? 'column' : 'row', 
+                  justifyContent: isOverflow ? 'center' : 'space-between', 
+                  alignItems: isOverflow ? 'flex-end' : 'flex-end', 
+                  position: 'relative', 
+                  zIndex: 1, 
+                  width: '100%', 
+                  gap: isOverflow ? '4px' : '8px' 
+                }}>
+                  <div style={{ 
+                    color: '#9ca3af', 
+                    fontSize: isOverflow ? '0.9rem' : '1rem', 
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    textAlign: isOverflow ? 'right' : 'left', 
+                    marginBottom: isOverflow ? '0' : '4px', 
+                    flexShrink: 0, 
+                    maxWidth: isOverflow ? '100%' : '40%' 
+                  }}>
+                    {eqStr}
+                  </div>
+                  <div style={{ 
+                    color: '#fff', 
+                    fontSize: resFontSize, 
+                    fontWeight: '500', 
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    textAlign: 'right', 
+                    lineHeight: 1.2, 
+                    flex: 1,
+                    width: isOverflow ? '100%' : 'auto'
+                  }}>
+                    {resStr}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Keypad */}
           <div className="calc-keypad">
+            {isEngineering && (
+              <>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('sin(')}>sin</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('cos(')}>cos</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('tan(')}>tan</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('log(')}>log</button>
+
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('asin(')}>sin⁻¹</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('acos(')}>cos⁻¹</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('atan(')}>tan⁻¹</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('ln(')}>ln</button>
+
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('^2')}>x²</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('^')}>x^y</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('√(')}>√</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('abs(')}>|x|</button>
+
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('e')}>e</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('π')}>π</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={() => handleInput('e^')}>e^x</button>
+                <button className="calc-btn op-top" style={{fontSize: '1.1rem'}} onClick={handleNegate}>+/-</button>
+              </>
+            )}
+            
             <button className="calc-btn op-top" onClick={handleClear}>C</button>
-            <button className="calc-btn op-top" onClick={() => handleInput('(')}>(</button>
-            <button className="calc-btn op-top" onClick={() => handleInput(')')}>)</button>
+            <button className="calc-btn op-top" onClick={handleBackspace}><Delete size={24} /></button>
+            <button className="calc-btn op-top" onClick={() => handleInput('%')}>%</button>
             <button className="calc-btn op-right" onClick={() => handleInput('÷')}>÷</button>
             
             <button className="calc-btn" onClick={() => handleInput('7')}>7</button>
@@ -166,9 +368,9 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
             <button className="calc-btn" onClick={() => handleInput('3')}>3</button>
             <button className="calc-btn op-right" onClick={() => handleInput('+')}>+</button>
             
+            <button className="calc-btn" onClick={handleParentheses}>()</button>
             <button className="calc-btn" onClick={() => handleInput('0')}>0</button>
             <button className="calc-btn" onClick={() => handleInput('.')}>.</button>
-            <button className="calc-btn" onClick={() => handleInput('%')}>%</button>
             <button className="calc-btn op-right" onClick={handleEqual}>=</button>
           </div>
         </div>

@@ -40,7 +40,10 @@
 }
 
 .header-placeholder {
-  width: 44px; /* Same width as back button to perfectly center title */
+  min-width: 44px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .app-content-scroll {

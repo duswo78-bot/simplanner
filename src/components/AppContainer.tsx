@@ -7,9 +7,10 @@ interface AppContainerProps {
   onBack: () => void;
   children: ReactNode;
   bgImage?: string;
+  headerAction?: ReactNode;
 }
 
-export function AppContainer({ title, onBack, children, bgImage }: AppContainerProps) {
+export function AppContainer({ title, onBack, children, bgImage, headerAction }: AppContainerProps) {
   return (
     <div className="app-view-container animate-fade-in" style={bgImage ? { background: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('${bgImage}') center center / cover no-repeat fixed` } : undefined}>
       <header className="app-header">
@@ -17,7 +18,7 @@ export function AppContainer({ title, onBack, children, bgImage }: AppContainerP
           <ChevronLeft size={28} color="#fff" />
         </button>
         <h1 className="app-title">{title}</h1>
-        <div className="header-placeholder" /> {/* For flexbox centering */}
+        <div className="header-placeholder">{headerAction}</div>
       </header>
       
       <div className="app-content-scroll">
