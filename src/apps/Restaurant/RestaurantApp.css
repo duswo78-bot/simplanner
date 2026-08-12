@@ -365,26 +365,31 @@
   flex-wrap: wrap;
 }
 
-.favorite-btn {
-  background: none;
+.favorite-btn, .action-icon-btn {
+  background: rgba(0, 0, 0, 0.04);
   border: none;
   cursor: pointer;
-  padding: 4px;
-  margin-top: 0;
-  color: #ccc;
+  padding: 8px;
+  border-radius: 50%;
+  color: #637381;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s, color 0.2s;
+  transition: transform 0.2s, color 0.2s, background 0.2s;
   flex-shrink: 0;
+}
+
+.favorite-btn:hover, .action-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .favorite-btn.active {
   color: #ec4899;
+  background: rgba(236, 72, 153, 0.1);
 }
 
-.favorite-btn:active {
-  transform: scale(1.2);
+.favorite-btn:active, .action-icon-btn:active {
+  transform: scale(0.9);
 }
 
 .restaurant-name {

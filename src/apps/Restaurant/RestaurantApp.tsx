@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, MapPin, Search, ChevronDown, ChevronUp, Heart, Phone, Navigation, Map, Image, Sparkles } from 'lucide-react';
+import { ChevronLeft, MapPin, Search, ChevronDown, ChevronUp, Heart, Phone, Navigation, Map, Image, Sparkles, Share2 } from 'lucide-react';
 import './RestaurantApp.css';
 
 interface RestaurantAppProps {
@@ -165,6 +165,26 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
+  const handleShare = async (e: React.MouseEvent, place: Place) => {
+    e.stopPropagation();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: place.place_name,
+          text: `${place.place_name} 맛집 정보를 확인해보세요!\n주소: ${place.road_address_name || place.address_name}`,
+          url: place.place_url
+        });
+      } catch (err) {
+        console.error('Share failed', err);
+      }
+    } else {
+      navigator.clipboard.writeText(place.place_url);
+      alert('식당 링크가 클립보드에 복사되었습니다.');
+    }
+  };
+
+  const filteredPlaces = showOnlyFav ? places.filter(p => favorites.includes(p.id)) : places;
+
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !loadingRef.current && !isEndRef.current && !errorRef.current) {
@@ -195,8 +215,6 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     const regionPrefix = place.address_name.split(' ').slice(0, 2).join(' ');
     return encodeURIComponent(`${regionPrefix} ${place.place_name}`);
   };
-
-  const filteredPlaces = showOnlyFav ? places.filter(p => favorites.includes(p.id)) : places;
 
   return (
     <div className="restaurant-app h-full flex flex-col overflow-hidden relative">
@@ -299,7 +317,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
         )}
 
         {filteredPlaces.map(place => {
-          const isFav = favorites.includes(place.id);
+          const isFavorite = favorites.includes(place.id);
           const isExpanded = expandedId === place.id;
           const exactQuery = getExactSearchQuery(place);
 
@@ -311,18 +329,29 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
             >
               <div className="card-header">
                 <div className="title-wrapper">
-                  <div className="restaurant-name">{place.place_name}</div>
+                  <h3 className="restaurant-name">{place.place_name}</h3>
                   <div className="badge-group">
-                    {place.category_group_name && <span className="badge badge-primary">{place.category_group_name}</span>}
-                    <span className="badge badge-outline">{place.category_name.split(' > ').pop()}</span>
+                    <span className="badge badge-primary">{place.category_name.split('>').pop()?.trim()}</span>
+                    {place.category_name.includes('>') && (
+                      <span className="badge badge-outline">{place.category_name.split('>')[1]?.trim()}</span>
+                    )}
                   </div>
                 </div>
-                <button 
-                  className={`favorite-btn ${isFav ? 'active' : ''}`} 
-                  onClick={(e) => toggleFavorite(e, place.id)}
-                >
-                  <Heart size={20} fill={isFav ? "currentColor" : "none"} />
-                </button>
+                <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+                  <button 
+                    className="action-icon-btn"
+                    onClick={(e) => handleShare(e, place)}
+                    title="공유하기"
+                  >
+                    <Share2 size={20} />
+                  </button>
+                  <button 
+                    className={`favorite-btn ${isFavorite ? 'active' : ''}`}
+                    onClick={(e) => toggleFavorite(e, place.id)}
+                  >
+                    <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+                  </button>
+                </div>
               </div>
               
               <div className="restaurant-address-container">
