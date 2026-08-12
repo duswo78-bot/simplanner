@@ -7,7 +7,7 @@ interface RestaurantAppProps {
 }
 
 const REGIONS = ['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'];
-const RESTAURANT_CATEGORIES = ['전체', '한식', '중식', '일식', '양식', '카페', '베이커리', '분식', '고기/구이', '치킨', '피자', '아시안', '패스트푸드'];
+const RESTAURANT_CATEGORIES = ['전체', '한식', '중식', '일식', '양식', '카페', '베이커리', '분식', '고기/구이', '치킨', '피자', '아시안', '패스트푸드', '기타'];
 const KAKAO_REST_API_KEY = '167bb3713d47a624020a8820a96b95b3';
 
 interface Place {
