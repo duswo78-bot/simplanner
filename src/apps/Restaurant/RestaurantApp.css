@@ -380,21 +380,22 @@
 
 .card-actions {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
   align-items: center;
-  min-width: 80px;
+  min-width: 60px;
   justify-content: flex-end;
+  margin-right: -4px;
 }
 
 .rest-favorite-btn, .rest-action-icon-btn {
   background: rgba(0, 0, 0, 0.04);
   border: none;
   cursor: pointer;
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
   padding: 0;
   border-radius: 50%;
   color: #637381;
