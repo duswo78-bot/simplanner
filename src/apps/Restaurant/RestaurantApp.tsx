@@ -298,27 +298,35 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
 
               {isExpanded && (
                 <div className="card-details">
-                  <div className="restaurant-meta-grid">
-                    <div className="meta-item full-width">
-                      <span className="meta-icon"><Map size={16} /></span>
-                      <div className="meta-text">
-                        <strong>상세 분류</strong>
-                        <span>{place.category_name || '-'}</span>
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                    <div className="meta-list" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', justifyContent: 'center' }}>
+                      <div className="meta-item">
+                        <span className="meta-icon"><Map size={16} /></span>
+                        <div className="meta-text">
+                          <strong>상세 분류</strong>
+                          <span>{place.category_name || '-'}</span>
+                        </div>
+                      </div>
+                      <div className="meta-item">
+                        <span className="meta-icon"><Phone size={16} /></span>
+                        <div className="meta-text">
+                          <strong>전화번호</strong>
+                          <span>{place.phone || '-'}</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="meta-item">
-                      <span className="meta-icon"><Phone size={16} /></span>
-                      <div className="meta-text">
-                        <strong>전화번호</strong>
-                        <span>{place.phone || '-'}</span>
-                      </div>
-                    </div>
-                    <div className="meta-item">
-                      <span className="meta-icon"><Navigation size={16} /></span>
-                      <div className="meta-text">
-                        <strong>지번 주소</strong>
-                        <span>{place.address_name || '-'}</span>
-                      </div>
+                    <div className="mini-map-container" style={{ width: '100px', height: '100px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)', background: '#eee' }}>
+                      <iframe 
+                        width="100%" 
+                        height="100%" 
+                        frameBorder="0" 
+                        scrolling="no" 
+                        marginHeight={0} 
+                        marginWidth={0} 
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(place.x)-0.003},${parseFloat(place.y)-0.003},${parseFloat(place.x)+0.003},${parseFloat(place.y)+0.003}&layer=mapnik&marker=${place.y},${place.x}`}
+                        title="Mini Map"
+                        style={{ border: 0 }}
+                      />
                     </div>
                   </div>
                   
@@ -327,7 +335,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                     <button className="brand-tag tag-insta" onClick={(e) => openLink(e, `https://www.instagram.com/explore/tags/${place.place_name.replace(/\s+/g, '')}/`)}>Instagram</button>
                     <button className="brand-tag tag-youtube" onClick={(e) => openLink(e, `https://www.youtube.com/results?search_query=${exactQuery}+맛집`)}>YouTube</button>
                     <button className="brand-tag tag-blog" onClick={(e) => openLink(e, `https://search.naver.com/search.naver?ssc=tab.blog.all&sm=tab_jum&query=${exactQuery}+맛집`)}>Blog</button>
-                    <button className="brand-tag tag-yogiyo" onClick={(e) => openLink(e, `https://www.google.com/search?q=요기요+${exactQuery}`)}>Yogiyo</button>
+                    <button className="brand-tag tag-yogiyo" onClick={(e) => openLink(e, `https://search.naver.com/search.naver?query=${encodeURIComponent('요기요 ')}${exactQuery}`)}>요기요</button>
                   </div>
                 </div>
               )}
