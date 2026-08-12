@@ -7,8 +7,9 @@ import './AppIcon.css';
 export interface AppData {
   id: string;
   name: string;
-  icon: keyof typeof LucideIcons;
-  color: string;
+  icon?: keyof typeof LucideIcons;
+  color?: string;
+  imageUrl?: string;
 }
 
 interface AppIconProps {
@@ -33,7 +34,7 @@ export function AppIcon({ app, onClick }: AppIconProps) {
     opacity: isDragging ? 0.8 : 1,
   };
 
-  const IconComponent = LucideIcons[app.icon] as React.FC<any>;
+  const IconComponent = app.icon ? (LucideIcons[app.icon] as React.FC<any>) : null;
 
   return (
     <div
@@ -48,12 +49,19 @@ export function AppIcon({ app, onClick }: AppIconProps) {
         }
       }}
     >
-      <div 
-        className="app-icon glass-panel"
-        style={{ background: app.color }}
-      >
-        {IconComponent && <IconComponent size={28} color="#fff" strokeWidth={2} />}
-      </div>
+      {app.imageUrl ? (
+        <div 
+          className="app-icon image-icon"
+          style={{ backgroundImage: `url(${app.imageUrl})` }}
+        />
+      ) : (
+        <div 
+          className="app-icon glass-panel"
+          style={{ background: app.color }}
+        >
+          {IconComponent && <IconComponent size={28} color="#fff" strokeWidth={2} />}
+        </div>
+      )}
       <span className="app-name">{app.name}</span>
     </div>
   );

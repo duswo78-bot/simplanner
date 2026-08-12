@@ -8,10 +8,9 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { MealApp } from './apps/MealApp';
 import { PharmacyApp } from './apps/PharmacyApp';
 import { BusApp } from './apps/BusApp';
-import { RoutingApp } from './apps/RoutingApp';
 import { EmptyApp } from './apps/EmptyApp';
 import { SchoolApp } from './apps/School/SchoolApp';
-
+import { PlannerApp } from './apps/Planner/PlannerApp';
 import { CalculatorApp } from './apps/CalculatorApp';
 import { GroceryApp } from './apps/Grocery/GroceryApp';
 import { AccountBookApp } from './apps/AccountBook/AccountBookApp';
@@ -47,6 +46,8 @@ function App() {
 
   const renderAppContent = (app: AppData) => {
     switch (app.id) {
+      case 'app-planner':
+        return <PlannerApp onBack={handleBack} />;
       case 'app-meals':
         return <MealApp onBack={handleBack} />;
       case 'app-pharmacy':
@@ -84,7 +85,7 @@ function App() {
               top: 0,
               left: 0,
               zIndex: currentApp?.id === app.id ? 10 : -1,
-              backgroundColor: '#020617' // Default background to cover launcher if needed
+              backgroundColor: '#020617'
             }}
           >
             {renderAppContent(app)}

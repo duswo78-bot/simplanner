@@ -22,8 +22,7 @@ import { TopWidget } from './TopWidget';
 import './Launcher.css';
 
 const INITIAL_APPS: AppData[] = [
-  { id: 'app-schedule', name: '일정', icon: 'Calendar', color: 'linear-gradient(135deg, #f59e0b, #d97706)' },
-  { id: 'app-todo', name: '할일', icon: 'ListTodo', color: 'linear-gradient(135deg, #10b981, #059669)' },
+  { id: 'app-planner', name: '플래너', icon: 'Calendar', color: 'linear-gradient(135deg, #fb923c, #ea580c)' },
   { id: 'app-school', name: '학교', icon: 'School', color: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
   { id: 'app-account', name: '가계부', icon: 'Wallet', color: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
   { id: 'app-health', name: '건강', icon: 'Heart', color: 'linear-gradient(135deg, #ef4444, #dc2626)' },
