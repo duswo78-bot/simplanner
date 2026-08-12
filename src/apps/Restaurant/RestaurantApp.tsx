@@ -28,10 +28,18 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   const [region, setRegion] = useState('울산');
   const [keyword, setKeyword] = useState('맛집');
   const [category, setCategory] = useState('전체');
-    const [allPlaces, setAllPlaces] = useState<Place[]>([]);
+  const [allPlaces, setAllPlaces] = useState<Place[]>([]);
   const [page, setPage] = useState(1);
   const listRef = useRef<HTMLElement>(null);
   const searchIdRef = useRef(0);
+
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [showOnlyFav, setShowOnlyFav] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [useLocation, setUseLocation] = useState(false);
+  const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
 
 
   // Load favorites
