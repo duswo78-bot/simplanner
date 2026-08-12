@@ -337,19 +337,19 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                     )}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+                <div className="card-actions">
                   <button 
                     className="action-icon-btn"
                     onClick={(e) => handleShare(e, place)}
                     title="공유하기"
                   >
-                    <Share2 size={20} />
+                    <Share2 size={18} />
                   </button>
                   <button 
                     className={`favorite-btn ${isFavorite ? 'active' : ''}`}
                     onClick={(e) => toggleFavorite(e, place.id)}
                   >
-                    <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+                    <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
                   </button>
                 </div>
               </div>

@@ -366,12 +366,23 @@
   flex-wrap: wrap;
 }
 
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  align-items: center;
+  min-width: 80px;
+  justify-content: flex-end;
+}
+
 .favorite-btn, .action-icon-btn {
   background: rgba(0, 0, 0, 0.04);
   border: none;
   cursor: pointer;
   width: 36px;
   height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   padding: 0;
   border-radius: 50%;
   color: #637381;
