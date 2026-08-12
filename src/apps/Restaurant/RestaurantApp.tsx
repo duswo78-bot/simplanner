@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, MapPin, Search, ChevronDown, ChevronUp, Heart, Phone, Navigation, Map, Image, Sparkles, Share2 } from 'lucide-react';
+import { ChevronLeft, MapPin, Search, ChevronDown, ChevronUp, Heart, Phone, Navigation, Map, Image, Sparkles, Share2, X } from 'lucide-react';
 import './RestaurantApp.css';
 
 interface RestaurantAppProps {
@@ -38,6 +38,19 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   const [showOnlyFav, setShowOnlyFav] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('RESTAURANT_RECENT_SEARCHES');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('RESTAURANT_RECENT_SEARCHES', JSON.stringify(recentSearches));
+  }, [recentSearches]);
   const [useLocation, setUseLocation] = useState(false);
   const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
 
@@ -129,6 +142,13 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   const handleSearch = (useLoc = useLocation, cat = category, kw = keyword) => {
     setUseLocation(useLoc);
     
+    if (kw && kw.trim() !== '' && kw !== '맛집') {
+      setRecentSearches(prev => {
+        const filtered = prev.filter(s => s !== kw);
+        return [kw, ...filtered].slice(0, 6);
+      });
+    }
+
     if (useLoc) {
       if (userCoords) {
         searchPlaces(true, userCoords.lat, userCoords.lng, cat, kw);
@@ -293,6 +313,24 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
             </button>
           ))}
         </div>
+        {recentSearches.length > 0 && (
+          <div className="recent-searches">
+            {recentSearches.map(term => (
+              <div key={term} className="recent-search-pill">
+                <span onClick={() => {
+                  setKeyword(term);
+                  handleSearch(useLocation, category, term);
+                }}>{term}</span>
+                <button onClick={(e) => {
+                  e.stopPropagation();
+                  setRecentSearches(prev => prev.filter(s => s !== term));
+                }}>
+                  <X size={10} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </header>
 
       <main className="restaurant-list" ref={listRef as any}>
