@@ -11,6 +11,11 @@ export default defineConfig(({ command }) => ({
         target: 'http://openapi.price.go.kr',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/openapi/, '')
+      },
+      '/kakao-api': {
+        target: 'https://dapi.kakao.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/kakao-api/, '')
       }
     }
   }
