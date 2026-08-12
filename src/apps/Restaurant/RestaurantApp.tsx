@@ -428,7 +428,9 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
             <div 
               key={place.id} 
               className={`restaurant-card ${isExpanded ? 'expanded' : ''}`}
-              onClick={() => setExpandedId(isExpanded ? null : place.id)}
+              onClick={() => {
+                if (!isExpanded) setExpandedId(place.id);
+              }}
             >
               <div className="card-header">
                 <div className="title-wrapper">
@@ -487,7 +489,11 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                         </div>
                       </div>
                     </div>
-                    <div className="mini-map-container" style={{ width: '100px', height: '100px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)', background: '#eee', position: 'relative' }}>
+                    <div 
+                      className="mini-map-container" 
+                      onClick={(e) => openLink(e, place.place_url)}
+                      style={{ width: '100px', height: '100px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)', background: '#eee', position: 'relative', cursor: 'pointer' }}
+                    >
                       <iframe 
                         src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(place.x)-0.002},${parseFloat(place.y)-0.002},${parseFloat(place.x)+0.002},${parseFloat(place.y)+0.002}&layer=mapnik`}
                         title="Mini Map"
@@ -514,7 +520,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                     <button className="brand-tag tag-insta" onClick={(e) => openLink(e, `https://www.instagram.com/explore/tags/${place.place_name.replace(/\s+/g, '')}/`)}>Instagram</button>
                     <button className="brand-tag tag-youtube" onClick={(e) => openLink(e, `https://www.youtube.com/results?search_query=${exactQuery}+맛집`)}>YouTube</button>
                     <button className="brand-tag tag-blog" onClick={(e) => openLink(e, `https://search.naver.com/search.naver?ssc=tab.blog.all&sm=tab_jum&query=${exactQuery}+맛집`)}>Blog</button>
-                    <button className="brand-tag tag-yogiyo" onClick={(e) => openLink(e, `yogiyoapp://search?keyword=${exactQuery}`)}>요기요</button>
+                    <button className="brand-tag tag-yogiyo" onClick={(e) => openLink(e, `yogiyoapp://search?keyword=${encodeURIComponent(place.place_name)}`)}>요기요</button>
                   </div>
                 </div>
               )}
