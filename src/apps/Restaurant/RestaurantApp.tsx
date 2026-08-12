@@ -28,34 +28,11 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   const [region, setRegion] = useState('울산');
   const [keyword, setKeyword] = useState('맛집');
   const [category, setCategory] = useState('전체');
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  const searchIdRef = useRef(0);
-  
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showOnlyFav, setShowOnlyFav] = useState(false);
-  
-  // 5km sorting state
-  const [useLocation, setUseLocation] = useState(false);
-  const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
-
+    const [allPlaces, setAllPlaces] = useState<Place[]>([]);
   const [page, setPage] = useState(1);
-  const [isEnd, setIsEnd] = useState(false);
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLElement>(null);
+  const searchIdRef = useRef(0);
 
-  // Refs for observer
-  const loadingRef = useRef(loading);
-  const isEndRef = useRef(isEnd);
-  const errorRef = useRef(error);
-
-  useEffect(() => {
-    loadingRef.current = loading;
-    isEndRef.current = isEnd;
-    errorRef.current = error;
-  }, [loading, isEnd, error]);
 
   // Load favorites
   useEffect(() => {
@@ -74,49 +51,54 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     localStorage.setItem('RESTAURANT_FAVORITES', JSON.stringify(favorites));
   }, [favorites]);
 
-  const searchPlaces = async (pageNum: number, isLocation = useLocation, lat = userCoords?.lat, lng = userCoords?.lng, cat = category) => {
+    const searchPlaces = async (isLocation = useLocation, lat = userCoords?.lat, lng = userCoords?.lng, cat = category) => {
     if (!isLocation && !region && !keyword) return;
 
     const currentSearchId = ++searchIdRef.current;
-
     setLoading(true);
     setError(null);
+
     try {
-      let queryUrl = '';
       const baseUrl = import.meta.env.DEV ? '/kakao-api' : 'https://dapi.kakao.com';
       
-      if (isLocation && lat && lng) {
-        // 내 주변 5km 검색 (반경 5000m, 거리순)
-        let q = keyword || '맛집';
-        if (cat !== '전체') q += ` ${cat}`;
-        queryUrl = `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=${lng}&y=${lat}&radius=5000&sort=distance&page=${pageNum}&size=15`;
-      } else {
-        // 일반 지역 + 키워드 검색
-        let query = `${region} ${keyword}`.trim();
-        if (cat !== '전체') query += ` ${cat}`;
-        queryUrl = `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(query)}&page=${pageNum}&size=15`;
-      }
-
-      const response = await fetch(queryUrl, {
-        headers: {
-          'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}`
+      const buildUrl = (pageNum: number) => {
+        if (isLocation && lat && lng) {
+          let q = keyword || '맛집';
+          if (cat !== '전체') q += ` ${cat}`;
+          return `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=${lng}&y=${lat}&radius=5000&sort=distance&page=${pageNum}&size=15`;
+        } else {
+          let query = `${region} ${keyword}`.trim();
+          if (cat !== '전체') query += ` ${cat}`;
+          return `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(query)}&page=${pageNum}&size=15`;
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API 호출 실패: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
+      };
+
+      const fetchPage = async (pageNum: number) => {
+        const response = await fetch(buildUrl(pageNum), {
+          headers: { 'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}` }
+        });
+        if (!response.ok) throw new Error(`API 호출 실패: ${response.status}`);
+        return await response.json();
+      };
+
+      const p1Data = await fetchPage(1);
       if (searchIdRef.current !== currentSearchId) return;
 
-      if (pageNum === 1) {
-        setPlaces(data.documents);
-      } else {
-        setPlaces(prev => [...prev, ...data.documents]);
+      let results = [...p1Data.documents];
+      
+      if (!p1Data.meta.is_end) {
+        const [p2Data, p3Data] = await Promise.all([
+          fetchPage(2).catch(() => null),
+          fetchPage(3).catch(() => null)
+        ]);
+        if (searchIdRef.current !== currentSearchId) return;
+
+        if (p2Data && p2Data.documents) results = [...results, ...p2Data.documents];
+        if (p3Data && p3Data.documents) results = [...results, ...p3Data.documents];
       }
-      setIsEnd(data.meta.is_end);
+
+      setAllPlaces(results);
+      setPage(1);
     } catch (err) {
       if (searchIdRef.current !== currentSearchId) return;
       setError('맛집 정보를 가져오는데 실패했습니다.');
@@ -129,13 +111,11 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   };
 
   const handleSearch = (useLoc = useLocation, cat = category) => {
-    setPage(1);
-    setIsEnd(false);
     setUseLocation(useLoc);
     
     if (useLoc) {
       if (userCoords) {
-        searchPlaces(1, true, userCoords.lat, userCoords.lng, cat);
+        searchPlaces(true, userCoords.lat, userCoords.lng, cat);
       } else {
         setLoading(true);
         navigator.geolocation.getCurrentPosition(
@@ -143,7 +123,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             setUserCoords({ lat, lng });
-            searchPlaces(1, true, lat, lng, cat);
+            searchPlaces(true, lat, lng, cat);
           },
           (err) => {
             setLoading(false);
@@ -153,17 +133,10 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
         );
       }
     } else {
-      searchPlaces(1, false, userCoords?.lat, userCoords?.lng, cat);
+      searchPlaces(false, userCoords?.lat, userCoords?.lng, cat);
     }
   };
 
-  // 내 주변 모드일 때 무한스크롤 등에서 좌표 재사용
-  useEffect(() => {
-    if (page > 1) {
-      searchPlaces(page, useLocation, userCoords?.lat, userCoords?.lng, category);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
 
   const handleShare = async (e: React.MouseEvent, place: Place) => {
     e.stopPropagation();
@@ -183,21 +156,15 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     }
   };
 
-  const filteredPlaces = showOnlyFav ? places.filter(p => favorites.includes(p.id)) : places;
+  const filteredPlaces = showOnlyFav ? allPlaces.filter(p => favorites.includes(p.id)) : allPlaces;
+  const totalPages = Math.max(1, Math.ceil(filteredPlaces.length / 20));
+  const currentPlaces = filteredPlaces.slice((page - 1) * 20, page * 20);
 
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && !loadingRef.current && !isEndRef.current && !errorRef.current) {
-        setPage(p => p + 1);
-      }
-    }, { threshold: 0.1 });
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
+    if (listRef.current) {
+      listRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
-    return () => observer.disconnect();
-  }, []);
+  }, [page]);
 
   const toggleFavorite = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -217,7 +184,8 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   };
 
   return (
-    <div className="restaurant-app h-full flex flex-col overflow-hidden relative">
+    <div className="restaurant-app-container">
+      <div className="restaurant-app h-full flex flex-col overflow-hidden relative">
       <svg width="0" height="0" style={{ position: 'absolute' }}>
         <defs>
           <linearGradient id="google-grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -302,7 +270,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
         </div>
       </header>
 
-      <main className="restaurant-list">
+      <main className="restaurant-list" ref={listRef as any}>
         {error && (
           <div className="empty-state">
             <h3>오류가 발생했습니다</h3>
@@ -310,13 +278,13 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
           </div>
         )}
         
-        {filteredPlaces.length === 0 && !loading && !error && (
+        {currentPlaces.length === 0 && !loading && !error && (
           <div className="empty-state">
             조건에 맞는 맛집이 없습니다.
           </div>
         )}
 
-        {filteredPlaces.map(place => {
+        {currentPlaces.map(place => {
           const isFavorite = favorites.includes(place.id);
           const isExpanded = expandedId === place.id;
           const exactQuery = getExactSearchQuery(place);
@@ -462,10 +430,28 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
             <div className="loading-text">데이터를 불러오는 중입니다...</div>
           </div>
         )}
-        {!showOnlyFav && !isEnd && !error && (
-          <div ref={observerTarget} style={{ height: '20px', width: '100%' }}></div>
+        
+        {totalPages > 1 && (
+          <div className="pagination-container">
+            <button className="page-btn" onClick={() => setPage(1)} disabled={page === 1}>&lt;&lt;</button>
+            <button className="page-btn" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>&lt;</button>
+            
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+              <button 
+                key={p} 
+                className={`page-btn ${page === p ? 'active' : ''}`}
+                onClick={() => setPage(p)}
+              >
+                {p}
+              </button>
+            ))}
+            
+            <button className="page-btn" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>&gt;</button>
+            <button className="page-btn" onClick={() => setPage(totalPages)} disabled={page === totalPages}>&gt;&gt;</button>
+          </div>
         )}
       </main>
+      </div>
     </div>
   );
 }
