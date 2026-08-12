@@ -183,9 +183,18 @@
 }
 
 .location-btn {
-  background: #10b981;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+  background: rgba(255, 255, 255, 0.9);
+  color: #10b981;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   flex-direction: column;
+}
+
+.location-btn.active {
+  background: #10b981;
+  color: white;
+  border: none;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
 }
 
 .location-btn-text {
