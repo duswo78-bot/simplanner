@@ -262,7 +262,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
             <option value="">전국</option>
             {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
-          <div className="search-wrapper">
+          <div className="search-wrapper" style={{ position: 'relative' }}>
             <input 
               type="text" 
               className="search-input" 
@@ -270,7 +270,29 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch(false)}
+              style={{ paddingRight: '32px' }}
             />
+            {keyword && (
+              <button
+                onClick={() => setKeyword('')}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  padding: '4px',
+                  color: '#919eab',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
           <div style={{ display: 'flex', gap: '4px' }}>
             <button 
