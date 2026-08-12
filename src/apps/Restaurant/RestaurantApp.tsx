@@ -59,9 +59,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     localStorage.setItem('RESTAURANT_FAVORITES', JSON.stringify(favorites));
   }, [favorites]);
 
-    const searchPlaces = async (isLocation = useLocation, lat = userCoords?.lat, lng = userCoords?.lng, cat = category) => {
-    if (!isLocation && !region && !keyword) return;
-
+    const searchPlaces = async (isLocation: boolean, lat?: number, lng?: number, cat = category, kw = keyword) => {
     const currentSearchId = ++searchIdRef.current;
     setLoading(true);
     setError(null);
@@ -70,7 +68,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
       const baseUrl = import.meta.env.DEV ? '/kakao-api' : 'https://dapi.kakao.com';
       
       const buildUrl = (pageNum: number) => {
-        let baseKeyword = keyword === '맛집' ? '' : keyword;
+        let baseKeyword = kw === '맛집' ? '' : kw;
 
         if (isLocation && lat && lng) {
           let q = baseKeyword;
@@ -128,12 +126,12 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     }
   };
 
-  const handleSearch = (useLoc = useLocation, cat = category) => {
+  const handleSearch = (useLoc = useLocation, cat = category, kw = keyword) => {
     setUseLocation(useLoc);
     
     if (useLoc) {
       if (userCoords) {
-        searchPlaces(true, userCoords.lat, userCoords.lng, cat);
+        searchPlaces(true, userCoords.lat, userCoords.lng, cat, kw);
       } else {
         setLoading(true);
         navigator.geolocation.getCurrentPosition(
@@ -141,7 +139,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             setUserCoords({ lat, lng });
-            searchPlaces(true, lat, lng, cat);
+            searchPlaces(true, lat, lng, cat, kw);
           },
           (err) => {
             setLoading(false);
@@ -151,7 +149,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
         );
       }
     } else {
-      searchPlaces(false, userCoords?.lat, userCoords?.lng, cat);
+      searchPlaces(false, userCoords?.lat, userCoords?.lng, cat, kw);
     }
   };
 
@@ -256,8 +254,17 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
           </div>
           <div style={{ display: 'flex', gap: '4px' }}>
             <button 
-              className="action-btn location-btn"
-              onClick={() => handleSearch(true)}
+              className={`action-btn location-btn ${useLocation ? 'active' : ''}`}
+              onClick={() => {
+                const willBeLoc = !useLocation;
+                let kw = keyword;
+                if (willBeLoc) {
+                  kw = '맛집';
+                  setKeyword(kw);
+                }
+                setUseLocation(willBeLoc);
+                handleSearch(willBeLoc, category, kw);
+              }}
               title="내 주변 5km 검색"
             >
               <Navigation size={18} style={{ marginBottom: '2px' }} />
