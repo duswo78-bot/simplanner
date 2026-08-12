@@ -15,6 +15,7 @@ import { CalculatorApp } from './apps/CalculatorApp';
 import { GroceryApp } from './apps/Grocery/GroceryApp';
 import { AccountBookApp } from './apps/AccountBook/AccountBookApp';
 import { RestaurantApp } from './apps/Restaurant/RestaurantApp';
+import { HealthApp } from './apps/Health/HealthApp';
 
 function App() {
   const [currentApp, setCurrentApp] = useState<AppData | null>(() => {
@@ -65,6 +66,8 @@ function App() {
         return <AccountBookApp onBack={handleBack} />;
       case 'app-restaurant':
         return <RestaurantApp onBack={handleBack} />;
+      case 'app-health':
+        return <HealthApp onBack={handleBack} />;
       default:
         return <EmptyApp title={app.name} onBack={handleBack} />;
     }

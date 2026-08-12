@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Search, ShoppingCart, Heart, Minus, Plus, X, Camera, ClipboardList, Share2, Loader2, LayoutGrid, List as ListIcon } from 'lucide-react';
+import { ArrowLeft, Search, ShoppingCart, Heart, Minus, Plus, X, Camera, ClipboardList, Share2, Loader2, LayoutGrid, List as ListIcon, Trash2 } from 'lucide-react';
 import Tesseract from 'tesseract.js';
 import { GROCERY_ITEMS } from './groceryData';
 import type { GroceryItem, Category } from './groceryData';

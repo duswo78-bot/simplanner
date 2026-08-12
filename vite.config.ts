@@ -16,6 +16,11 @@ export default defineConfig(({ command }) => ({
         target: 'https://dapi.kakao.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/kakao-api/, '')
+      },
+      '/health-api': {
+        target: 'https://apis.data.go.kr',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/health-api/, '')
       }
     }
   }

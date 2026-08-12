@@ -49,6 +49,30 @@
   color: #0f172a;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  color: #475569;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.icon-button:hover, .icon-button:active {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
 .search-container {
   padding: 16px;
   background-color: #ffffff;
@@ -800,7 +824,7 @@
 .action-btn {
   background: white;
   border: 1px solid #e2e8f0;
-  color: #64748b;
+  color: #475569;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -811,21 +835,34 @@
   transition: all 0.2s;
 }
 
+.action-btn svg {
+  color: #475569;
+}
+
 .action-btn:hover {
   background-color: #f1f5f9;
+}
+
+.action-btn:hover svg {
   color: #1e293b;
 }
 
 .delete-btn:hover {
   background-color: #fef2f2;
-  color: #ef4444;
   border-color: #fca5a5;
+}
+
+.delete-btn:hover svg {
+  color: #ef4444;
 }
 
 .share-btn:hover {
   background-color: #eff6ff;
-  color: #3b82f6;
   border-color: #93c5fd;
+}
+
+.share-btn:hover svg {
+  color: #3b82f6;
 }
 
 .empty-state {
