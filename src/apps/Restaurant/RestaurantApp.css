@@ -273,13 +273,12 @@
   box-shadow: 0 2px 4px rgba(33, 43, 54, 0.3);
 }
 
-/* Main Content */
 .restaurant-list {
   flex: 1;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -329,7 +328,6 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 16px;
-  margin-bottom: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
