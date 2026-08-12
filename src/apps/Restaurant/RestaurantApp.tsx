@@ -70,8 +70,8 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     localStorage.setItem('RESTAURANT_FAVORITES', JSON.stringify(favorites));
   }, [favorites]);
 
-  const searchPlaces = async (pageNum: number) => {
-    if (!region && !keyword && !useLocation) return;
+  const searchPlaces = async (pageNum: number, isLocation = useLocation, lat = userCoords?.lat, lng = userCoords?.lng) => {
+    if (!isLocation && !region && !keyword) return;
 
     setLoading(true);
     setError(null);
@@ -79,10 +79,10 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
       let queryUrl = '';
       const baseUrl = import.meta.env.DEV ? '/kakao-api' : 'https://dapi.kakao.com';
       
-      if (useLocation && userCoords) {
+      if (isLocation && lat && lng) {
         // 내 주변 5km 검색 (반경 5000m, 거리순)
         const q = keyword || '맛집';
-        queryUrl = `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=${userCoords.lng}&y=${userCoords.lat}&radius=5000&sort=distance&page=${pageNum}&size=15`;
+        queryUrl = `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=${lng}&y=${lat}&radius=5000&sort=distance&page=${pageNum}&size=15`;
       } else {
         // 일반 지역 + 키워드 검색
         const query = `${region} ${keyword}`.trim();
@@ -110,16 +110,20 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = (useLoc = false) => {
     setPage(1);
     setIsEnd(false);
     setPlaces([]);
+    setUseLocation(useLoc);
     
-    if (useLocation && !userCoords) {
+    if (useLoc) {
       setLoading(true);
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          setUserCoords({ lat, lng });
+          searchPlaces(1, true, lat, lng);
         },
         (err) => {
           setLoading(false);
@@ -128,31 +132,14 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
         }
       );
     } else {
-      searchPlaces(1);
+      searchPlaces(1, false);
     }
   };
 
-  // 내 주변 모드일 때 좌표가 구해지면 자동 검색
-  useEffect(() => {
-    if (useLocation && userCoords) {
-      setPage(1);
-      setIsEnd(false);
-      setPlaces([]);
-      searchPlaces(1);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userCoords]);
-
-  useEffect(() => {
-    if (!useLocation) {
-      handleSearch();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  // 내 주변 모드일 때 무한스크롤 등에서 좌표 재사용
   useEffect(() => {
     if (page > 1) {
-      searchPlaces(page);
+      searchPlaces(page, useLocation, userCoords?.lat, userCoords?.lng);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
@@ -209,39 +196,37 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
           </button>
         </div>
         <div className="controls">
-          <button 
-            className={`location-toggle-btn ${useLocation ? 'active' : ''}`}
-            onClick={() => {
-              setUseLocation(!useLocation);
-              if (useLocation) {
-                // 내 주변 끄면 바로 재검색 (기존 지역/키워드로)
-                setTimeout(() => handleSearch(), 0);
-              }
-            }}
-            title="내 주변 5km 검색"
+          <select 
+            className="region-select" 
+            value={region} 
+            onChange={(e) => setRegion(e.target.value)}
           >
-            <Compass size={18} />
-          </button>
-          {!useLocation && (
-            <select 
-              className="region-select" 
-              value={region} 
-              onChange={(e) => setRegion(e.target.value)}
-            >
-              <option value="">전국</option>
-              {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
-          )}
+            <option value="">전국</option>
+            {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
           <div className="search-wrapper">
             <input 
               type="text" 
               className="search-input" 
-              placeholder={useLocation ? "내 주변 맛집 검색..." : "예: 맛집, 카페, 국밥..."}
+              placeholder="예: 맛집, 카페, 국밥..."
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch(false)}
             />
-            <button className="search-btn" onClick={handleSearch}>
+          </div>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <button 
+              className="action-btn location-btn"
+              onClick={() => handleSearch(true)}
+              title="내 주변 5km 검색"
+            >
+              <Navigation size={18} />
+            </button>
+            <button 
+              className="action-btn search-btn" 
+              onClick={() => handleSearch(false)}
+              title="검색하기"
+            >
               <Search size={18} />
             </button>
           </div>
@@ -296,7 +281,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                 </div>
                 <div className="address-actions">
                   <button className="brand-tag tag-kakao" onClick={(e) => openLink(e, place.place_url)}>KaKao Map</button>
-                  <button className="brand-tag tag-naver" onClick={(e) => openLink(e, `https://map.naver.com/v5/search/${exactQuery}`)}>Naver Map</button>
+                  <button className="brand-tag tag-naver" onClick={(e) => openLink(e, `https://map.naver.com/v5/search/${encodeURIComponent(place.road_address_name || place.address_name)}`)}>Naver Map</button>
                   {place.distance && (
                     <span className="distance-badge">
                       {(parseInt(place.distance) / 1000).toFixed(1)}km
