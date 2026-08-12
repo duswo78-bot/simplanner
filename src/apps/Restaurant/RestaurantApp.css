@@ -180,6 +180,41 @@
   box-shadow: 0 2px 4px rgba(236, 72, 153, 0.3);
 }
 
+.category-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-top: 10px;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.category-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #637381;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.chip-btn.active {
+  background: #212b36;
+  color: white;
+  border-color: #212b36;
+  box-shadow: 0 2px 4px rgba(33, 43, 54, 0.3);
+}
+
 /* Main Content */
 .restaurant-list {
   flex: 1;

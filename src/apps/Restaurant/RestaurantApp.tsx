@@ -7,6 +7,7 @@ interface RestaurantAppProps {
 }
 
 const REGIONS = ['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'];
+const RESTAURANT_CATEGORIES = ['전체', '한식', '중식', '일식', '양식', '카페', '베이커리', '분식', '고기/구이', '치킨', '피자', '아시안', '패스트푸드'];
 const KAKAO_REST_API_KEY = '167bb3713d47a624020a8820a96b95b3';
 
 interface Place {
@@ -26,6 +27,7 @@ interface Place {
 export function RestaurantApp({ onBack }: RestaurantAppProps) {
   const [region, setRegion] = useState('울산');
   const [keyword, setKeyword] = useState('맛집');
+  const [category, setCategory] = useState('전체');
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,11 +83,13 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
       
       if (isLocation && lat && lng) {
         // 내 주변 5km 검색 (반경 5000m, 거리순)
-        const q = keyword || '맛집';
+        let q = keyword || '맛집';
+        if (category !== '전체') q += ` ${category}`;
         queryUrl = `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=${lng}&y=${lat}&radius=5000&sort=distance&page=${pageNum}&size=15`;
       } else {
         // 일반 지역 + 키워드 검색
-        const query = `${region} ${keyword}`.trim();
+        let query = `${region} ${keyword}`.trim();
+        if (category !== '전체') query += ` ${category}`;
         queryUrl = `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(query)}&page=${pageNum}&size=15`;
       }
 
@@ -231,6 +235,20 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
               <Search size={18} />
             </button>
           </div>
+        </div>
+        <div className="category-chips">
+          {RESTAURANT_CATEGORIES.map(cat => (
+            <button 
+              key={cat}
+              className={`chip-btn ${category === cat ? 'active' : ''}`}
+              onClick={() => {
+                setCategory(cat);
+                setTimeout(() => handleSearch(useLocation), 0);
+              }}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
       </header>
 
