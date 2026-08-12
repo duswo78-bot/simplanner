@@ -76,14 +76,17 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
           let q = baseKeyword;
           if (cat !== '전체') {
             q = q ? `${q} ${cat}` : cat;
-          } else {
-            q = q || '맛집';
+          } else if (!q.includes('맛집')) {
+            q = q ? `${q} 맛집` : '맛집';
           }
           return `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=${lng}&y=${lat}&radius=5000&sort=distance&page=${pageNum}&size=15`;
         } else {
           let query = `${region} ${baseKeyword}`.trim();
-          if (cat !== '전체') query += ` ${cat}`;
-          if (query === region) query += ' 맛집';
+          if (cat !== '전체') {
+             query += ` ${cat}`;
+          } else if (!query.includes('맛집')) {
+             query += ' 맛집';
+          }
           return `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(query)}&page=${pageNum}&size=15`;
         }
       };
