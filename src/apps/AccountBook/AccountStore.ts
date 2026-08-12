@@ -103,19 +103,25 @@ export function useAccountStore() {
     ].join('\n');
 
     const fileName = `account_book_backup_${new Date().toISOString().split('T')[0]}.csv`;
-    const file = new File(['\uFEFF' + csvContent], fileName, { type: "text/csv;charset=utf-8;" });
+    const file = new File(['\uFEFF' + csvContent], fileName, { type: "text/csv" });
 
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    if (navigator.share) {
       try {
+        // Some older implementations don't have canShare, so we just try to share
         await navigator.share({
           files: [file],
           title: '가계부 내역 백업',
           text: '가계부 엑셀 백업 데이터입니다.'
         });
         return; // Successfully shared
-      } catch (err) {
+      } catch (err: any) {
         console.error("Share failed", err);
-        // Fallback to download if share gets aborted or fails
+        // If the user cancelled the share dialogue, don't force a download
+        if (err.name === 'AbortError') {
+          return;
+        }
+        // If sharing files is not supported (e.g. some browsers), it will throw an error, 
+        // in which case we continue to the fallback download below.
       }
     }
 
