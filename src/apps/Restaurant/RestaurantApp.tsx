@@ -32,6 +32,8 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  const searchIdRef = useRef(0);
+  
   const [favorites, setFavorites] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showOnlyFav, setShowOnlyFav] = useState(false);
@@ -72,8 +74,10 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     localStorage.setItem('RESTAURANT_FAVORITES', JSON.stringify(favorites));
   }, [favorites]);
 
-  const searchPlaces = async (pageNum: number, isLocation = useLocation, lat = userCoords?.lat, lng = userCoords?.lng) => {
+  const searchPlaces = async (pageNum: number, isLocation = useLocation, lat = userCoords?.lat, lng = userCoords?.lng, cat = category) => {
     if (!isLocation && !region && !keyword) return;
+
+    const currentSearchId = ++searchIdRef.current;
 
     setLoading(true);
     setError(null);
@@ -84,12 +88,12 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
       if (isLocation && lat && lng) {
         // 내 주변 5km 검색 (반경 5000m, 거리순)
         let q = keyword || '맛집';
-        if (category !== '전체') q += ` ${category}`;
+        if (cat !== '전체') q += ` ${cat}`;
         queryUrl = `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=${lng}&y=${lat}&radius=5000&sort=distance&page=${pageNum}&size=15`;
       } else {
         // 일반 지역 + 키워드 검색
         let query = `${region} ${keyword}`.trim();
-        if (category !== '전체') query += ` ${category}`;
+        if (cat !== '전체') query += ` ${cat}`;
         queryUrl = `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(query)}&page=${pageNum}&size=15`;
       }
 
@@ -105,45 +109,58 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
       
       const data = await response.json();
       
-      setPlaces(prev => pageNum === 1 ? data.documents : [...prev, ...data.documents]);
-      setIsEnd(data.meta.is_end || pageNum >= 3);
-    } catch (err: any) {
-      setError(err.message);
+      if (searchIdRef.current !== currentSearchId) return;
+
+      if (pageNum === 1) {
+        setPlaces(data.documents);
+      } else {
+        setPlaces(prev => [...prev, ...data.documents]);
+      }
+      setIsEnd(data.meta.is_end);
+    } catch (err) {
+      if (searchIdRef.current !== currentSearchId) return;
+      setError('맛집 정보를 가져오는데 실패했습니다.');
+      console.error(err);
     } finally {
-      setLoading(false);
+      if (searchIdRef.current === currentSearchId) {
+        setLoading(false);
+      }
     }
   };
 
-  const handleSearch = (useLoc = false) => {
+  const handleSearch = (useLoc = useLocation, cat = category) => {
     setPage(1);
     setIsEnd(false);
-    setPlaces([]);
     setUseLocation(useLoc);
     
     if (useLoc) {
-      setLoading(true);
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          setUserCoords({ lat, lng });
-          searchPlaces(1, true, lat, lng);
-        },
-        (err) => {
-          setLoading(false);
-          setError('위치 정보를 가져올 수 없습니다. 설정에서 위치 권한을 확인해주세요.');
-          setUseLocation(false);
-        }
-      );
+      if (userCoords) {
+        searchPlaces(1, true, userCoords.lat, userCoords.lng, cat);
+      } else {
+        setLoading(true);
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            setUserCoords({ lat, lng });
+            searchPlaces(1, true, lat, lng, cat);
+          },
+          (err) => {
+            setLoading(false);
+            setError('위치 정보를 가져올 수 없습니다. 설정에서 위치 권한을 확인해주세요.');
+            setUseLocation(false);
+          }
+        );
+      }
     } else {
-      searchPlaces(1, false);
+      searchPlaces(1, false, userCoords?.lat, userCoords?.lng, cat);
     }
   };
 
   // 내 주변 모드일 때 무한스크롤 등에서 좌표 재사용
   useEffect(() => {
     if (page > 1) {
-      searchPlaces(page, useLocation, userCoords?.lat, userCoords?.lng);
+      searchPlaces(page, useLocation, userCoords?.lat, userCoords?.lng, category);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
@@ -243,7 +260,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
               className={`chip-btn ${category === cat ? 'active' : ''}`}
               onClick={() => {
                 setCategory(cat);
-                setTimeout(() => handleSearch(useLocation), 0);
+                handleSearch(useLocation, cat);
               }}
             >
               {cat}
