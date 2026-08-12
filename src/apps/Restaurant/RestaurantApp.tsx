@@ -352,7 +352,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                     </div>
                     <div className="mini-map-container" style={{ width: '100px', height: '100px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)', background: '#eee', position: 'relative' }}>
                       <iframe 
-                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(place.x)-0.002},${parseFloat(place.y)-0.002},${parseFloat(place.x)+0.002},${parseFloat(place.y)+0.002}&layer=mapnik&marker=${place.y},${place.x}`}
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(place.x)-0.002},${parseFloat(place.y)-0.002},${parseFloat(place.x)+0.002},${parseFloat(place.y)+0.002}&layer=mapnik`}
                         title="Mini Map"
                         style={{ 
                           width: '200px', 
@@ -364,6 +364,9 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                           pointerEvents: 'none'
                         }}
                       />
+                      <div className="custom-marker">
+                        <MapPin size={24} color="#e11d48" fill="#e11d48" />
+                      </div>
                     </div>
                   </div>
                   
