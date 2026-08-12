@@ -217,7 +217,24 @@
 
 .photo-btn:hover {
   background: #e5e7eb;
-  color: #212b36;
+}
+
+.photo-btn-text {
+  font-size: 0.8rem;
+  margin-left: 6px;
+  font-weight: 700;
+}
+
+.text-grad-google {
+  background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-grad-ai {
+  background: linear-gradient(90deg, #a855f7, #ec4899, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .expand-btn {

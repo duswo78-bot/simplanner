@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, MapPin, Search, ChevronDown, ChevronUp, Heart, Phone, Navigation, Map, Image } from 'lucide-react';
+import { ChevronLeft, MapPin, Search, ChevronDown, ChevronUp, Heart, Phone, Navigation, Map, Image, Sparkles } from 'lucide-react';
 import './RestaurantApp.css';
 
 interface RestaurantAppProps {
@@ -199,7 +199,22 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   const filteredPlaces = showOnlyFav ? places.filter(p => favorites.includes(p.id)) : places;
 
   return (
-    <div className="restaurant-app-container">
+    <div className="restaurant-app h-full flex flex-col bg-gray-50 overflow-hidden relative">
+      <svg width="0" height="0" style={{ position: 'absolute' }}>
+        <defs>
+          <linearGradient id="google-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#4285F4" />
+            <stop offset="33%" stopColor="#EA4335" />
+            <stop offset="66%" stopColor="#FBBC05" />
+            <stop offset="100%" stopColor="#34A853" />
+          </linearGradient>
+          <linearGradient id="ai-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#a855f7" />
+            <stop offset="50%" stopColor="#ec4899" />
+            <stop offset="100%" stopColor="#f59e0b" />
+          </linearGradient>
+        </defs>
+      </svg>
       <header className="restaurant-header">
         <div className="header-top">
           <button className="back-btn" onClick={onBack}>
@@ -373,14 +388,24 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
               )}
               
               <div className="card-footer">
-                <button 
-                  className="photo-btn"
-                  onClick={(e) => openLink(e, `https://search.naver.com/search.naver?ssc=tab.ait.all&sm=tab_jum&query=${exactQuery}`)}
-                  title="AI 검색"
-                >
-                  <Image size={16} />
-                  <span style={{ fontSize: '0.8rem', marginLeft: '4px', fontWeight: 600 }}>AI검색</span>
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    className="photo-btn"
+                    onClick={(e) => openLink(e, `https://www.google.com/search?tbm=isch&q=${exactQuery}`)}
+                    title="사진 검색"
+                  >
+                    <Image size={16} stroke="url(#google-grad)" />
+                    <span className="photo-btn-text text-grad-google">Photo</span>
+                  </button>
+                  <button 
+                    className="photo-btn"
+                    onClick={(e) => openLink(e, `https://search.naver.com/search.naver?ssc=tab.ait.all&sm=tab_jum&query=${exactQuery}`)}
+                    title="AI 검색"
+                  >
+                    <Sparkles size={16} stroke="url(#ai-grad)" />
+                    <span className="photo-btn-text text-grad-ai">AI검색</span>
+                  </button>
+                </div>
                 <div style={{ flex: 1 }}></div>
                 {place.distance && (
                   <span className="distance-badge" style={{ marginRight: '8px' }}>
