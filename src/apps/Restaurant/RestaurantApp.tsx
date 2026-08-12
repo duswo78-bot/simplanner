@@ -56,6 +56,11 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
 
 
   // Load favorites
+  const [radius, setRadius] = useState(5000);
+  const [showRadiusMenu, setShowRadiusMenu] = useState(false);
+  const longPressTriggered = useRef(false);
+  const pressTimer = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     const saved = localStorage.getItem('RESTAURANT_FAVORITES');
     if (saved) {
@@ -72,7 +77,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     localStorage.setItem('RESTAURANT_FAVORITES', JSON.stringify(favorites));
   }, [favorites]);
 
-    const searchPlaces = async (isLocation: boolean, lat?: number, lng?: number, cat = category, kw = keyword) => {
+    const searchPlaces = async (isLocation: boolean, lat?: number, lng?: number, cat = category, kw = keyword, rad = radius) => {
     const currentSearchId = ++searchIdRef.current;
     setLoading(true);
     setError(null);
@@ -90,7 +95,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
           } else if (!q.includes('맛집')) {
             q = q ? `${q} 맛집` : '맛집';
           }
-          return `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=${lng}&y=${lat}&radius=5000&sort=distance&page=${pageNum}&size=15`;
+          return `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=${lng}&y=${lat}&radius=${rad}&sort=distance&page=${pageNum}&size=15`;
         } else {
           let query = `${region} ${baseKeyword}`.trim();
           if (cat !== '전체') {
@@ -139,7 +144,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     }
   };
 
-  const handleSearch = (useLoc = useLocation, cat = category, kw = keyword) => {
+  const handleSearch = (useLoc = useLocation, cat = category, kw = keyword, rad = radius) => {
     setUseLocation(useLoc);
     
     if (kw && kw.trim() !== '' && kw !== '맛집') {
@@ -151,7 +156,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
 
     if (useLoc) {
       if (userCoords) {
-        searchPlaces(true, userCoords.lat, userCoords.lng, cat, kw);
+        searchPlaces(true, userCoords.lat, userCoords.lng, cat, kw, rad);
       } else {
         setLoading(true);
         navigator.geolocation.getCurrentPosition(
@@ -159,7 +164,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             setUserCoords({ lat, lng });
-            searchPlaces(true, lat, lng, cat, kw);
+            searchPlaces(true, lat, lng, cat, kw, rad);
           },
           (err) => {
             setLoading(false);
@@ -169,7 +174,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
         );
       }
     } else {
-      searchPlaces(false, userCoords?.lat, userCoords?.lng, cat, kw);
+      searchPlaces(false, userCoords?.lat, userCoords?.lng, cat, kw, rad);
     }
   };
 
@@ -295,23 +300,68 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
             )}
           </div>
           <div style={{ display: 'flex', gap: '4px' }}>
-            <button 
-              className={`action-btn location-btn ${useLocation ? 'active' : ''}`}
-              onClick={() => {
-                const willBeLoc = !useLocation;
-                let kw = keyword;
-                if (willBeLoc) {
-                  kw = '맛집';
-                  setKeyword(kw);
-                }
-                setUseLocation(willBeLoc);
-                handleSearch(willBeLoc, category, kw);
-              }}
-              title="내 주변 5km 검색"
-            >
-              <Navigation size={18} style={{ marginBottom: '2px' }} />
-              <span className="location-btn-text">5km</span>
-            </button>
+            <div style={{ position: 'relative' }}>
+              <button 
+                className={`action-btn location-btn ${useLocation ? 'active' : ''}`}
+                onPointerDown={(e) => {
+                  longPressTriggered.current = false;
+                  pressTimer.current = setTimeout(() => {
+                    longPressTriggered.current = true;
+                    setShowRadiusMenu(true);
+                  }, 500);
+                }}
+                onPointerUp={() => {
+                  if (pressTimer.current) clearTimeout(pressTimer.current);
+                }}
+                onPointerLeave={() => {
+                  if (pressTimer.current) clearTimeout(pressTimer.current);
+                }}
+                onClick={(e) => {
+                  if (longPressTriggered.current) return;
+                  const willBeLoc = !useLocation;
+                  let kw = keyword;
+                  if (willBeLoc) {
+                    kw = '맛집';
+                    setKeyword(kw);
+                  }
+                  setUseLocation(willBeLoc);
+                  handleSearch(willBeLoc, category, kw);
+                }}
+                title="내 주변 검색 (길게 누르면 반경 설정)"
+              >
+                <Navigation size={18} style={{ marginBottom: '2px' }} />
+                <span className="location-btn-text">{radius / 1000}km</span>
+              </button>
+              {showRadiusMenu && (
+                <>
+                  <div 
+                    style={{ position: 'fixed', inset: 0, zIndex: 99 }} 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowRadiusMenu(false);
+                    }} 
+                  />
+                  <div className="radius-menu">
+                    {[5000, 3000, 1000].map(r => (
+                      <button 
+                        key={r}
+                        className={r === radius ? 'active' : ''}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRadius(r);
+                          setShowRadiusMenu(false);
+                          if (useLocation) {
+                            handleSearch(true, category, keyword, r);
+                          }
+                        }}
+                      >
+                        {r / 1000}km
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
             <button 
               className="action-btn search-btn" 
               onClick={() => handleSearch(false)}

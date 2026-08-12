@@ -227,7 +227,7 @@
   gap: 6px;
   overflow-x: auto;
   padding: 0 16px 4px;
-  margin-top: -6px;
+  margin-top: -1px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   margin-left: -16px;
@@ -281,6 +281,44 @@
 .recent-search-pill button:hover {
   background: rgba(0,0,0,0.05);
   color: #212b36;
+}
+
+.radius-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 100;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.radius-menu button {
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.radius-menu button:last-child {
+  border-bottom: none;
+}
+
+.radius-menu button.active {
+  background: rgba(236, 72, 153, 0.08);
+  color: #ec4899;
 }
 
 .card-footer {
