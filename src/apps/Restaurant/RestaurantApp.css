@@ -344,6 +344,7 @@
   -webkit-tap-highlight-color: transparent;
   animation: slideUp 0.3s ease-out forwards;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 @keyframes slideUp {
