@@ -350,17 +350,19 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                         </div>
                       </div>
                     </div>
-                    <div className="mini-map-container" style={{ width: '100px', height: '100px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)', background: '#eee' }}>
+                    <div className="mini-map-container" style={{ width: '100px', height: '100px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)', background: '#eee', position: 'relative' }}>
                       <iframe 
-                        width="100%" 
-                        height="100%" 
-                        frameBorder="0" 
-                        scrolling="no" 
-                        marginHeight={0} 
-                        marginWidth={0} 
-                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(place.x)-0.003},${parseFloat(place.y)-0.003},${parseFloat(place.x)+0.003},${parseFloat(place.y)+0.003}&layer=mapnik&marker=${place.y},${place.x}`}
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(place.x)-0.002},${parseFloat(place.y)-0.002},${parseFloat(place.x)+0.002},${parseFloat(place.y)+0.002}&layer=mapnik&marker=${place.y},${place.x}`}
                         title="Mini Map"
-                        style={{ border: 0 }}
+                        style={{ 
+                          width: '200px', 
+                          height: '200px', 
+                          border: 0, 
+                          position: 'absolute',
+                          top: '-50px',
+                          left: '-50px',
+                          pointerEvents: 'none'
+                        }}
                       />
                     </div>
                   </div>
