@@ -199,7 +199,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   const filteredPlaces = showOnlyFav ? places.filter(p => favorites.includes(p.id)) : places;
 
   return (
-    <div className="restaurant-app h-full flex flex-col bg-gray-50 overflow-hidden relative">
+    <div className="restaurant-app h-full flex flex-col overflow-hidden relative">
       <svg width="0" height="0" style={{ position: 'absolute' }}>
         <defs>
           <linearGradient id="google-grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -395,7 +395,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                     title="사진 검색"
                   >
                     <Image size={16} stroke="url(#google-grad)" />
-                    <span className="photo-btn-text text-grad-google">Photo</span>
+                    <span className="photo-btn-text">Photo</span>
                   </button>
                   <button 
                     className="photo-btn"
@@ -403,7 +403,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                     title="AI 검색"
                   >
                     <Sparkles size={16} stroke="url(#ai-grad)" />
-                    <span className="photo-btn-text text-grad-ai">AI검색</span>
+                    <span className="photo-btn-text">AI검색</span>
                   </button>
                 </div>
                 <div style={{ flex: 1 }}></div>

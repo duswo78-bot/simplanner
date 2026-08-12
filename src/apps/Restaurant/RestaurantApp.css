@@ -8,6 +8,18 @@
   overflow: hidden;
 }
 
+.restaurant-app {
+  background: linear-gradient(-45deg, #3b82f6, #10b981, #8b5cf6, #3b82f6);
+  background-size: 400% 400%;
+  animation: waveGradient 15s ease infinite;
+}
+
+@keyframes waveGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 /* Header */
 .restaurant-header {
   position: sticky;
@@ -223,18 +235,7 @@
   font-size: 0.8rem;
   margin-left: 6px;
   font-weight: 700;
-}
-
-.text-grad-google {
-  background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-grad-ai {
-  background: linear-gradient(90deg, #a855f7, #ec4899, #f59e0b);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #212b36;
 }
 
 .expand-btn {
@@ -325,17 +326,19 @@
 
 /* Restaurant Card */
 .restaurant-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: #ffffff;
   border-radius: 16px;
   padding: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   animation: slideUp 0.3s ease-out forwards;
+  overflow: hidden;
 }
 
 @keyframes slideUp {
