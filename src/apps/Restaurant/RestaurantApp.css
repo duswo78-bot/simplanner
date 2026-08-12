@@ -56,18 +56,11 @@
 .header-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #be185d;
+  color: #212b36;
   display: flex;
   align-items: center;
   gap: 6px;
   margin: 0;
-}
-
-.header-subtitle {
-  font-size: 0.7rem;
-  color: #637381;
-  font-weight: 500;
-  margin-top: 2px;
 }
 
 .fav-filter-btn {
@@ -97,6 +90,25 @@
   display: flex;
   gap: 6px;
   width: 100%;
+}
+
+.location-toggle-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #637381;
+  border-radius: 10px;
+  padding: 0 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.location-toggle-btn.active {
+  background: #be185d;
+  color: white;
+  border-color: #be185d;
 }
 
 .region-select, .search-input {
@@ -311,6 +323,16 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.distance-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #be185d;
+  background: rgba(190, 24, 93, 0.1);
+  padding: 4px 8px;
+  border-radius: 12px;
 }
 
 .brand-tag {
@@ -332,9 +354,11 @@
 
 .tag-kakao { background-color: #FAE100; color: #3C1E1E; }
 .tag-naver { background-color: #03C75A; color: #FFFFFF; }
+.tag-naver-place { background-color: #03C75A; color: #FFFFFF; border: 1px solid rgba(0,0,0,0.1); }
 .tag-insta { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; }
 .tag-youtube { background-color: #FF0000; color: white; }
 .tag-blog { background-color: #03C75A; color: #FFFFFF; }
+.tag-yogiyo { background-color: #FA0050; color: #FFFFFF; font-weight: 900; }
 
 .expand-indicator {
   text-align: center;

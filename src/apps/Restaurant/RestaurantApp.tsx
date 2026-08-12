@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, MapPin, Search, ChevronDown, ChevronUp, ExternalLink, Heart, Clock, Phone, Navigation } from 'lucide-react';
+import { ChevronLeft, MapPin, Search, ChevronDown, ChevronUp, Heart, Phone, Navigation, Map, Compass } from 'lucide-react';
 import './RestaurantApp.css';
 
 interface RestaurantAppProps {
@@ -33,6 +33,11 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showOnlyFav, setShowOnlyFav] = useState(false);
+  
+  // 5km sorting state
+  const [useLocation, setUseLocation] = useState(false);
+  const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
+
   const [page, setPage] = useState(1);
   const [isEnd, setIsEnd] = useState(false);
   const observerTarget = useRef<HTMLDivElement>(null);
@@ -66,14 +71,25 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   }, [favorites]);
 
   const searchPlaces = async (pageNum: number) => {
-    if (!region && !keyword) return;
+    if (!region && !keyword && !useLocation) return;
 
     setLoading(true);
     setError(null);
     try {
-      const query = `${region} ${keyword}`.trim();
+      let queryUrl = '';
       const baseUrl = import.meta.env.DEV ? '/kakao-api' : 'https://dapi.kakao.com';
-      const response = await fetch(`${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(query)}&page=${pageNum}&size=15`, {
+      
+      if (useLocation && userCoords) {
+        // 내 주변 5km 검색 (반경 5000m, 거리순)
+        const q = keyword || '맛집';
+        queryUrl = `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=${userCoords.lng}&y=${userCoords.lat}&radius=5000&sort=distance&page=${pageNum}&size=15`;
+      } else {
+        // 일반 지역 + 키워드 검색
+        const query = `${region} ${keyword}`.trim();
+        queryUrl = `${baseUrl}/v2/local/search/keyword.json?query=${encodeURIComponent(query)}&page=${pageNum}&size=15`;
+      }
+
+      const response = await fetch(queryUrl, {
         headers: {
           'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}`
         }
@@ -86,7 +102,6 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
       const data = await response.json();
       
       setPlaces(prev => pageNum === 1 ? data.documents : [...prev, ...data.documents]);
-      // Kakao API max page is 3 for size=15 (45 items max)
       setIsEnd(data.meta.is_end || pageNum >= 3);
     } catch (err: any) {
       setError(err.message);
@@ -99,11 +114,39 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
     setPage(1);
     setIsEnd(false);
     setPlaces([]);
-    searchPlaces(1);
+    
+    if (useLocation && !userCoords) {
+      setLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        (err) => {
+          setLoading(false);
+          setError('위치 정보를 가져올 수 없습니다. 설정에서 위치 권한을 확인해주세요.');
+          setUseLocation(false);
+        }
+      );
+    } else {
+      searchPlaces(1);
+    }
   };
 
+  // 내 주변 모드일 때 좌표가 구해지면 자동 검색
   useEffect(() => {
-    handleSearch();
+    if (useLocation && userCoords) {
+      setPage(1);
+      setIsEnd(false);
+      setPlaces([]);
+      searchPlaces(1);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userCoords]);
+
+  useEffect(() => {
+    if (!useLocation) {
+      handleSearch();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -141,7 +184,8 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
   };
 
   const getExactSearchQuery = (place: Place) => {
-    return encodeURIComponent(place.place_name);
+    const regionPrefix = place.address_name.split(' ').slice(0, 2).join(' ');
+    return encodeURIComponent(`${regionPrefix} ${place.place_name}`);
   };
 
   const filteredPlaces = showOnlyFav ? places.filter(p => favorites.includes(p.id)) : places;
@@ -154,25 +198,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
             <ChevronLeft size={24} />
           </button>
           <div className="header-title-wrapper">
-            <h1 className="header-title">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="1.2em" height="1.2em">
-                <path d="M 10 7 Q 32 11 54 7 Q 58 18 64 24 L 0 24 Q 6 18 10 7 Z" fill="#be185d"/>
-                <path d="M 1 24 A 3 3 0 0 1 7 24 A 3 3 0 0 1 13 24 A 3 3 0 0 1 19 24 A 3 3 0 0 1 25 24 A 3 3 0 0 1 31 24 A 3 3 0 0 1 37 24 A 3 3 0 0 1 43 24 A 3 3 0 0 1 49 24 A 3 3 0 0 1 55 24 A 3 3 0 0 1 61 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-                <rect x="2" y="24" width="60" height="4" fill="#be185d"/>
-                <rect x="14" y="28" width="6" height="22" fill="#be185d"/>
-                <rect x="44" y="28" width="6" height="22" fill="#be185d"/>
-                <rect x="10" y="50" width="14" height="4" fill="#be185d"/>
-                <rect x="40" y="50" width="14" height="4" fill="#be185d"/>
-                <circle cx="32" cy="39" r="22" fill="#ffffff"/>
-                <g transform="rotate(34 32 39)">
-                  <circle cx="32" cy="39" r="21" fill="#ec4899"/>
-                  <path d="M 11 39 a 21 21 0 1 1 42 0 a 10.5 10.5 0 0 0 -21 0 a 10.5 10.5 0 0 1 -21 0" fill="#be185d"/>
-                </g>
-                <text x="32" y="39" fontFamily="Pretendard, sans-serif" fontWeight="900" fontSize="15" fill="#ffffff" textAnchor="middle" dominantBaseline="middle" letterSpacing="-1">맛집</text>
-              </svg>
-              맛집 추천
-            </h1>
-            <span className="header-subtitle">카카오 Local API 연동</span>
+            <h1 className="header-title">맛집 추천</h1>
           </div>
           <button 
             className={`fav-filter-btn ${showOnlyFav ? 'active' : ''}`}
@@ -183,19 +209,34 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
           </button>
         </div>
         <div className="controls">
-          <select 
-            className="region-select" 
-            value={region} 
-            onChange={(e) => setRegion(e.target.value)}
+          <button 
+            className={`location-toggle-btn ${useLocation ? 'active' : ''}`}
+            onClick={() => {
+              setUseLocation(!useLocation);
+              if (useLocation) {
+                // 내 주변 끄면 바로 재검색 (기존 지역/키워드로)
+                setTimeout(() => handleSearch(), 0);
+              }
+            }}
+            title="내 주변 5km 검색"
           >
-            <option value="">전국</option>
-            {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
+            <Compass size={18} />
+          </button>
+          {!useLocation && (
+            <select 
+              className="region-select" 
+              value={region} 
+              onChange={(e) => setRegion(e.target.value)}
+            >
+              <option value="">전국</option>
+              {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          )}
           <div className="search-wrapper">
             <input 
               type="text" 
               className="search-input" 
-              placeholder="예: 맛집, 카페, 국밥..." 
+              placeholder={useLocation ? "내 주변 맛집 검색..." : "예: 맛집, 카페, 국밥..."}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -254,8 +295,13 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                   {place.road_address_name || place.address_name}
                 </div>
                 <div className="address-actions">
-                  <button className="brand-tag tag-kakao" onClick={(e) => openLink(e, `https://map.kakao.com/link/map/${exactQuery},${place.y},${place.x}`)}>KaKao Map</button>
+                  <button className="brand-tag tag-kakao" onClick={(e) => openLink(e, place.place_url)}>KaKao Map</button>
                   <button className="brand-tag tag-naver" onClick={(e) => openLink(e, `https://map.naver.com/v5/search/${exactQuery}`)}>Naver Map</button>
+                  {place.distance && (
+                    <span className="distance-badge">
+                      {(parseInt(place.distance) / 1000).toFixed(1)}km
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -268,10 +314,10 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                 <div className="card-details">
                   <div className="restaurant-meta-grid">
                     <div className="meta-item full-width">
-                      <span className="meta-icon"><Navigation size={16} /></span>
+                      <span className="meta-icon"><Map size={16} /></span>
                       <div className="meta-text">
-                        <strong>지번 주소</strong>
-                        <span>{place.address_name || '-'}</span>
+                        <strong>상세 분류</strong>
+                        <span>{place.category_name || '-'}</span>
                       </div>
                     </div>
                     <div className="meta-item">
@@ -282,18 +328,20 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                       </div>
                     </div>
                     <div className="meta-item">
-                      <span className="meta-icon"><ExternalLink size={16} /></span>
+                      <span className="meta-icon"><Navigation size={16} /></span>
                       <div className="meta-text">
-                        <strong>상세정보</strong>
-                        <span onClick={(e) => openLink(e, place.place_url)} style={{color: 'var(--primary)', cursor: 'pointer'}}>카카오맵 열기</span>
+                        <strong>지번 주소</strong>
+                        <span>{place.address_name || '-'}</span>
                       </div>
                     </div>
                   </div>
                   
                   <div className="action-icons">
+                    <button className="brand-tag tag-naver-place" onClick={(e) => openLink(e, `https://m.place.naver.com/search?query=${exactQuery}`)}>Naver Place</button>
                     <button className="brand-tag tag-insta" onClick={(e) => openLink(e, `https://www.instagram.com/explore/tags/${place.place_name.replace(/\s+/g, '')}/`)}>Instagram</button>
                     <button className="brand-tag tag-youtube" onClick={(e) => openLink(e, `https://www.youtube.com/results?search_query=${exactQuery}+맛집`)}>YouTube</button>
                     <button className="brand-tag tag-blog" onClick={(e) => openLink(e, `https://search.naver.com/search.naver?ssc=tab.blog.all&sm=tab_jum&query=${exactQuery}+맛집`)}>Blog</button>
+                    <button className="brand-tag tag-yogiyo" onClick={(e) => openLink(e, `https://www.google.com/search?q=요기요+${exactQuery}`)}>Yogiyo</button>
                   </div>
                 </div>
               )}
