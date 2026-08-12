@@ -220,7 +220,8 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
               onClick={() => handleSearch(true)}
               title="내 주변 5km 검색"
             >
-              <Navigation size={18} />
+              <Navigation size={18} style={{ marginBottom: '2px' }} />
+              <span className="location-btn-text">5km</span>
             </button>
             <button 
               className="action-btn search-btn" 
@@ -260,18 +261,18 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
             >
               <div className="card-header">
                 <div className="title-wrapper">
-                  <button 
-                    className={`favorite-btn ${isFav ? 'active' : ''}`} 
-                    onClick={(e) => toggleFavorite(e, place.id)}
-                  >
-                    <Heart size={20} fill={isFav ? "currentColor" : "none"} />
-                  </button>
                   <div className="restaurant-name">{place.place_name}</div>
+                  <div className="badge-group">
+                    {place.category_group_name && <span className="badge badge-primary">{place.category_group_name}</span>}
+                    <span className="badge badge-outline">{place.category_name.split(' > ').pop()}</span>
+                  </div>
                 </div>
-                <div className="badge-group">
-                  {place.category_group_name && <span className="badge badge-primary">{place.category_group_name}</span>}
-                  <span className="badge badge-outline">{place.category_name.split(' > ').pop()}</span>
-                </div>
+                <button 
+                  className={`favorite-btn ${isFav ? 'active' : ''}`} 
+                  onClick={(e) => toggleFavorite(e, place.id)}
+                >
+                  <Heart size={20} fill={isFav ? "currentColor" : "none"} />
+                </button>
               </div>
               
               <div className="restaurant-address-container">
@@ -281,7 +282,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                 </div>
                 <div className="address-actions">
                   <button className="brand-tag tag-kakao" onClick={(e) => openLink(e, place.place_url)}>KaKao Map</button>
-                  <button className="brand-tag tag-naver" onClick={(e) => openLink(e, `https://map.naver.com/v5/search/${encodeURIComponent(place.road_address_name || place.address_name)}`)}>Naver Map</button>
+                  <button className="brand-tag tag-naver" onClick={(e) => openLink(e, `https://map.naver.com/p/search/${encodeURIComponent(place.road_address_name || place.address_name)}`)}>Naver Map</button>
                   {place.distance && (
                     <span className="distance-badge">
                       {(parseInt(place.distance) / 1000).toFixed(1)}km
@@ -322,7 +323,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                   </div>
                   
                   <div className="action-icons">
-                    <button className="brand-tag tag-naver-place" onClick={(e) => openLink(e, `https://m.place.naver.com/search?query=${exactQuery}`)}>Naver Place</button>
+                    <button className="brand-tag tag-naver-place" onClick={(e) => openLink(e, `https://m.place.naver.com/search?query=${exactQuery}`)}>SmartPlace</button>
                     <button className="brand-tag tag-insta" onClick={(e) => openLink(e, `https://www.instagram.com/explore/tags/${place.place_name.replace(/\s+/g, '')}/`)}>Instagram</button>
                     <button className="brand-tag tag-youtube" onClick={(e) => openLink(e, `https://www.youtube.com/results?search_query=${exactQuery}+맛집`)}>YouTube</button>
                     <button className="brand-tag tag-blog" onClick={(e) => openLink(e, `https://search.naver.com/search.naver?ssc=tab.blog.all&sm=tab_jum&query=${exactQuery}+맛집`)}>Blog</button>
