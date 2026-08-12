@@ -363,8 +363,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                     </div>
                   </div>
                   
-                  <div className="action-icons">
-                    <button className="brand-tag tag-naver-place" onClick={(e) => openLink(e, `https://m.place.naver.com/search?query=${exactQuery}`)}>SmartPlace</button>
+                  <div className="action-icons mt-3">
                     <button className="brand-tag tag-insta" onClick={(e) => openLink(e, `https://www.instagram.com/explore/tags/${place.place_name.replace(/\s+/g, '')}/`)}>Instagram</button>
                     <button className="brand-tag tag-youtube" onClick={(e) => openLink(e, `https://www.youtube.com/results?search_query=${exactQuery}+맛집`)}>YouTube</button>
                     <button className="brand-tag tag-blog" onClick={(e) => openLink(e, `https://search.naver.com/search.naver?ssc=tab.blog.all&sm=tab_jum&query=${exactQuery}+맛집`)}>Blog</button>
@@ -376,10 +375,11 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
               <div className="card-footer">
                 <button 
                   className="photo-btn"
-                  onClick={(e) => openLink(e, `https://www.google.com/search?tbm=isch&q=${exactQuery}`)}
-                  title="사진 검색"
+                  onClick={(e) => openLink(e, `https://search.naver.com/search.naver?ssc=tab.ait.all&sm=tab_jum&query=${exactQuery}`)}
+                  title="AI 검색"
                 >
-                  <Image size={18} />
+                  <Image size={16} />
+                  <span style={{ fontSize: '0.8rem', marginLeft: '4px', fontWeight: 600 }}>AI검색</span>
                 </button>
                 <div style={{ flex: 1 }}></div>
                 {place.distance && (
@@ -395,7 +395,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                   }}
                 >
                   {isExpanded ? '접기' : '자세히 보기'}
-                  <ChevronDown size={16} className={`chevron ${isExpanded ? 'up' : ''}`} />
+                  {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
               </div>
             </div>
