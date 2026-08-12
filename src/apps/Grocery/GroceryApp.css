@@ -131,17 +131,30 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 16px;
+  padding-bottom: 24px;
+}
+
+.grocery-grid.list-view {
+  grid-template-columns: 1fr;
 }
 
 .grocery-card {
-  background-color: #ffffff;
+  background-color: white;
   border-radius: 16px;
   padding: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
   position: relative;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #e2e8f0;
+}
+
+.list-view .grocery-card {
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 12px;
 }
 
 .grocery-card:hover {
@@ -173,11 +186,26 @@
   transform: scale(1.2);
 }
 
+.list-view .favorite-btn {
+  position: static;
+  padding: 0;
+}
+
 .grocery-icon {
   font-size: 48px;
   text-align: center;
   margin-bottom: 12px;
   margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.list-view .grocery-icon {
+  margin: 0;
+  font-size: 28px;
+  width: 40px;
+  height: 40px;
 }
 
 .grocery-info {
@@ -187,24 +215,42 @@
   flex: 1;
 }
 
+.grocery-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
 .grocery-name {
   font-size: 15px;
   font-weight: 700;
   color: #1e293b;
   margin: 0;
+  line-height: 1.3;
+}
+
+.grocery-price-box {
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .grocery-unit {
-  font-size: 12px;
+  font-size: 11px;
   color: #64748b;
   margin: 0;
 }
 
 .grocery-price {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   color: #0f172a;
-  margin: 4px 0 12px 0;
+  margin: 0 0 2px 0;
+}
+
+.list-view .grocery-price {
+  margin: 2px 0 4px 0;
 }
 
 .grocery-details {
@@ -216,6 +262,13 @@
   color: #94a3b8;
 }
 
+.list-view .grocery-details {
+  margin-bottom: 0;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .grocery-details span {
   display: flex;
   align-items: center;
@@ -225,27 +278,80 @@
 .add-to-cart-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+  margin-top: auto;
+  gap: 8px;
+}
+
+.list-view .add-to-cart-controls {
+  margin-top: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.grocery-action-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+}
+
+.list-qty-controls {
+  transform: scale(0.85);
+  transform-origin: right center;
+}
+
+.list-add-btn {
+  width: 28px;
+  height: 28px;
+}
+
+.qty-controls {
+  display: flex;
+  align-items: center;
   background-color: #f1f5f9;
   border-radius: 8px;
   overflow: hidden;
-  margin-top: auto;
+  gap: 4px;
+}
+
+.qty-value {
+  min-width: 20px;
+  text-align: center;
+}
+
+.list-view .qty-controls {
+  /* removed scale here since it's on .list-qty-controls now */
+}
+
+.list-view .add-btn {
+  width: 28px;
+  height: 28px;
 }
 
 .add-btn {
   background-color: #84cc16;
   color: white;
   border: none;
-  width: 100%;
-  padding: 8px;
-  border-radius: 8px;
-  font-weight: 600;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s;
+  flex-shrink: 0;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
 .add-btn:hover, .add-btn:active {
   background-color: #65a30d;
+}
+
+.add-btn:active {
+  transform: scale(0.95);
 }
 
 .qty-btn {
@@ -604,24 +710,122 @@
 .cart-total-value {
   font-size: 24px;
   font-weight: 800;
-  color: #0f172a;
+  color: #ef4444;
 }
 
 .checkout-btn {
   width: 100%;
-  padding: 16px;
-  background-color: #84cc16;
+  background-color: #3b82f6;
   color: white;
   border: none;
   border-radius: 12px;
+  padding: 16px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
+  margin-top: 16px;
   transition: background-color 0.2s;
 }
 
 .checkout-btn:hover {
-  background-color: #65a30d;
+  background-color: #2563eb;
+}
+
+.checkout-btn:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Saved Lists */
+.saved-lists-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.saved-list-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.saved-list-card:hover {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.saved-list-info {
+  flex: 1;
+}
+
+.saved-list-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.saved-list-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.saved-list-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+.delete-btn:hover {
+  background-color: #fef2f2;
+  color: #ef4444;
+  border-color: #fca5a5;
+}
+
+.share-btn:hover {
+  background-color: #eff6ff;
+  color: #3b82f6;
+  border-color: #93c5fd;
 }
 
 .empty-state {

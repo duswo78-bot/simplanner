@@ -14,6 +14,7 @@ import { SchoolApp } from './apps/School/SchoolApp';
 
 import { CalculatorApp } from './apps/CalculatorApp';
 import { GroceryApp } from './apps/Grocery/GroceryApp';
+import { AccountBookApp } from './apps/AccountBook/AccountBookApp';
 
 function App() {
   const [currentApp, setCurrentApp] = useState<AppData | null>(() => {
@@ -58,6 +59,8 @@ function App() {
         return <SchoolApp onBack={handleBack} />;
       case 'app-cart':
         return <GroceryApp onBack={handleBack} />;
+      case 'app-account':
+        return <AccountBookApp onBack={handleBack} />;
       default:
         return <EmptyApp title={app.name} onBack={handleBack} />;
     }

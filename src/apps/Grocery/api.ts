@@ -1,6 +1,8 @@
 import { XMLParser } from 'fast-xml-parser';
 
-const API_KEY = 'be%2FRM33gszR8YNJlRSxXsDx91aiCgzFtC3w6xMXZ1qOk3U5F%2Fc9qh6oXg9kMy1UFkpeNY0NB5aZE9DNgPnMSPw%3D%3D';
+// 디코딩된 원본 키 사용 (fetch 시 encodeURIComponent로 직접 인코딩)
+const API_KEY_RAW = 'be/RM33gszR8YNJlRSxXsDx91aiCgzFtC3w6xMXZ1qOk3U5F/c9qh6oXg9kMy1UFkpeNY0NB5aZE9DNgPnMSPw==';
+const API_KEY = encodeURIComponent(API_KEY_RAW);
 
 export interface ApiPriceInfo {
   price: number;
