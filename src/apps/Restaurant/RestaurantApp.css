@@ -194,6 +194,46 @@
   display: none;
 }
 
+.card-footer {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.photo-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  background: #f4f6f8;
+  border: none;
+  border-radius: 8px;
+  color: #637381;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.photo-btn:hover {
+  background: #e5e7eb;
+  color: #212b36;
+}
+
+.expand-btn {
+  background: none;
+  border: none;
+  color: #637381;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 6px 12px;
+  transition: color 0.2s;
+}
+
 .chip-btn {
   padding: 6px 14px;
   border-radius: 20px;
@@ -358,22 +398,25 @@
 
 .restaurant-address-container {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
   margin-bottom: 8px;
 }
 
 .restaurant-address {
+  flex: 1;
   font-size: 0.85rem;
   color: #637381;
-  line-height: 1.4;
   word-break: keep-all;
+  line-height: 1.4;
 }
 
 .address-actions {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 4px;
+  flex-shrink: 0;
   align-items: center;
 }
 
@@ -473,10 +516,18 @@
 }
 
 .meta-text span {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: #212b36;
-  font-weight: 500;
-  word-break: keep-all;
+}
+
+.phone-link {
+  color: #2563eb;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.phone-link:hover {
+  text-decoration: underline;
 }
 
 .action-icons {

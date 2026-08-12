@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, MapPin, Search, ChevronDown, ChevronUp, Heart, Phone, Navigation, Map, Compass } from 'lucide-react';
+import { ChevronLeft, MapPin, Search, ChevronDown, ChevronUp, Heart, Phone, Navigation, Map, Image } from 'lucide-react';
 import './RestaurantApp.css';
 
 interface RestaurantAppProps {
@@ -318,17 +318,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                 <div className="address-actions">
                   <button className="brand-tag tag-kakao" onClick={(e) => openLink(e, place.place_url)}>KaKao Map</button>
                   <button className="brand-tag tag-naver" onClick={(e) => openLink(e, `https://map.naver.com/p/search/${encodeURIComponent(place.road_address_name || place.address_name)}`)}>Naver Map</button>
-                  {place.distance && (
-                    <span className="distance-badge">
-                      {(parseInt(place.distance) / 1000).toFixed(1)}km
-                    </span>
-                  )}
                 </div>
-              </div>
-
-              <div className="expand-indicator">
-                <span className="indicator-text">{isExpanded ? '접기' : '자세히 보기'}</span>
-                {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </div>
 
               {isExpanded && (
@@ -346,7 +336,7 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                         <span className="meta-icon"><Phone size={16} /></span>
                         <div className="meta-text">
                           <strong>전화번호</strong>
-                          <span>{place.phone || '-'}</span>
+                          <span>{place.phone ? <a href={`tel:${place.phone}`} className="phone-link">{place.phone}</a> : '-'}</span>
                         </div>
                       </div>
                     </div>
@@ -365,7 +355,10 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                         }}
                       />
                       <div className="custom-marker">
-                        <MapPin size={24} color="#e11d48" fill="#e11d48" />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#e11d48" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                          <circle cx="12" cy="10" r="3" fill="white" stroke="white" />
+                        </svg>
                       </div>
                     </div>
                   </div>
@@ -375,10 +368,36 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
                     <button className="brand-tag tag-insta" onClick={(e) => openLink(e, `https://www.instagram.com/explore/tags/${place.place_name.replace(/\s+/g, '')}/`)}>Instagram</button>
                     <button className="brand-tag tag-youtube" onClick={(e) => openLink(e, `https://www.youtube.com/results?search_query=${exactQuery}+맛집`)}>YouTube</button>
                     <button className="brand-tag tag-blog" onClick={(e) => openLink(e, `https://search.naver.com/search.naver?ssc=tab.blog.all&sm=tab_jum&query=${exactQuery}+맛집`)}>Blog</button>
-                    <button className="brand-tag tag-yogiyo" onClick={(e) => openLink(e, `https://search.naver.com/search.naver?query=${encodeURIComponent('요기요 ')}${exactQuery}`)}>요기요</button>
+                    <button className="brand-tag tag-yogiyo" onClick={(e) => openLink(e, `yogiyoapp://search?keyword=${exactQuery}`)}>요기요</button>
                   </div>
                 </div>
               )}
+              
+              <div className="card-footer">
+                <button 
+                  className="photo-btn"
+                  onClick={(e) => openLink(e, `https://www.google.com/search?tbm=isch&q=${exactQuery}`)}
+                  title="사진 검색"
+                >
+                  <Image size={18} />
+                </button>
+                <div style={{ flex: 1 }}></div>
+                {place.distance && (
+                  <span className="distance-badge" style={{ marginRight: '8px' }}>
+                    {(parseInt(place.distance) / 1000).toFixed(1)}km
+                  </span>
+                )}
+                <button 
+                  className="expand-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setExpandedId(isExpanded ? null : place.id);
+                  }}
+                >
+                  {isExpanded ? '접기' : '자세히 보기'}
+                  <ChevronDown size={16} className={`chevron ${isExpanded ? 'up' : ''}`} />
+                </button>
+              </div>
             </div>
           );
         })}
