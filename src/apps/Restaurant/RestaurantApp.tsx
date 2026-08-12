@@ -193,8 +193,8 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
 
   return (
     <div className="restaurant-app-container">
-      <div className="restaurant-app h-full flex flex-col overflow-hidden relative">
-      <svg width="0" height="0" style={{ position: 'absolute' }}>
+      <div className="restaurant-app">
+        <svg width="0" height="0" style={{ position: 'absolute' }}>
         <defs>
           <linearGradient id="google-grad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#4285F4" />
