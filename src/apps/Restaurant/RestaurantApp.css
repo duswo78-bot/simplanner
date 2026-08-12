@@ -76,20 +76,21 @@
 }
 
 .fav-filter-btn {
-  background: none;
+  background: rgba(0, 0, 0, 0.05);
   border: none;
-  padding: 4px 8px;
-  color: #b0b0b0;
+  padding: 6px 12px;
+  color: #475569;
   cursor: pointer;
-  transition: color 0.2s, transform 0.2s;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  border-radius: 8px;
+  gap: 6px;
+  border-radius: 20px;
 }
 
 .fav-filter-btn.active {
+  background: rgba(236, 72, 153, 0.15);
   color: #ec4899;
 }
 
@@ -369,7 +370,9 @@
   background: rgba(0, 0, 0, 0.04);
   border: none;
   cursor: pointer;
-  padding: 8px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border-radius: 50%;
   color: #637381;
   display: flex;
