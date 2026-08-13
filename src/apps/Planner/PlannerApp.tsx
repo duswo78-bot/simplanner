@@ -3,6 +3,7 @@ import { ArrowLeft, Sparkles, Mic, Calendar as CalIcon, MapPin, Users, Check, Pl
 import { useSchedule, isEventOccurringOnDate, getYYYYMMDD } from '../shared/ScheduleContext';
 import { parseInput, type ParsedInput } from '../shared/nlParser';
 import type { ScheduleEvent, Memo, RecurrenceType } from '../shared/ScheduleContext';
+import { downloadIcsForEvent } from '../shared/icsHelper';
 import { PlannerCalendarModal } from './PlannerCalendarModal';
 import './PlannerApp.css';
 
@@ -15,6 +16,7 @@ export function PlannerApp({ onBack }: PlannerAppProps) {
   const [inputText, setInputText] = useState('');
   const [showCalendar, setShowCalendar] = useState(false);
   const [pendingEvent, setPendingEvent] = useState<ParsedInput | null>(null);
+  const [syncToPhone, setSyncToPhone] = useState(false);
 
   const getRecurrenceLabel = (recurrence: string) => {
     if (recurrence === 'none') return '반복 안함';
@@ -142,9 +144,14 @@ export function PlannerApp({ onBack }: PlannerAppProps) {
         status: 'todo',
         recurrence: pendingEvent.recurrence,
       });
+
+      if (syncToPhone) {
+        downloadIcsForEvent(pendingEvent as any);
+      }
     }
     setPendingEvent(null);
     setInputText('');
+    setSyncToPhone(false);
   };
 
   const addSimpleTodo = () => {
@@ -333,6 +340,17 @@ export function PlannerApp({ onBack }: PlannerAppProps) {
                         className="form-input"
                         placeholder="없음"
                       />
+                    </div>
+                    <div className="form-group full-width" style={{ marginTop: '10px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#10b981', fontWeight: 600 }}>
+                        <input 
+                          type="checkbox" 
+                          checked={syncToPhone} 
+                          onChange={(e) => setSyncToPhone(e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#10b981' }}
+                        />
+                        폰 캘린더에도 저장
+                      </label>
                     </div>
                   </>
                 )}

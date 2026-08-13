@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Flame, RefreshCw } from 'lucide-react';
+import { ChevronDown, ChevronUp, Flame, RefreshCw, Share2 } from 'lucide-react';
 
 interface MealData {
   items: string[];
@@ -14,9 +14,10 @@ interface MealCardProps {
   meal: MealData | null;
   loading: boolean;
   error: string | null;
+  schoolName?: string;
 }
 
-export function MealCard({ date, meal, loading, error }: MealCardProps) {
+export function MealCard({ date, meal, loading, error, schoolName }: MealCardProps) {
   const [activeTab, setActiveTab] = useState<'origin' | 'nutrition' | null>(null);
 
   // Close accordion when date changes
@@ -31,6 +32,30 @@ export function MealCard({ date, meal, loading, error }: MealCardProps) {
   }, [date]);
   
   const bgUrl = `${import.meta.env.BASE_URL}images/bg${bgImageId}.jpg`;
+
+  const handleShare = async () => {
+    if (!meal) return;
+    
+    const dateString = `${date.getMonth() + 1}월 ${date.getDate()}일`;
+    const mealText = meal.items.join(', ');
+    const schoolPrefix = schoolName ? `🏫 [${schoolName}] ` : '';
+    const caloriesText = meal.calories ? `\n🔥 ${meal.calories}` : '';
+    const shareText = `${schoolPrefix}${dateString} 급식 식단 🍱:\n${mealText}${caloriesText}`;
+    
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: '오늘의 급식',
+          text: shareText,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareText);
+        alert('식단이 클립보드에 복사되었습니다.');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -90,11 +115,31 @@ export function MealCard({ date, meal, loading, error }: MealCardProps) {
             <Flame size={20} />
             <span>{meal.calories}</span>
           </div>
-          {meal.population && (
-            <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>
-              급식인원 {Number(meal.population).toLocaleString()}명
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {meal.population && (
+              <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>
+                급식인원 {Number(meal.population).toLocaleString()}명
+              </div>
+            )}
+            <button 
+              onClick={handleShare}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '6px',
+                color: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.2s'
+              }}
+              title="공유하기"
+            >
+              <Share2 size={18} />
+            </button>
+          </div>
         </div>
           <ul style={{ listStyle: 'none', gap: '14px', display: 'flex', flexDirection: 'column', fontSize: '1.05rem', padding: 0, margin: 0 }}>
             {meal.items.map((item, idx) => (

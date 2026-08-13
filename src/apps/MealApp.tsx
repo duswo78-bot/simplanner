@@ -260,6 +260,7 @@ export function MealApp({ onBack }: MealAppProps) {
         meal={currentMeal} 
         loading={isLoadingMeals} 
         error={mealError} 
+        schoolName={activeSchool?.schoolName}
       />
 
       {showMonthly && (
