@@ -26,7 +26,6 @@ const INITIAL_APPS: AppData[] = [
   { id: 'app-school', name: '학교', icon: 'School', color: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
   { id: 'app-account', name: '가계부', icon: 'Wallet', color: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
   { id: 'app-health', name: '건강', icon: 'Heart', color: 'linear-gradient(135deg, #ef4444, #dc2626)' },
-  { id: 'app-parcel', name: '택배 조회', icon: 'Package', color: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
   { id: 'app-pharmacy', name: '약국/병원', icon: 'Pill', color: 'linear-gradient(135deg, #06b6d4, #0891b2)' },
   { id: 'app-bus', name: '대중교통', icon: 'Bus', color: 'linear-gradient(135deg, #eab308, #ca8a04)' },
   { id: 'app-meals', name: '급식', icon: 'Utensils', color: 'linear-gradient(135deg, #f43f5e, #e11d48)' },
