@@ -8,7 +8,7 @@ interface VehiclePageProps {
   onNavigate?: (page: string) => void;
 }
 
-const FUEL_TYPES = ['가솔린', '디젤', 'LPG', '전기', '하이브리드'] as const;
+const FUEL_TYPES = ['가솔린', '디젤', 'LPG', '전기', '하이브리드', '수소'] as const;
 
 export const VehiclePage: React.FC<VehiclePageProps> = ({ store }) => {
   const { vehicles, addVehicle, updateVehicle, deleteVehicle } = store;

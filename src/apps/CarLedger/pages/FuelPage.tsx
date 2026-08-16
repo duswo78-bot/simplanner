@@ -217,7 +217,7 @@ export const FuelPage: React.FC<FuelPageProps> = ({ store }) => {
         <div className="cl-form-group">
           <label className="cl-form-label">유종</label>
           <div className="cl-chips">
-            {['가솔린', '디젤', 'LPG'].map(type => (
+            {['가솔린', '디젤', 'LPG', '전기', '하이브리드', '수소'].map(type => (
               <button
                 key={type}
                 className={`cl-chip ${fuelType === type ? 'active' : ''}`}

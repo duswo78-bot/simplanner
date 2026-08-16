@@ -9,7 +9,7 @@ export interface Vehicle {
   manufacturer: string;
   model: string;
   year: number;
-  fuelType: '가솔린' | '디젤' | 'LPG' | '전기' | '하이브리드';
+  fuelType: '가솔린' | '디젤' | 'LPG' | '전기' | '하이브리드' | '수소';
   currentMileage: number;
   insuranceDate: string; // YYYY-MM-DD
   inspectionDate: string; // YYYY-MM-DD
