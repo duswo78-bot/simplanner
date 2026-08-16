@@ -1,0 +1,1283 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Smart Car Ledger — Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Reset & Container ──────────────────────────────────────────────────── */
+
+.car-ledger-app {
+  height: 100%;
+  width: 100%;
+  background-color: #f1f5f9;
+  color: #0f172a;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+.car-ledger-app * {
+  box-sizing: border-box;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.cl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+.cl-header h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.cl-header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Icon Button ────────────────────────────────────────────────────────── */
+
+.cl-icon-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cl-icon-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.cl-icon-btn:active {
+  transform: scale(0.92);
+}
+
+/* ── Main Content ───────────────────────────────────────────────────────── */
+
+.cl-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.cl-content::-webkit-scrollbar {
+  display: none;
+}
+
+.cl-page {
+  padding: 16px 16px 100px 16px;
+  animation: cl-fadeIn 0.25s ease-out;
+}
+
+@keyframes cl-fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Bottom Navigation ──────────────────────────────────────────────────── */
+
+.cl-bottom-nav {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.cl-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  font-size: 0.65rem;
+  font-weight: 500;
+  transition: color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+.cl-nav-item.active {
+  color: #2563eb;
+}
+
+.cl-nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2.5px;
+  background: #2563eb;
+  border-radius: 0 0 2px 2px;
+}
+
+.cl-nav-item svg {
+  width: 22px;
+  height: 22px;
+}
+
+.cl-nav-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.01em;
+}
+
+/* ── FAB (Floating Action Button) ───────────────────────────────────────── */
+
+.cl-fab {
+  position: absolute;
+  bottom: 72px;
+  right: 20px;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 15;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cl-fab:active {
+  transform: scale(0.92);
+}
+
+.cl-fab.open {
+  border-radius: 50%;
+  transform: rotate(45deg);
+}
+
+/* ── FAB Menu ───────────────────────────────────────────────────────────── */
+
+.cl-fab-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 14;
+  animation: cl-fadeIn 0.15s ease-out;
+}
+
+.cl-fab-menu {
+  position: absolute;
+  bottom: 136px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 15;
+  animation: cl-slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cl-fab-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-direction: row-reverse;
+  animation: cl-fadeIn 0.2s ease-out;
+}
+
+.cl-fab-option-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cl-fab-option-btn:active {
+  transform: scale(0.92);
+}
+
+.cl-fab-option-label {
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+/* ── Dashboard Cards ────────────────────────────────────────────────────── */
+
+.cl-summary-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.cl-summary-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.cl-summary-card {
+  flex-shrink: 0;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  min-width: 140px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.cl-summary-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.cl-summary-card-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.cl-summary-card-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.cl-summary-card-unit {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+/* ── Section Titles ─────────────────────────────────────────────────────── */
+
+.cl-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 20px 0 10px;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cl-section-link {
+  font-size: 0.75rem;
+  color: #2563eb;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+/* ── Quick Action Buttons ───────────────────────────────────────────────── */
+
+.cl-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.cl-quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  background: #ffffff;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cl-quick-action-btn:active {
+  transform: scale(0.95);
+  background: #f8fafc;
+}
+
+.cl-quick-action-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.cl-quick-action-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* ── Reminders / Alerts ─────────────────────────────────────────────────── */
+
+.cl-reminder-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-left: 3px solid transparent;
+}
+
+.cl-reminder-card.danger { border-left-color: #ef4444; }
+.cl-reminder-card.warning { border-left-color: #f59e0b; }
+.cl-reminder-card.info { border-left-color: #3b82f6; }
+
+.cl-reminder-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.cl-reminder-icon.danger { background: #fef2f2; color: #ef4444; }
+.cl-reminder-icon.warning { background: #fffbeb; color: #f59e0b; }
+.cl-reminder-icon.info { background: #eff6ff; color: #3b82f6; }
+
+.cl-reminder-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.cl-reminder-vehicle {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.cl-reminder-msg {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* ── AI Insights ────────────────────────────────────────────────────────── */
+
+.cl-insight-card {
+  display: flex;
+  gap: 10px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.cl-insight-emoji {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.cl-insight-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cl-insight-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.cl-insight-msg {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* ── Activity List ──────────────────────────────────────────────────────── */
+
+.cl-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cl-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  padding: 12px 14px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.cl-activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cl-activity-dot.drive { background: #3b82f6; }
+.cl-activity-dot.fuel { background: #22c55e; }
+.cl-activity-dot.maintenance { background: #f59e0b; }
+.cl-activity-dot.expense { background: #8b5cf6; }
+
+.cl-activity-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cl-activity-summary {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cl-activity-date {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.cl-activity-amount {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  flex-shrink: 0;
+}
+
+/* ── Record Lists (Drive, Fuel, Maintenance, Expense) ───────────────────── */
+
+.cl-record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cl-record-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.cl-record-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.cl-record-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+.cl-record-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cl-record-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cl-record-sub {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.cl-record-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cl-record-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.cl-delete-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  color: #cbd5e1;
+  cursor: pointer;
+  display: flex;
+  transition: color 0.15s;
+}
+
+.cl-delete-btn:hover {
+  color: #ef4444;
+}
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+
+.cl-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cl-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cl-form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.cl-form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #0f172a;
+  background: #ffffff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.cl-form-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.cl-form-input::placeholder {
+  color: #cbd5e1;
+}
+
+.cl-form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.cl-form-row > * {
+  flex: 1;
+}
+
+.cl-form-computed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #eff6ff;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: #1e40af;
+  font-weight: 600;
+}
+
+.cl-form-computed svg {
+  flex-shrink: 0;
+}
+
+/* ── Chip / Pill Selectors ──────────────────────────────────────────────── */
+
+.cl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cl-chip {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cl-chip:active {
+  transform: scale(0.95);
+}
+
+.cl-chip.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+/* ── Vehicle Selector ───────────────────────────────────────────────────── */
+
+.cl-vehicle-select {
+  padding: 8px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: #1e293b;
+  background: #ffffff;
+  font-weight: 600;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+/* ── Primary Submit Button ──────────────────────────────────────────────── */
+
+.cl-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.01em;
+}
+
+.cl-submit-btn:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+.cl-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Modal / Bottom Sheet ───────────────────────────────────────────────── */
+
+.cl-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  z-index: 100;
+  animation: cl-fadeIn 0.15s ease-out;
+}
+
+.cl-modal-sheet {
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 16px max(16px, env(safe-area-inset-bottom));
+  max-height: 90%;
+  overflow-y: auto;
+  animation: cl-slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cl-modal-handle {
+  width: 36px;
+  height: 4px;
+  background: #d1d5db;
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+.cl-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cl-modal-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+@keyframes cl-slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* ── Empty State ────────────────────────────────────────────────────────── */
+
+.cl-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.cl-empty svg {
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+.cl-empty p {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Calendar ───────────────────────────────────────────────────────────── */
+
+.cl-calendar {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.cl-calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.cl-calendar-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.cl-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cl-calendar-day-label {
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #94a3b8;
+  padding: 6px 0;
+}
+
+.cl-calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 2px;
+  min-height: 42px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cl-calendar-day:hover {
+  background: #f1f5f9;
+}
+
+.cl-calendar-day.today {
+  background: #eff6ff;
+}
+
+.cl-calendar-day.selected {
+  background: #2563eb;
+}
+
+.cl-calendar-day.selected .cl-calendar-date {
+  color: #ffffff;
+}
+
+.cl-calendar-day.other-month .cl-calendar-date {
+  color: #d1d5db;
+}
+
+.cl-calendar-date {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.cl-calendar-dots {
+  display: flex;
+  gap: 2px;
+  height: 5px;
+}
+
+.cl-calendar-event-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.cl-calendar-event-dot.drive { background: #3b82f6; }
+.cl-calendar-event-dot.fuel { background: #22c55e; }
+.cl-calendar-event-dot.maintenance { background: #f59e0b; }
+.cl-calendar-event-dot.expense { background: #8b5cf6; }
+.cl-calendar-event-dot.insurance { background: #ef4444; }
+.cl-calendar-event-dot.inspection { background: #ec4899; }
+
+.cl-calendar-events {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cl-calendar-event-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.cl-calendar-event-badge {
+  width: 6px;
+  height: 28px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.cl-calendar-event-badge.drive { background: #3b82f6; }
+.cl-calendar-event-badge.fuel { background: #22c55e; }
+.cl-calendar-event-badge.maintenance { background: #f59e0b; }
+.cl-calendar-event-badge.expense { background: #8b5cf6; }
+.cl-calendar-event-badge.insurance { background: #ef4444; }
+.cl-calendar-event-badge.inspection { background: #ec4899; }
+
+.cl-calendar-event-text {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+/* ── Stats / Charts ─────────────────────────────────────────────────────── */
+
+.cl-stats-filters {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 16px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.cl-stats-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.cl-stats-filter-btn {
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cl-stats-filter-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.cl-chart-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.cl-chart-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 14px;
+}
+
+/* ── Vehicle Cards ──────────────────────────────────────────────────────── */
+
+.cl-vehicle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cl-vehicle-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.cl-vehicle-photo {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  color: #94a3b8;
+}
+
+.cl-vehicle-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cl-vehicle-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.cl-vehicle-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.cl-vehicle-number {
+  font-size: 0.8rem;
+  color: #2563eb;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.cl-vehicle-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cl-vehicle-tag {
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.cl-vehicle-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Location Suggestions ───────────────────────────────────────────────── */
+
+.cl-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.cl-suggestion-chip {
+  padding: 5px 10px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 0.7rem;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cl-suggestion-chip:active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+/* ── OCR Button ─────────────────────────────────────────────────────────── */
+
+.cl-ocr-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cl-ocr-btn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.cl-ocr-processing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  background: #eff6ff;
+  border-radius: 12px;
+  color: #2563eb;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.cl-ocr-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #bfdbfe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: cl-spin 0.8s linear infinite;
+}
+
+@keyframes cl-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Photo Upload ───────────────────────────────────────────────────────── */
+
+.cl-photo-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 80px;
+  border: 2px dashed #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  overflow: hidden;
+}
+
+.cl-photo-upload:hover {
+  border-color: #2563eb;
+}
+
+.cl-photo-upload img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Fuel Analysis Mini Card ────────────────────────────────────────────── */
+
+.cl-fuel-analysis {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cl-fuel-stat {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.cl-fuel-stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.cl-fuel-stat-label {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* ── Vehicle form ───────────────────────────────────────────────────────── */
+
+.cl-add-vehicle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cl-add-vehicle-btn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+/* ── Stats Summary Row ──────────────────────────────────────────────────── */
+
+.cl-stats-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cl-stats-summary-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.cl-stats-summary-label {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.cl-stats-summary-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* ── Utility ────────────────────────────────────────────────────────────── */
+
+.cl-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 8px 0;
+}
+
+.cl-text-muted {
+  color: #94a3b8;
+}
+
+.cl-text-sm {
+  font-size: 0.75rem;
+}
+
+.cl-mb-16 {
+  margin-bottom: 16px;
+}
