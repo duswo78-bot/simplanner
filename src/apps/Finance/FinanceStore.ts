@@ -57,20 +57,9 @@ import cardCatalogData from './data/cards.json';
 export const CARD_CATALOG = cardCatalogData as Card[];
 
 const MOCK_DATA: FinanceData = {
-  cards: [CARD_CATALOG[0], CARD_CATALOG[1]], // 사용자가 보유한 카드는 카탈로그의 앞 2개로 초기화
-  accounts: [
-    { id: 'a1', bankName: '국민은행', accountNumber: '1234-56-789012', alias: '생활비', balance: 1450000, isFavorite: true },
-    { id: 'a2', bankName: '신한은행', accountNumber: '110-123-456789', alias: '급여계좌', balance: 3200000, isFavorite: true },
-    { id: 'a3', bankName: '카카오뱅크', accountNumber: '3333-11-222333', alias: '비상금', balance: 5000000, isFavorite: false }
-  ],
-  autoTransfers: [
-    { id: 't1', name: '아파트 관리비', category: '주거/공과금', paymentDate: 10, amount: 280000, paymentMethod: '국민은행 생활비' },
-    { id: 't2', name: '도시가스 요금', category: '주거/공과금', paymentDate: 15, amount: 45000, paymentMethod: '현대카드 M' },
-    { id: 't3', name: '실비보험 (메리츠)', category: '보험', paymentDate: 20, amount: 125000, paymentMethod: '국민은행 생활비' },
-    { id: 't4', name: '넷플릭스', category: '구독', paymentDate: 5, amount: 13500, paymentMethod: '삼성 taptap O' },
-    { id: 't5', name: '유튜브 프리미엄', category: '구독', paymentDate: 12, amount: 14900, paymentMethod: '현대카드 M' },
-    { id: 't6', name: '통신비 (SKT)', category: '통신', paymentDate: 25, amount: 78000, paymentMethod: '삼성 taptap O' },
-  ],
+  cards: [],
+  accounts: [],
+  autoTransfers: [],
   settings: {
     darkMode: true,
     performanceAlert: true,

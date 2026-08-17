@@ -766,5 +766,111 @@
     "image": "https://api.cardgorilla.com/storage/card/301/card_img/20999/301card.png",
     "paymentDate": 14,
     "expectedPayment": 0
+  },
+  {
+    "id": "67f99e43-8b2d-417b-9567-6348b50b9709",
+    "company": "하나카드",
+    "name": "하나카드 #tag1 navy",
+    "annualFee": 12000,
+    "targetPerformance": 300000,
+    "currentPerformance": 0,
+    "benefits": [
+      "편의점 5% 할인",
+      "대중교통 10% 적립",
+      "온라인 쇼핑 5% 청구할인"
+    ],
+    "image": "https://api.cardgorilla.com/storage/card/755/card_img/23472/755card.png",
+    "paymentDate": 14,
+    "expectedPayment": 0
+  },
+  {
+    "id": "415daec5-bdfd-480d-937a-37fffe43d18b",
+    "company": "카카오뱅크",
+    "name": "카카오뱅크 프렌즈 체크카드",
+    "annualFee": 0,
+    "targetPerformance": 0,
+    "currentPerformance": 0,
+    "benefits": [
+      "전월 실적, 지급 한도 제한 없이 0.2% 캐시백",
+      "주말/공휴일 추가 0.2% 캐시백"
+    ],
+    "image": "https://api.cardgorilla.com/storage/card/141/card_img/20857/141card.png",
+    "paymentDate": 14,
+    "expectedPayment": 0
+  },
+  {
+    "id": "fdad91ef-b12c-41fc-a8b9-50a6d65539ba",
+    "company": "우리카드",
+    "name": "카드의정석 EVERY 1",
+    "annualFee": 15000,
+    "targetPerformance": 300000,
+    "currentPerformance": 0,
+    "benefits": [
+      "전 가맹점 1% 청구할인",
+      "대형마트 5% 할인"
+    ],
+    "image": "https://api.cardgorilla.com/storage/card/109/card_img/20811/109card.png",
+    "paymentDate": 14,
+    "expectedPayment": 0
+  },
+  {
+    "id": "c51bfcae-140b-46dd-a68d-3dac1b29563a",
+    "company": "토스뱅크",
+    "name": "토스뱅크 체크카드",
+    "annualFee": 0,
+    "targetPerformance": 0,
+    "currentPerformance": 0,
+    "benefits": [
+      "에피소드마다 달라지는 캐시백",
+      "해외 결제 3% 캐시백"
+    ],
+    "image": "https://api.cardgorilla.com/storage/card/641/card_img/22462/641card.png",
+    "paymentDate": 14,
+    "expectedPayment": 0
+  },
+  {
+    "id": "574aa60d-7d23-465f-9f87-22e8c625e7d1",
+    "company": "케이뱅크",
+    "name": "MY 체크카드",
+    "annualFee": 0,
+    "targetPerformance": 300000,
+    "currentPerformance": 0,
+    "benefits": [
+      "편의점/카페 300원 캐시백",
+      "대중교통 300원 캐시백"
+    ],
+    "image": "https://api.cardgorilla.com/storage/card/731/card_img/23011/731card.png",
+    "paymentDate": 14,
+    "expectedPayment": 0
+  },
+  {
+    "id": "07f14475-d7fe-4b57-9c2d-2ccd30b023fc",
+    "company": "신한카드",
+    "name": "신한카드 Mr.Life",
+    "annualFee": 15000,
+    "targetPerformance": 300000,
+    "currentPerformance": 0,
+    "benefits": [
+      "공과금 10% 할인",
+      "편의점/병원/약국/세탁소 10% 할인"
+    ],
+    "image": "https://api.cardgorilla.com/storage/card/43/card_img/20703/43card.png",
+    "paymentDate": 14,
+    "expectedPayment": 0
+  },
+  {
+    "id": "2489d19c-e8c1-45b9-9663-845b763c866c",
+    "company": "KB국민카드",
+    "name": "KB국민 톡톡D 카드",
+    "annualFee": 12000,
+    "targetPerformance": 300000,
+    "currentPerformance": 0,
+    "benefits": [
+      "배달앱 50% 청구할인",
+      "온라인 간편결제 10% 청구할인"
+    ],
+    "image": "https://api.cardgorilla.com/storage/card/761/card_img/23498/761card.png",
+    "paymentDate": 14,
+    "expectedPayment": 0
   }
 ]

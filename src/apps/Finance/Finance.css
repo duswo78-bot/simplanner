@@ -103,6 +103,8 @@
 
 .finance-bottom-nav {
   height: 65px;
+  min-height: 65px;
+  flex-shrink: 0;
   display: flex;
   background-color: var(--f-bg-main);
   border-top: 1px solid var(--f-border);
