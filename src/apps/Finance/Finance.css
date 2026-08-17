@@ -24,15 +24,15 @@
 .finance-light-mode.finance-app {
   --f-bg-main: #f8fafc;
   --f-bg-elevated: #ffffff;
-  --f-bg-subtle: #e2e8f0;
-  --f-bg-hover: #cbd5e1;
+  --f-bg-subtle: #f1f5f9;
+  --f-bg-hover: #e2e8f0;
   --f-text-primary: #0f172a;
-  --f-text-secondary: #1e293b;
-  --f-text-muted: #64748b;
-  --f-text-tertiary: #94a3b8;
+  --f-text-secondary: #334155;
+  --f-text-muted: #475569;
+  --f-text-tertiary: #64748b;
   --f-border: #e2e8f0;
-  --f-border-light: #cbd5e1;
-  --f-card-bg: linear-gradient(145deg, #ffffff, #f1f5f9);
+  --f-border-light: #f1f5f9;
+  --f-card-bg: #ffffff;
 }
 
 .finance-header {
