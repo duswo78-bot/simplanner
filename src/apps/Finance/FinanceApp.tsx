@@ -64,7 +64,7 @@ export function FinanceApp({ onBack }: FinanceAppProps) {
   };
 
   return (
-    <div className="finance-app">
+    <div className={`finance-app ${!store.settings.darkMode ? 'finance-light-mode' : ''}`}>
       {/* Header */}
       <header className="finance-header">
         <button className="finance-icon-btn" onClick={handleBack}>

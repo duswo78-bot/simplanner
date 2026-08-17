@@ -23,7 +23,7 @@ export function TopWidget() {
         <div className="widget-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <img 
-              src="/icon.png" 
+              src={`${import.meta.env.BASE_URL}icon.png`}
               alt="logo" 
               style={{ width: 44, height: 44, borderRadius: 14, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
             />

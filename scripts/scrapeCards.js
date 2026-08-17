@@ -79,6 +79,19 @@ async function scrapeTopCards() {
       { company: 'NH농협카드', name: 'NH올원 파이카드', annualFee: 10000, benefits: ['온라인쇼핑 10~20% 할인', '선택업종 10~20% 할인', '스타벅스 20% 할인'], image: 'https://api.cardgorilla.com/storage/card/301/card_img/20999/301card.png' },
       { company: 'NH농협카드', name: 'NH농협 올바른 FLEX 카드', annualFee: 10000, benefits: ['스타벅스 50% 할인', '스트리밍 20% 할인', '배달앱 10% 할인'], image: 'https://api.cardgorilla.com/storage/card/301/card_img/20999/301card.png' },
       { company: 'NH농협카드', name: 'NH농협 zgm.the pay', annualFee: 12000, benefits: ['전 가맹점 1% NH포인트 적립', '온라인간편결제 1.7% 적립', '해외 1.7% 적립'], image: 'https://api.cardgorilla.com/storage/card/301/card_img/20999/301card.png' },
+
+      // 추가 스페셜/체크카드 라인업
+      { company: '하나카드', name: '하나카드 #tag1 카드 Navy', annualFee: 15000, benefits: ['학원/아파트관리비 5~10% 할인', '통신/요식업 5~10% 할인', '쇼핑/주유 5~10% 할인'], image: 'https://api.cardgorilla.com/storage/card/301/card_img/20999/301card.png' },
+      { company: '하나카드', name: '네이버페이 머니 하나 체크카드', annualFee: 0, benefits: ['네이버페이 결제 시 1.2% 적립', '국내/해외 가맹점 0.6% 적립', '해외이용수수료 면제'], image: 'https://api.cardgorilla.com/storage/card/301/card_img/20999/301card.png' },
+      { company: '카카오뱅크', name: '카카오뱅크 프렌즈 체크카드', annualFee: 0, benefits: ['기본 0.2% 캐시백', '주말/공휴일 0.4% 캐시백', '전월실적 없음'], image: 'https://api.cardgorilla.com/storage/card/14/card_img/20999/14card.png' },
+      { company: '토스뱅크', name: '토스뱅크 체크카드', annualFee: 0, benefits: ['대중교통 100~300원 캐시백', '커피/패스트푸드 캐시백', '해외 결제 2% 캐시백'], image: 'https://api.cardgorilla.com/storage/card/14/card_img/20999/14card.png' },
+      { company: '케이뱅크', name: '케이뱅크 MY 체크카드', annualFee: 0, benefits: ['편의점/커피/패스트푸드 300원 캐시백', '대중교통 300원 캐시백', '알뜰교통카드 마일리지 적립'], image: 'https://api.cardgorilla.com/storage/card/14/card_img/20999/14card.png' },
+      { company: '신한카드', name: '신한카드 Deep Dream 체크', annualFee: 0, benefits: ['전 가맹점 0.2% 적립', '자주가는 영역 0.6~1.0% 적립', '주말 주유소 40원/L 적립'], image: 'https://api.cardgorilla.com/storage/card/171/card_img/20999/171card.png' },
+      { company: 'KB국민카드', name: 'KB국민 노리2 체크카드(KB Pay)', annualFee: 0, benefits: ['스타벅스/커피빈 10% 할인', '대중교통 10% 할인', '이동통신 2500원 할인'], image: 'https://api.cardgorilla.com/storage/card/778/card_img/20999/778card.png' },
+      { company: 'KB국민카드', name: 'KB국민 펭수 노리 체크카드', annualFee: 0, benefits: ['대중교통 10% 청구할인', 'CGV 35% 환급할인', '에버랜드 50% 환급할인'], image: 'https://api.cardgorilla.com/storage/card/778/card_img/20999/778card.png' },
+      { company: '우리카드', name: '카드의정석 COOKIE CHECK', annualFee: 0, benefits: ['전 세계 1,000여개 공항라운지 무료', '해외이용수수료 면제', '영화/어학 3천원 캐시백'], image: 'https://api.cardgorilla.com/storage/card/301/card_img/20999/301card.png' },
+      { company: '우리카드', name: '010PAY 체크카드', annualFee: 0, benefits: ['결제할 때마다 0.2% 적립', '매월 10일 응답하라 10% 적립', '실적조건 없음'], image: 'https://api.cardgorilla.com/storage/card/301/card_img/20999/301card.png' },
+      { company: '롯데카드', name: 'LOCA LIKIT 체크', annualFee: 0, benefits: ['스타벅스 20% 캐시백', '대중교통 10% 캐시백', '배달앱 5% 캐시백'], image: 'https://api.cardgorilla.com/storage/card/301/card_img/20999/301card.png' },
     ];
 
     for (const target of targetCards) {

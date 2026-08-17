@@ -10,18 +10,18 @@ export function SettingsPage({ store }: SettingsPageProps) {
   const { settings, updateSettings } = store;
 
   const Toggle = ({ label, icon, checked, onChange }: { label: string, icon: React.ReactNode, checked: boolean, onChange: (c: boolean) => void }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: '1px solid #1e293b' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: '1px solid var(--f-border)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f8fafc' }}>
+        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--f-bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--f-text-primary)' }}>
           {icon}
         </div>
-        <span style={{ fontSize: '0.95rem', fontWeight: 500, color: '#e2e8f0' }}>{label}</span>
+        <span style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--f-text-secondary)' }}>{label}</span>
       </div>
       <button 
         onClick={() => onChange(!checked)}
         style={{ 
           width: '44px', height: '24px', borderRadius: '12px', border: 'none', 
-          background: checked ? '#3b82f6' : '#475569', 
+          background: checked ? '#3b82f6' : 'var(--f-bg-hover)', 
           position: 'relative', cursor: 'pointer', transition: 'background 0.2s'
         }}
       >
@@ -37,7 +37,7 @@ export function SettingsPage({ store }: SettingsPageProps) {
   return (
     <div className="finance-settings-page" style={{ paddingBottom: '80px' }}>
       <div className="f-card" style={{ padding: '0 20px', marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#94a3b8', paddingTop: '20px', marginBottom: '8px' }}>화면 설정</h3>
+        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--f-text-muted)', paddingTop: '20px', marginBottom: '8px' }}>화면 설정</h3>
         <Toggle 
           label="다크 모드" 
           icon={<Moon size={18} />} 
@@ -45,7 +45,7 @@ export function SettingsPage({ store }: SettingsPageProps) {
           onChange={c => updateSettings({ darkMode: c })} 
         />
         
-        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#94a3b8', paddingTop: '24px', marginBottom: '8px' }}>알림 설정</h3>
+        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--f-text-muted)', paddingTop: '24px', marginBottom: '8px' }}>알림 설정</h3>
         <Toggle 
           label="실적 부족 알림" 
           icon={<ShieldAlert size={18} />} 
@@ -71,7 +71,7 @@ export function SettingsPage({ store }: SettingsPageProps) {
           onChange={c => updateSettings({ reportAlert: c })} 
         />
         
-        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#94a3b8', paddingTop: '24px', marginBottom: '16px' }}>데이터 관리</h3>
+        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--f-text-muted)', paddingTop: '24px', marginBottom: '16px' }}>데이터 관리</h3>
         <div style={{ display: 'flex', gap: '12px', paddingBottom: '24px' }}>
           <button className="f-btn-secondary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
             <Download size={18} /> 백업

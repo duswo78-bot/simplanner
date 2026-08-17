@@ -47,16 +47,16 @@ export function AnalysisPage({ store }: AnalysisPageProps) {
   return (
     <div className="finance-analysis-page" style={{ paddingBottom: '80px' }}>
       {/* Tabs */}
-      <div style={{ display: 'flex', background: '#1e293b', borderRadius: '12px', padding: '4px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', background: 'var(--f-bg-elevated)', borderRadius: '12px', padding: '4px', marginBottom: '20px' }}>
         <button 
           onClick={() => setActiveTab('consumption')}
-          style={{ flex: 1, padding: '10px 0', borderRadius: '8px', border: 'none', background: activeTab === 'consumption' ? '#334155' : 'transparent', color: activeTab === 'consumption' ? '#f8fafc' : '#94a3b8', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }}
+          style={{ flex: 1, padding: '10px 0', borderRadius: '8px', border: 'none', background: activeTab === 'consumption' ? 'var(--f-bg-subtle)' : 'transparent', color: activeTab === 'consumption' ? 'var(--f-text-primary)' : 'var(--f-text-muted)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }}
         >
           소비 분석
         </button>
         <button 
           onClick={() => setActiveTab('benefits')}
-          style={{ flex: 1, padding: '10px 0', borderRadius: '8px', border: 'none', background: activeTab === 'benefits' ? '#334155' : 'transparent', color: activeTab === 'benefits' ? '#f8fafc' : '#94a3b8', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }}
+          style={{ flex: 1, padding: '10px 0', borderRadius: '8px', border: 'none', background: activeTab === 'benefits' ? 'var(--f-bg-subtle)' : 'transparent', color: activeTab === 'benefits' ? 'var(--f-text-primary)' : 'var(--f-text-muted)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }}
         >
           혜택 검색
         </button>
@@ -66,10 +66,10 @@ export function AnalysisPage({ store }: AnalysisPageProps) {
       {activeTab === 'consumption' && (
         <div className="animate-fade-in">
           <div className="f-card">
-            <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: '0 0 16px 0', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: '0 0 16px 0', color: 'var(--f-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <PieChart size={18} color="#3b82f6" /> 8월 지출 분석
             </h3>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f8fafc', marginBottom: '4px' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--f-text-primary)', marginBottom: '4px' }}>
               {totalSpent.toLocaleString()}원
             </div>
             <div style={{ fontSize: '0.85rem', color: '#10b981', marginBottom: '20px' }}>
@@ -88,10 +88,10 @@ export function AnalysisPage({ store }: AnalysisPageProps) {
                 <div key={c.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: c.color }} />
-                    <span style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>{c.name}</span>
-                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{c.percent}%</span>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--f-text-tertiary)' }}>{c.name}</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--f-text-muted)' }}>{c.percent}%</span>
                   </div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 500, color: '#f8fafc' }}>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--f-text-primary)' }}>
                     {c.amount.toLocaleString()}원
                   </div>
                 </div>
@@ -102,7 +102,7 @@ export function AnalysisPage({ store }: AnalysisPageProps) {
               <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#3b82f6', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Zap size={14} /> AI 소비 패턴 분석
               </div>
-              <div style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.5 }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--f-text-secondary)', lineHeight: 1.5 }}>
                 현재 <strong>식비({categories[0].percent}%)</strong> 비중이 가장 높습니다. 식음료 할인이 강력한 <strong>삼성 taptap O</strong> 카드 사용을 늘리면 이번 달 약 <strong>32,000원</strong>을 추가 절약할 수 있어요!
               </div>
             </div>
@@ -114,16 +114,16 @@ export function AnalysisPage({ store }: AnalysisPageProps) {
       {activeTab === 'benefits' && (
         <div className="animate-fade-in">
           <div className="f-card" style={{ marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: '0 0 16px 0', color: '#e2e8f0' }}>어디서 결제하시나요?</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: '0 0 16px 0', color: 'var(--f-text-secondary)' }}>어디서 결제하시나요?</h3>
             
             <div style={{ position: 'relative' }}>
-              <Search size={18} style={{ position: 'absolute', left: '12px', top: '11px', color: '#64748b' }} />
+              <Search size={18} style={{ position: 'absolute', left: '12px', top: '11px', color: 'var(--f-text-tertiary)' }} />
               <input 
                 type="text" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="예: 스타벅스, 배달의민족" 
-                style={{ width: '100%', background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '10px 10px 10px 36px', color: '#f8fafc', fontSize: '1rem', outline: 'none' }}
+                style={{ width: '100%', background: 'var(--f-bg-elevated)', border: '1px solid var(--f-border)', borderRadius: '12px', padding: '10px 10px 10px 36px', color: 'var(--f-text-primary)', fontSize: '1rem', outline: 'none' }}
               />
             </div>
             
@@ -132,7 +132,7 @@ export function AnalysisPage({ store }: AnalysisPageProps) {
                 <button 
                   key={tag}
                   onClick={() => setSearchQuery(tag)}
-                  style={{ whiteSpace: 'nowrap', background: '#334155', border: 'none', color: '#cbd5e1', padding: '6px 12px', borderRadius: '16px', fontSize: '0.8rem', cursor: 'pointer' }}
+                  style={{ whiteSpace: 'nowrap', background: 'var(--f-bg-subtle)', border: 'none', color: 'var(--f-text-secondary)', padding: '6px 12px', borderRadius: '16px', fontSize: '0.8rem', cursor: 'pointer' }}
                 >
                   {tag}
                 </button>

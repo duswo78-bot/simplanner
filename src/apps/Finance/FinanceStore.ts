@@ -122,6 +122,20 @@ export function useFinanceStore() {
     }));
   }, []);
 
+  const addAutoTransfer = useCallback((transfer: Omit<AutoTransfer, 'id'>) => {
+    setData(prev => ({
+      ...prev,
+      autoTransfers: [...prev.autoTransfers, { ...transfer, id: crypto.randomUUID() }]
+    }));
+  }, []);
+
+  const removeAutoTransfer = useCallback((id: string) => {
+    setData(prev => ({
+      ...prev,
+      autoTransfers: prev.autoTransfers.filter(t => t.id !== id)
+    }));
+  }, []);
+
   // Computed Properties (AI Insights Mock)
   const totalExpectedPayment = useMemo(() => {
     return data.cards.reduce((sum, card) => sum + card.expectedPayment, 0);
@@ -190,6 +204,8 @@ export function useFinanceStore() {
     updateSettings,
     addCard,
     removeCard,
+    addAutoTransfer,
+    removeAutoTransfer,
     totalExpectedPayment,
     totalAnnualFee,
     expectedMonthlyBalance,
