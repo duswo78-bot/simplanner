@@ -83,7 +83,17 @@ const MOCK_DATA: FinanceData = {
 function loadData(): FinanceData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        ...MOCK_DATA,
+        ...parsed,
+        cards: parsed.cards || MOCK_DATA.cards,
+        accounts: parsed.accounts || MOCK_DATA.accounts,
+        autoTransfers: parsed.autoTransfers || MOCK_DATA.autoTransfers,
+        settings: { ...MOCK_DATA.settings, ...(parsed.settings || {}) }
+      };
+    }
   } catch (e) {
     console.error('Failed to load finance data', e);
   }
