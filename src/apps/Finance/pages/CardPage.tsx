@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useState } from 'react';
-import { Plus, Camera, Search, CheckCircle2, ChevronRight, Image as ImageIcon, Trash2, CreditCard } from 'lucide-react';
+import { Plus, Search, CheckCircle2, Image as ImageIcon, Trash2, CreditCard } from 'lucide-react';
 import { useFinanceStore, CARD_CATALOG } from '../FinanceStore';
 import type { Card } from '../FinanceStore';
 
@@ -11,50 +10,21 @@ interface CardPageProps {
 
 export function CardPage({ store }: CardPageProps) {
   const [showRegister, setShowRegister] = useState(false);
-  const [cardNumber, setCardNumber] = useState('');
-  const [detectedCompany, setDetectedCompany] = useState<string | null>(null);
-  const [scanning, setScanning] = useState(false);
-  const [searchResults, setSearchResults] = useState<Card[]>([]);
+  
+  // 새 등록 플로우 상태
+  const [selectedCompany, setSelectedCompany] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/[^0-9-]/g, '');
-    setCardNumber(val);
-    setSelectedCard(null);
-    
-    const rawNumber = val.replace(/-/g, '');
-    if (rawNumber.length >= 6) {
-      import('../utils/binDetector').then(({ detectCardCompany }) => {
-        const company = detectCardCompany(rawNumber);
-        setDetectedCompany(company);
-        
-        if (company) {
-          const filtered = CARD_CATALOG.filter(c => c.company.includes(company));
-          setSearchResults(filtered);
-        } else {
-          setSearchResults([]);
-        }
-      });
-    } else {
-      setDetectedCompany(null);
-      setSearchResults([]);
-    }
-  };
+  // 고유 카드사 목록
+  const COMPANIES = Array.from(new Set(CARD_CATALOG.map(c => c.company)));
 
-  const handleSimulateOCR = () => {
-    setScanning(true);
-    setTimeout(() => {
-      setScanning(false);
-      setCardNumber('5320-2900-1234-5678');
-      import('../utils/binDetector').then(({ detectCardCompany }) => {
-        const company = detectCardCompany('53202900');
-        setDetectedCompany(company);
-        if (company) {
-          setSearchResults(CARD_CATALOG.filter(c => c.company.includes(company)));
-        }
-      });
-    }, 1500);
-  };
+  // 조건에 따른 카드 필터링
+  const searchResults = CARD_CATALOG.filter(c => {
+    if (selectedCompany && c.company !== selectedCompany) return false;
+    if (searchQuery && !c.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
 
   const selectCard = (card: Card) => {
     setSelectedCard(card);
@@ -77,9 +47,8 @@ export function CardPage({ store }: CardPageProps) {
     
     setShowRegister(false);
     setSelectedCard(null);
-    setCardNumber('');
-    setDetectedCompany(null);
-    setSearchResults([]);
+    setSelectedCompany('');
+    setSearchQuery('');
   };
 
   return (
@@ -166,42 +135,39 @@ export function CardPage({ store }: CardPageProps) {
           <div style={{ width: '100%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', background: 'var(--f-bg-main)', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', padding: '24px', animation: 'fadeIn 0.3s ease' }}>
             <h3 style={{ margin: '0 0 16px 0', color: 'var(--f-text-primary)', fontSize: '1.2rem' }}>새 카드 등록</h3>
             <p style={{ color: 'var(--f-text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
-              카드 번호(최소 6자리)를 입력하시면 카드사를 자동으로 인식하여 혜택을 추천해 드립니다.
+              카드사를 선택하고 카드명을 검색하여 등록할 카드를 선택해주세요.
             </p>
+
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <select
+                value={selectedCompany}
+                onChange={e => setSelectedCompany(e.target.value)}
+                style={{ flex: 1, background: 'var(--f-bg-elevated)', border: '1px solid var(--f-bg-subtle)', borderRadius: '12px', padding: '10px 12px', color: 'var(--f-text-primary)', fontSize: '0.95rem', outline: 'none' }}
+              >
+                <option value="">모든 카드사</option>
+                {COMPANIES.map(comp => (
+                  <option key={comp} value={comp}>{comp}</option>
+                ))}
+              </select>
+            </div>
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
               <div style={{ flex: 1, position: 'relative' }}>
-                <CreditCard size={18} style={{ position: 'absolute', left: '12px', top: '11px', color: 'var(--f-text-tertiary)' }} />
+                <Search size={18} style={{ position: 'absolute', left: '12px', top: '11px', color: 'var(--f-text-tertiary)' }} />
                 <input 
                   type="text" 
-                  value={cardNumber}
-                  onChange={handleCardNumberChange}
-                  placeholder="카드 번호 입력 (숫자)" 
-                  style={{ width: '100%', background: 'var(--f-bg-elevated)', border: '1px solid var(--f-bg-subtle)', borderRadius: '12px', padding: '10px 10px 10px 36px', color: 'var(--f-text-primary)', fontSize: '1rem', outline: 'none' }}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="카드명 검색 (예: 톡톡)" 
+                  style={{ width: '100%', background: 'var(--f-bg-elevated)', border: '1px solid var(--f-bg-subtle)', borderRadius: '12px', padding: '10px 10px 10px 36px', color: 'var(--f-text-primary)', fontSize: '0.95rem', outline: 'none' }}
                 />
               </div>
-              <button 
-                onClick={handleSimulateOCR}
-                disabled={scanning}
-                style={{ background: 'var(--f-bg-subtle)', border: 'none', borderRadius: '12px', width: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--f-text-secondary)', cursor: 'pointer' }}
-              >
-                {scanning ? <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid var(--f-text-tertiary)', borderTopColor: 'var(--f-text-primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} /> : <Camera size={20} />}
-              </button>
             </div>
-
-            {detectedCompany && (
-              <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--f-text-muted)' }}>자동 인식:</span>
-                <span style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', padding: '4px 10px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 600 }}>
-                  {detectedCompany}
-                </span>
-              </div>
-            )}
 
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: '20px', borderTop: '1px solid var(--f-bg-elevated)', paddingTop: '16px' }}>
               {searchResults.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--f-text-tertiary)', marginBottom: '4px' }}>인식된 카드사의 추천 카드 리스트입니다. 정확한 카드를 선택해주세요.</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--f-text-tertiary)', marginBottom: '4px' }}>검색 결과 {searchResults.length}건</div>
                   {searchResults.map((card, i) => (
                     <div 
                       key={i}
@@ -224,14 +190,14 @@ export function CardPage({ store }: CardPageProps) {
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', color: 'var(--f-text-tertiary)', fontSize: '0.9rem', marginTop: '20px' }}>
-                  {cardNumber.length > 0 && !detectedCompany ? '카드사를 식별할 수 없습니다. 번호를 다시 확인해주세요.' : '카드 번호를 입력하면 카드를 자동으로 찾아드립니다.'}
+                  해당하는 카드가 없습니다.
                 </div>
               )}
             </div>
 
             <div style={{ display: 'flex', gap: '12px', marginTop: 'auto' }}>
               <button 
-                onClick={() => { setShowRegister(false); setSelectedCard(null); setCardNumber(''); setDetectedCompany(null); setSearchResults([]); }} 
+                onClick={() => { setShowRegister(false); setSelectedCard(null); setSelectedCompany(''); setSearchQuery(''); }} 
                 className="f-btn-secondary"
               >
                 취소
@@ -242,7 +208,6 @@ export function CardPage({ store }: CardPageProps) {
             </div>
           </div>
           <style>{`
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
             @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
           `}</style>
         </div>,
