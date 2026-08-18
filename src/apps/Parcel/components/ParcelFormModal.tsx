@@ -133,6 +133,7 @@ export function ParcelFormModal({ store, onClose, editParcel }: ParcelFormModalP
 
       store.updateParcel(editParcel.id, updates);
       onClose(editParcel.id);
+      store.syncStatuses();
     } else {
       const newParcel = store.addParcel({
         name: name.trim(),
@@ -144,6 +145,7 @@ export function ParcelFormModal({ store, onClose, editParcel }: ParcelFormModalP
         tags: buildReturnTags([], isReturn, isReturn),
       });
       onClose(newParcel.id);
+      store.syncStatuses();
     }
   };
 
