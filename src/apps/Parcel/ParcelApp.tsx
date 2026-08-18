@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Home, Package, Star, Clock, Settings, Plus, ChevronLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Home, Package, Star, Clock, Settings, Plus, ChevronLeft, Store } from 'lucide-react';
 import { useParcelStore } from './ParcelStore';
 import { HomePage } from './pages/HomePage';
 import { AllPage } from './pages/AllPage';
@@ -7,6 +7,7 @@ import { FavoritesPage } from './pages/FavoritesPage';
 import { RecentPage } from './pages/RecentPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ParcelFormModal } from './components/ParcelFormModal';
+import { CvsSendModal } from './components/CvsSendModal';
 import { TrackingWebView } from './components/TrackingWebView';
 import './ParcelApp.css';
 
@@ -27,29 +28,44 @@ const PAGE_TITLES: Record<Page, string> = {
 export function ParcelApp({ onBack }: ParcelAppProps) {
   const [page, setPage] = useState<Page>('home');
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isCvsOpen, setIsCvsOpen] = useState(false);
   const [viewingParcelId, setViewingParcelId] = useState<string | null>(null);
+  const [editingParcelId, setEditingParcelId] = useState<string | null>(null);
   
   const store = useParcelStore();
+
+  useEffect(() => {
+    store.syncStatuses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const editingParcel = editingParcelId
+    ? store.parcels.find((p) => p.id === editingParcelId) || null
+    : null;
 
   const handleView = (id: string) => {
     store.markViewed(id);
     setViewingParcelId(id);
   };
 
+  const handleEdit = (id: string) => {
+    setEditingParcelId(id);
+  };
+
   const renderPage = () => {
     switch (page) {
       case 'home':
-        return <HomePage store={store} onView={handleView} />;
+        return <HomePage store={store} onView={handleView} onEdit={handleEdit} />;
       case 'all':
-        return <AllPage store={store} onView={handleView} />;
+        return <AllPage store={store} onView={handleView} onEdit={handleEdit} />;
       case 'favorites':
-        return <FavoritesPage store={store} onView={handleView} />;
+        return <FavoritesPage store={store} onView={handleView} onEdit={handleEdit} />;
       case 'recent':
-        return <RecentPage store={store} onView={handleView} />;
+        return <RecentPage store={store} onView={handleView} onEdit={handleEdit} />;
       case 'settings':
         return <SettingsPage store={store} />;
       default:
-        return <HomePage store={store} onView={handleView} />;
+        return <HomePage store={store} onView={handleView} onEdit={handleEdit} />;
     }
   };
 
@@ -95,13 +111,34 @@ export function ParcelApp({ onBack }: ParcelAppProps) {
         </button>
       </nav>
 
-      {/* FAB */}
-      <button className="pc-fab" onClick={() => setIsAddOpen(true)}>
+      {/* 편의점 택배 FAB (왼쪽) */}
+      <button
+        type="button"
+        className="pc-fab-cvs"
+        onClick={() => setIsCvsOpen(true)}
+        aria-label="편의점 택배 보내기"
+      >
+        <Store size={16} />
+        <span>편의점 택배</span>
+      </button>
+
+      {/* 조회 등록 FAB (오른쪽) */}
+      <button className="pc-fab" onClick={() => setIsAddOpen(true)} aria-label="택배 조회 등록">
         <Plus size={28} />
       </button>
 
       {/* Modals */}
-      {isAddOpen && <ParcelFormModal store={store} onClose={() => setIsAddOpen(false)} />}
+      {isAddOpen && (
+        <ParcelFormModal store={store} onClose={() => setIsAddOpen(false)} />
+      )}
+      {editingParcel && (
+        <ParcelFormModal
+          store={store}
+          editParcel={editingParcel}
+          onClose={() => setEditingParcelId(null)}
+        />
+      )}
+      {isCvsOpen && <CvsSendModal store={store} onClose={() => setIsCvsOpen(false)} />}
       {viewingParcelId && <TrackingWebView store={store} parcelId={viewingParcelId} onClose={() => setViewingParcelId(null)} />}
     </div>
   );
