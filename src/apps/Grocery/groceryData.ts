@@ -11,9 +11,91 @@ export interface GroceryItem {
   storeName?: string;
   manufacturer?: string;
   imageUrl?: string;
+  /** 참가격 API 상품 여부 */
+  source?: 'api' | 'local' | 'custom';
+  goodId?: string;
+  /** 소분류 코드 (이미지 조회용, 내부) */
+  smlcls?: string;
+  /** 세일 여부 (goodDcYn) */
+  isDiscount?: boolean;
+  /** 1+1 여부 (plusoneYn) */
+  isPlusOne?: boolean;
+  discountStart?: string;
+  discountEnd?: string;
+  /** 지역 내 조사 매장 수 */
+  storeCount?: number;
 }
 
+export interface RegionOption {
+  code: string;
+  name: string;
+}
+
+/** 지역 미선택(전국 샘플) */
+export const REGION_ALL = 'ALL';
+
+export const FALLBACK_REGIONS: RegionOption[] = [
+  { code: '020000000', name: '서울특별시' },
+  { code: '031000000', name: '경기도' },
+  { code: '032000000', name: '인천광역시' },
+  { code: '051000000', name: '부산광역시' },
+  { code: '053000000', name: '대구광역시' }
+];
+
+export interface MealPreset {
+  id: string;
+  name: string;
+  ingredients: string[];
+}
+
+export const KOREAN_MEAL_PRESETS: MealPreset[] = [
+  { id: 'm1', name: '된장찌개', ingredients: ['된장', '두부', '애호박', '대파', '양파', '감자', '청양고추'] },
+  { id: 'm2', name: '김치찌개', ingredients: ['김치', '돼지 삼겹살', '두부', '대파', '양파', '다진마늘'] },
+  { id: 'm3', name: '미역국', ingredients: ['건미역', '소 국거리', '국간장', '참기름', '다진마늘'] },
+  { id: 'm4', name: '소고기무국', ingredients: ['소 국거리', '무', '대파', '국간장', '다진마늘'] },
+  { id: 'm5', name: '제육볶음', ingredients: ['돼지 앞다리살', '고추장', '고춧가루', '양파', '대파', '다진마늘'] },
+  { id: 'm6', name: '불고기', ingredients: ['소 등심', '간장', '설탕', '양파', '대파', '다진마늘'] },
+  { id: 'm7', name: '카레라이스', ingredients: ['카레가루', '돼지 앞다리살', '감자', '당근', '양파'] },
+  { id: 'm8', name: '오므라이스', ingredients: ['계란', '즉석밥', '양파', '당근', '케첩'] },
+  { id: 'm9', name: '김밥', ingredients: ['김', '즉석밥', '계란', '당근', '시금치', '단무지'] },
+  { id: 'm10', name: '비빔밥', ingredients: ['즉석밥', '고추장', '참기름', '계란', '상추', '콩나물', '소 국거리'] },
+  { id: 'm11', name: '볶음밥', ingredients: ['즉석밥', '계란', '대파', '양파', '당근'] },
+  { id: 'm12', name: '계란말이', ingredients: ['계란', '대파', '당근', '소금'] },
+  { id: 'm13', name: '닭볶음탕', ingredients: ['생닭 (볶음탕용)', '감자', '양파', '당근', '고추장', '고춧가루'] },
+  { id: 'm14', name: '고등어조림', ingredients: ['고등어', '무', '양파', '대파', '고춧가루', '진간장'] },
+  { id: 'm15', name: '갈치조림', ingredients: ['갈치', '무', '대파', '양파', '진간장'] },
+  { id: 'm16', name: '수제비', ingredients: ['밀가루', '감자', '애호박', '대파', '국간장'] },
+  { id: 'm17', name: '칼국수', ingredients: ['칼국수면', '애호박', '당근', '대파', '다진마늘'] },
+  { id: 'm18', name: '잔치국수', ingredients: ['소면', '애호박', '당근', '계란', '김치', '진간장'] },
+  { id: 'm19', name: '비빔국수', ingredients: ['소면', '고추장', '식초', '설탕', '오이', '계란'] },
+  { id: 'm20', name: '떡볶이', ingredients: ['떡', '어묵', '고추장', '대파', '양파', '설탕'] },
+  { id: 'm21', name: '오징어볶음', ingredients: ['오징어', '양파', '당근', '대파', '고추장'] },
+  { id: 'm22', name: '감자채볶음', ingredients: ['감자', '양파', '당근', '소금'] },
+  { id: 'm23', name: '두부조림', ingredients: ['두부', '양파', '대파', '진간장', '고춧가루'] },
+  { id: 'm24', name: '시금치무침', ingredients: ['시금치', '다진마늘', '참기름', '소금'] },
+  { id: 'm25', name: '콩나물국', ingredients: ['콩나물', '대파', '다진마늘', '국간장'] },
+  { id: 'm26', name: '순두부찌개', ingredients: ['순두부', '바지락', '대파', '계란', '고춧가루'] },
+  { id: 'm27', name: '스팸김치볶음밥', ingredients: ['스팸 통조림', '김치', '즉석밥', '계란', '참기름'] },
+  { id: 'm28', name: '참치김치찌개', ingredients: ['참치 통조림', '김치', '두부', '양파', '대파'] },
+  { id: 'm29', name: '짜장밥', ingredients: ['춘장', '돼지 앞다리살', '양파', '양배추', '감자', '즉석밥'] },
+  { id: 'm30', name: '삼겹살 구이', ingredients: ['돼지 삼겹살', '상추', '깻잎', '쌈장', '다진마늘', '청양고추'] }
+];
+
 export const GROCERY_ITEMS: GroceryItem[] = [
+  // === 식단 매칭용 추가 재료 ===
+  { id: 'ex1', name: '두부', category: '기타', unit: '1모', price: 1500, icon: '🧊' },
+  { id: 'ex2', name: '김치', category: '기타', unit: '1kg', price: 8000, icon: '🥬' },
+  { id: 'ex3', name: '콩나물', category: '과일/채소', unit: '1봉', price: 1500, icon: '🌱' },
+  { id: 'ex4', name: '순두부', category: '기타', unit: '1봉', price: 1000, icon: '🧊' },
+  { id: 'ex5', name: '어묵', category: '정육/수산', unit: '1봉', price: 2500, icon: '🍢' },
+  { id: 'ex6', name: '떡', category: '기타', unit: '1봉', price: 3000, icon: '🍡' },
+  { id: 'ex7', name: '다진마늘', category: '과일/채소', unit: '1통', price: 5000, icon: '🧄' },
+  { id: 'ex8', name: '단무지', category: '기타', unit: '1팩', price: 2000, icon: '🟡' },
+  { id: 'ex9', name: '춘장', category: '기타', unit: '1팩', price: 2000, icon: '🟤' },
+  { id: 'ex10', name: '국간장', category: '기타', unit: '1병', price: 5000, icon: '🏺' },
+  { id: 'ex11', name: '식초', category: '기타', unit: '1병', price: 3000, icon: '🍶' },
+  { id: 'ex12', name: '칼국수면', category: '기타', unit: '1봉', price: 2500, icon: '🍜' },
+
   // === 과일/채소 ===
   { id: 'f1', name: '사과', category: '과일/채소', unit: '1개', price: 1500, icon: '🍎', inspectDay: '2024-05-31', storeName: '이마트(성수점)' },
   { id: 'f2', name: '배', category: '과일/채소', unit: '1개', price: 3000, icon: '🍐', inspectDay: '2024-05-31', storeName: '홈플러스(강동점)' },

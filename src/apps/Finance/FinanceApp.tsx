@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ChevronLeft,
   Home,
@@ -32,9 +32,21 @@ const PAGE_TITLES: Record<Page, string> = {
 
 export function FinanceApp({ onBack }: FinanceAppProps) {
   const [page, setPage] = useState<Page>('home');
+  const [analysisTab, setAnalysisTab] = useState<'consumption' | 'benefits'>('consumption');
   const store = useFinanceStore();
 
   const handleNavigate = (target: string) => {
+    // 홈 빠른실행: 혜택 검색 → 분석 탭의 혜택 검색으로
+    if (target === 'benefits' || target === 'analysis-benefits') {
+      setAnalysisTab('benefits');
+      setPage('analysis');
+      return;
+    }
+    if (target === 'analysis') {
+      setAnalysisTab('consumption');
+      setPage('analysis');
+      return;
+    }
     setPage(target as Page);
   };
 
@@ -55,7 +67,7 @@ export function FinanceApp({ onBack }: FinanceAppProps) {
       case 'transfer':
         return <TransferPage store={store} />;
       case 'analysis':
-        return <AnalysisPage store={store} />;
+        return <AnalysisPage store={store} initialTab={analysisTab} />;
       case 'settings':
         return <SettingsPage store={store} />;
       default:
@@ -78,7 +90,7 @@ export function FinanceApp({ onBack }: FinanceAppProps) {
 
       {/* Content */}
       <div className="finance-content">
-        <div className="finance-page" key={page}>
+        <div className="finance-page" key={`${page}-${page === 'analysis' ? analysisTab : ''}`}>
           {renderPage()}
         </div>
       </div>

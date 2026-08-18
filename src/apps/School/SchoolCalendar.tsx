@@ -41,6 +41,10 @@ export function SchoolCalendar({ activeSchool }: SchoolCalendarProps) {
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
+  
+  const todayDate = new Date();
+  const todayKey = `${todayDate.getFullYear()}${String(todayDate.getMonth() + 1).padStart(2, '0')}${String(todayDate.getDate()).padStart(2, '0')}`;
+  const todaysEvents = events[todayKey] || [];
 
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
@@ -231,10 +235,30 @@ export function SchoolCalendar({ activeSchool }: SchoolCalendarProps) {
           </>
         )}
       </div>
+
+      {todaysEvents.length > 0 && (
+        <div style={{
+          marginTop: '16px',
+          padding: '12px 16px',
+          background: 'linear-gradient(to right, rgba(59, 130, 246, 0.2), rgba(147, 197, 253, 0.1))',
+          borderRadius: '12px',
+          border: '1px solid rgba(59, 130, 246, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          color: '#bfdbfe'
+        }}>
+          <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>✨</span>
+          <div style={{ flex: 1, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <strong style={{ color: '#fff' }}>오늘({todayDate.getMonth() + 1}월 {todayDate.getDate()}일) 일정:</strong>{' '}
+            {todaysEvents.map(ev => `${getEventEmoji(ev)} ${ev}`).join(', ')}
+          </div>
+        </div>
+      )}
       
       {/* Event list view for the month */}
       {!isLoading && !error && Object.keys(events).length > 0 && (
-        <div style={{ padding: '0 4px 24px 4px' }}>
+        <div style={{ padding: '0 4px 24px 4px', marginTop: '16px' }}>
           <h3 style={{ 
             fontSize: '1.1rem', 
             marginBottom: '16px', 

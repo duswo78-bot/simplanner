@@ -7,6 +7,20 @@ export default defineConfig(({ command }) => ({
   plugins: [react()],
   server: {
     proxy: {
+      // 한국소비자원_생필품 가격 정보_GW
+      '/grocery-api': {
+        target: 'https://apis.data.go.kr',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/grocery-api/, '')
+      },
+      // 참가격 포털 (상품 이미지·코드 목록)
+      '/price-portal': {
+        target: 'https://www.price.go.kr',
+        changeOrigin: true,
+        secure: false, // 일부 환경에서 기관 인증서 체인 검증 실패 방지
+        rewrite: (path) => path.replace(/^\/price-portal/, '')
+      },
+      // legacy openapi.price.go.kr
       '/openapi': {
         target: 'http://openapi.price.go.kr',
         changeOrigin: true,

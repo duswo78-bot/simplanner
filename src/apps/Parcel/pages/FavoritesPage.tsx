@@ -7,9 +7,10 @@ type ParcelStoreType = ReturnType<typeof useParcelStore>;
 interface FavoritesPageProps {
   store: ParcelStoreType;
   onView: (id: string) => void;
+  onEdit: (id: string) => void;
 }
 
-export function FavoritesPage({ store, onView }: FavoritesPageProps) {
+export function FavoritesPage({ store, onView, onEdit }: FavoritesPageProps) {
   return (
     <div className="pc-page pc-section">
       <div className="pc-list">
@@ -20,12 +21,14 @@ export function FavoritesPage({ store, onView }: FavoritesPageProps) {
           </div>
         ) : (
           store.favorites.map(parcel => (
-            <ParcelCard 
-              key={parcel.id} 
-              parcel={parcel} 
-              onView={onView} 
-              onToggleFavorite={store.toggleFavorite} 
-              onDelete={store.deleteParcel} 
+            <ParcelCard
+              key={parcel.id}
+              parcel={parcel}
+              onView={onView}
+              onEdit={onEdit}
+              onToggleFavorite={store.toggleFavorite}
+              onDelete={store.deleteParcel}
+              onToggleReturn={store.toggleReturn}
             />
           ))
         )}

@@ -8,9 +8,10 @@ type ParcelStoreType = ReturnType<typeof useParcelStore>;
 interface AllPageProps {
   store: ParcelStoreType;
   onView: (id: string) => void;
+  onEdit: (id: string) => void;
 }
 
-export function AllPage({ store, onView }: AllPageProps) {
+export function AllPage({ store, onView, onEdit }: AllPageProps) {
   const [search, setSearch] = useState('');
 
   const filteredParcels = useMemo(() => {
@@ -40,12 +41,14 @@ export function AllPage({ store, onView }: AllPageProps) {
           </div>
         ) : (
           filteredParcels.map(parcel => (
-            <ParcelCard 
-              key={parcel.id} 
-              parcel={parcel} 
-              onView={onView} 
-              onToggleFavorite={store.toggleFavorite} 
-              onDelete={store.deleteParcel} 
+            <ParcelCard
+              key={parcel.id}
+              parcel={parcel}
+              onView={onView}
+              onEdit={onEdit}
+              onToggleFavorite={store.toggleFavorite}
+              onDelete={store.deleteParcel}
+              onToggleReturn={store.toggleReturn}
             />
           ))
         )}
