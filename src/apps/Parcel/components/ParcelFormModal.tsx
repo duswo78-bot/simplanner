@@ -1,19 +1,34 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Save, X } from 'lucide-react';
+import { Camera, Save, X, Undo2 } from 'lucide-react';
 import Tesseract from 'tesseract.js';
-import { detectCarrier, CARRIERS } from '../ParcelStore';
+import {
+  detectCarrier,
+  CARRIERS,
+  isReturnParcel,
+  type ParcelRecord,
+} from '../ParcelStore';
 
 interface ParcelFormModalProps {
   store: ReturnType<typeof import('../ParcelStore').useParcelStore>;
-  onClose: () => void;
+  onClose: (newId?: string) => void;
+  /** 있으면 수정 모드 */
+  editParcel?: ParcelRecord | null;
 }
 
-export function ParcelFormModal({ store, onClose }: ParcelFormModalProps) {
-  const [trackingNumber, setTrackingNumber] = useState('');
-  const [carrierId, setCarrierId] = useState('auto');
-  const [name, setName] = useState('');
-  const [shop, setShop] = useState('');
-  const [memo, setMemo] = useState('');
+export function ParcelFormModal({ store, onClose, editParcel }: ParcelFormModalProps) {
+  const isEdit = Boolean(editParcel);
+  const pendingTn = editParcel?.trackingNumber?.startsWith('CVS-PENDING') ?? false;
+
+  const [trackingNumber, setTrackingNumber] = useState(
+    pendingTn ? '' : (editParcel?.trackingNumber || '')
+  );
+  const [carrierId, setCarrierId] = useState(editParcel?.carrierId || 'auto');
+  const [name, setName] = useState(editParcel?.name || '');
+  const [shop, setShop] = useState(editParcel?.shop || '');
+  const [memo, setMemo] = useState(editParcel?.memo || '');
+  const [isReturn, setIsReturn] = useState(
+    editParcel ? isReturnParcel(editParcel) : false
+  );
   const [isScanning, setIsScanning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -48,31 +63,88 @@ export function ParcelFormModal({ store, onClose }: ParcelFormModalProps) {
     }
   };
 
+  const resolveCarrier = (tn: string): string | null => {
+    if (carrierId !== 'auto') return carrierId;
+    const detected = detectCarrier(tn);
+    return detected?.id ?? null;
+  };
+
+  const buildReturnTags = (baseTags: string[], asReturn: boolean, asOut: boolean) => {
+    let tags = baseTags.filter((t) => t !== '반품' && t !== '발송');
+    if (asOut && !tags.includes('편의점택배')) {
+      tags = [...tags, '발송'];
+    }
+    if (asReturn) {
+      tags = [...tags, '반품'];
+    }
+    return tags;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!trackingNumber || !name) return;
+    if (!name.trim()) return;
 
-    let finalCarrierId = carrierId;
-    if (finalCarrierId === 'auto') {
-      const detected = detectCarrier(trackingNumber);
-      if (detected) {
-        finalCarrierId = detected.id;
-      } else {
-        alert('택배사를 자동으로 감지할 수 없습니다. 직접 선택해주세요.');
-        return;
-      }
+    // 수정 시 송장 미입력이면 기존(임시 포함) 유지
+    const tnRaw = trackingNumber.trim().replace(/\s/g, '');
+    const tn =
+      tnRaw ||
+      (isEdit && editParcel ? editParcel.trackingNumber : '');
+    if (!tn) {
+      alert('운송장 번호를 입력하세요.');
+      return;
     }
 
-    store.addParcel({
-      name,
-      trackingNumber,
-      carrierId: finalCarrierId,
-      shop,
-      memo,
-      tags: [],
-      isFavorite: false,
-    });
-    onClose();
+    const finalCarrierId = resolveCarrier(tn);
+    if (!finalCarrierId) {
+      alert('택배사를 자동으로 감지할 수 없습니다. 직접 선택해주세요.');
+      return;
+    }
+
+    if (isEdit && editParcel) {
+      const wasOut =
+        editParcel.direction === 'out' ||
+        editParcel.direction === 'return' ||
+        isReturnParcel(editParcel) ||
+        editParcel.tags?.includes('발송') ||
+        editParcel.tags?.includes('편의점택배') ||
+        editParcel.trackingNumber.startsWith('CVS-PENDING');
+      const direction: 'in' | 'out' = isReturn || wasOut ? 'out' : 'in';
+      // 반품 체크 해제해도 원래 보내기면 보내기 유지
+      const asOut = isReturn || wasOut;
+      const tags = buildReturnTags(editParcel.tags || [], isReturn, asOut);
+
+      const updates: Partial<ParcelRecord> = {
+        name: name.trim(),
+        trackingNumber: tn,
+        carrierId: finalCarrierId,
+        shop: shop.trim(),
+        memo: memo.trim(),
+        direction,
+        tags,
+      };
+      // 임시 송장 → 실제 번호로 바뀌면 준비 → 배송중
+      if (
+        editParcel.trackingNumber.startsWith('CVS-PENDING') &&
+        !tn.startsWith('CVS-PENDING') &&
+        editParcel.status === '준비'
+      ) {
+        updates.status = '배송중';
+      }
+
+      store.updateParcel(editParcel.id, updates);
+      onClose(editParcel.id);
+    } else {
+      const newParcel = store.addParcel({
+        name: name.trim(),
+        trackingNumber: tn,
+        carrierId: finalCarrierId,
+        shop: shop.trim(),
+        memo: memo.trim(),
+        direction: isReturn ? 'out' : 'in',
+        tags: buildReturnTags([], isReturn, isReturn),
+      });
+      onClose(newParcel.id);
+    }
   };
 
   return (
@@ -80,7 +152,7 @@ export function ParcelFormModal({ store, onClose }: ParcelFormModalProps) {
       <div className="pc-modal-sheet">
         <div className="pc-modal-handle" />
         <div className="pc-modal-header">
-          <h2>택배 추가</h2>
+          <h2>{isEdit ? '택배 수정' : '택배 추가'}</h2>
           <button type="button" className="pc-icon-btn" onClick={onClose}><X size={20} /></button>
         </div>
         <div className="pc-scanner-btn" onClick={handleScanClick}>
@@ -103,8 +175,8 @@ export function ParcelFormModal({ store, onClose }: ParcelFormModalProps) {
               className="pc-input"
               value={trackingNumber}
               onChange={e => setTrackingNumber(e.target.value)}
-              required
-              placeholder="운송장 번호 입력"
+              required={!isEdit}
+              placeholder={pendingTn ? '실제 운송장 번호 입력' : '운송장 번호 입력'}
             />
           </div>
           <div className="pc-form-group">
@@ -151,8 +223,17 @@ export function ParcelFormModal({ store, onClose }: ParcelFormModalProps) {
               placeholder="기타 메모"
             />
           </div>
+          <label className={`pc-return-check form ${isReturn ? 'on' : ''}`}>
+            <input
+              type="checkbox"
+              checked={isReturn}
+              onChange={(e) => setIsReturn(e.target.checked)}
+            />
+            <Undo2 size={14} />
+            반품 (보내기로 등록)
+          </label>
           <button type="submit" className="pc-btn-primary">
-            <Save size={20} /> 저장
+            <Save size={20} /> {isEdit ? '수정 저장' : '저장'}
           </button>
         </form>
       </div>

@@ -129,13 +129,19 @@ export function ParcelApp({ onBack }: ParcelAppProps) {
 
       {/* Modals */}
       {isAddOpen && (
-        <ParcelFormModal store={store} onClose={() => setIsAddOpen(false)} />
+        <ParcelFormModal store={store} onClose={(newId) => {
+          setIsAddOpen(false);
+          if (newId) handleView(newId);
+        }} />
       )}
       {editingParcel && (
         <ParcelFormModal
           store={store}
           editParcel={editingParcel}
-          onClose={() => setEditingParcelId(null)}
+          onClose={(newId) => {
+            setEditingParcelId(null);
+            if (newId) handleView(newId);
+          }}
         />
       )}
       {isCvsOpen && <CvsSendModal store={store} onClose={() => setIsCvsOpen(false)} />}
