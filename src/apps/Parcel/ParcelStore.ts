@@ -555,3 +555,44 @@ export function useParcelStore() {
     favorites,
   };
 }
+
+export async function checkParcelBadges(): Promise<number> {
+  const data = loadData();
+  let count = 0;
+  let hasChanges = false;
+
+  const updatedParcels = await Promise.all(
+    data.parcels.map(async (p) => {
+      if (p.status === '완료') return p;
+      try {
+        const res = await fetch(`https://apis.tracker.delivery/carriers/${p.carrierId}/tracks/${p.trackingNumber}`);
+        if (res.ok) {
+          const result = await res.json();
+          const stateId = result?.state?.id;
+          let newStatus = p.status;
+          if (stateId === 'delivered') newStatus = '완료';
+          else if (stateId === 'out_for_delivery') newStatus = '오늘도착';
+          else if (stateId === 'in_transit' || stateId === 'at_pickup') newStatus = '배송중';
+          else if (stateId === 'information_received') newStatus = '준비';
+          
+          if (newStatus !== p.status) hasChanges = true;
+          return { ...p, status: newStatus };
+        }
+      } catch (e) {}
+      return p;
+    })
+  );
+
+  if (hasChanges) {
+    data.parcels = updatedParcels;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  updatedParcels.forEach(p => {
+    if (p.status === '오늘도착' && p.direction !== 'out' && p.direction !== 'return') {
+      count++;
+    }
+  });
+
+  return count;
+}

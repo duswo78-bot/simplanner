@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -19,6 +19,7 @@ import {
 import { AppIcon } from './AppIcon';
 import type { AppData } from './AppIcon';
 import { TopWidget } from './TopWidget';
+import { checkParcelBadges } from '../apps/Parcel/ParcelStore';
 import './Launcher.css';
 
 const INITIAL_APPS: AppData[] = [
@@ -44,6 +45,16 @@ interface LauncherProps {
 
 export function Launcher({ onAppClick }: LauncherProps) {
   const [apps, setApps] = useState<AppData[]>(INITIAL_APPS);
+
+  useEffect(() => {
+    checkParcelBadges().then(count => {
+      if (count > 0) {
+        setApps(prev => prev.map(a => 
+          a.id === 'app-delivery' ? { ...a, badgeCount: count } : a
+        ));
+      }
+    });
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

@@ -10,6 +10,7 @@ export interface AppData {
   icon?: keyof typeof LucideIcons;
   color?: string;
   imageUrl?: string;
+  badgeCount?: number;
 }
 
 interface AppIconProps {
@@ -61,6 +62,9 @@ export function AppIcon({ app, onClick }: AppIconProps) {
         >
           {IconComponent && <IconComponent size={28} color="#fff" strokeWidth={2} />}
         </div>
+      )}
+      {app.badgeCount !== undefined && app.badgeCount > 0 && (
+        <div className="app-icon-badge">{app.badgeCount}</div>
       )}
       <span className="app-name">{app.name}</span>
     </div>
