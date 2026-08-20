@@ -25,13 +25,13 @@ export const CARRIERS: Carrier[] = [
   { id: 'kr.cvsnet', name: 'GS Postbox', type: 'domestic' },
   { id: 'kr.homepick', name: '홈픽', type: 'domestic' },
   // International
-  { id: 'un.dhl', name: 'DHL', type: 'international' },
-  { id: 'un.ups', name: 'UPS', type: 'international', detectPattern: /^1Z[A-Z0-9]{16}$/ },
-  { id: 'un.fedex', name: 'FedEx', type: 'international', detectPattern: /^\d{12,15}$/ },
-  { id: 'un.ems', name: 'EMS', type: 'international', detectPattern: /^[A-Z]{2}\d{9}[A-Z]{2}$/ },
-  { id: 'un.usps', name: 'USPS', type: 'international', detectPattern: /^\d{20,22}$/ },
+  { id: 'de.dhl', name: 'DHL', type: 'international' },
+  { id: 'us.ups', name: 'UPS', type: 'international', detectPattern: /^1Z[A-Z0-9]{16}$/ },
+  { id: 'us.fedex', name: 'FedEx', type: 'international', detectPattern: /^\d{12,15}$/ },
+  { id: 'un.upu.ems', name: 'EMS', type: 'international', detectPattern: /^[A-Z]{2}\d{9}[A-Z]{2}$/ },
+  { id: 'us.usps', name: 'USPS', type: 'international', detectPattern: /^\d{20,22}$/ },
   { id: 'cn.chinapost', name: 'China Post', type: 'international' },
-  { id: 'cn.cainiao', name: 'Cainiao', type: 'international' },
+  { id: 'cn.cainiao.global', name: 'Cainiao', type: 'international' },
   { id: 'cn.yanwen', name: 'Yanwen', type: 'international' },
   { id: 'cn.4px', name: '4PX', type: 'international' },
   { id: 'cn.sfexpress', name: 'SF Express', type: 'international' },
@@ -44,8 +44,8 @@ export const getCarrierName = (id: string) => CARRIERS.find(c => c.id === id)?.n
 export const detectCarrier = (trackingNumber: string): Carrier | null => {
   const cleanNumber = trackingNumber.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
 
-  if (cleanNumber.startsWith('1Z')) return CARRIERS.find(c => c.id === 'un.ups') || null;
-  if (/^[A-Z]{2}\d{9}[A-Z]{2}$/.test(cleanNumber)) return CARRIERS.find(c => c.id === 'un.ems') || null;
+  if (cleanNumber.startsWith('1Z')) return CARRIERS.find(c => c.id === 'us.ups') || null;
+  if (/^[A-Z]{2}\d{9}[A-Z]{2}$/.test(cleanNumber)) return CARRIERS.find(c => c.id === 'un.upu.ems') || null;
   if (cleanNumber.length === 13 && /^\d{13}$/.test(cleanNumber)) return CARRIERS.find(c => c.id === 'kr.epost') || null;
   if (cleanNumber.length === 11 && /^\d{11}$/.test(cleanNumber)) return CARRIERS.find(c => c.id === 'kr.logen') || null;
 
