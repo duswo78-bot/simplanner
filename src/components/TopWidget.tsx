@@ -60,7 +60,7 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
             .catch(() => loadWeather(lat, lon, '현재 위치'));
         },
         () => loadWeather(37.566, 126.978, '서울'),
-        { timeout: 3000, maximumAge: 600000 }
+        { timeout: 10000, maximumAge: 600000 }
       );
     } else {
       loadWeather(37.566, 126.978, '서울');
