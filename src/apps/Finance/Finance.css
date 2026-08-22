@@ -612,13 +612,17 @@
 
 /* Insight cards */
 .f-insight {
-  padding: 14px 16px;
-  border-left: 4px solid #3b82f6;
+  padding: 16px;
+  border-radius: 14px;
+  background-color: var(--f-bg-elevated);
+  border: 1px solid var(--f-border);
   margin-bottom: 0;
+  transition: all 0.2s ease;
 }
 
 .f-insight.urgent {
-  border-left-color: #f87171;
+  background-color: rgba(248, 113, 113, 0.04);
+  border-color: rgba(248, 113, 113, 0.15);
 }
 
 .f-insight-clickable {
@@ -634,18 +638,36 @@
 }
 
 .f-insight-clickable:active {
-  background: var(--f-bg-subtle);
+  transform: scale(0.98);
 }
 
 .f-insight-title {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #93c5fd;
-  margin-bottom: 4px;
+  color: #60a5fa;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.f-insight-title::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  box-shadow: 0 0 6px #3b82f6;
 }
 
 .f-insight.urgent .f-insight-title {
-  color: #fca5a5;
+  color: #f87171;
+}
+
+.f-insight.urgent .f-insight-title::before {
+  background-color: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
 }
 
 .f-insight-msg {
