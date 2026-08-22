@@ -77,14 +77,26 @@ export const ScheduleProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [memos, setMemos] = useState<Memo[]>([]);
 
   useEffect(() => {
-    const savedEvents = localStorage.getItem('simplanner_events');
+    const loadEvents = () => {
+      const savedEvents = localStorage.getItem('simplanner_events');
+      if (savedEvents) {
+        try { setEvents(JSON.parse(savedEvents)); } catch (e) {}
+      }
+    };
+    
+    loadEvents(); // Initial load
+
+    const handlePlannerUpdated = () => loadEvents();
+    window.addEventListener('planner_updated', handlePlannerUpdated);
+    
     const savedMemos = localStorage.getItem('simplanner_memos');
-    if (savedEvents) {
-      try { setEvents(JSON.parse(savedEvents)); } catch (e) {}
-    }
     if (savedMemos) {
       try { setMemos(JSON.parse(savedMemos)); } catch (e) {}
     }
+
+    return () => {
+      window.removeEventListener('planner_updated', handlePlannerUpdated);
+    };
   }, []);
 
   useEffect(() => {

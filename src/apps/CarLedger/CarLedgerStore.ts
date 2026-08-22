@@ -128,6 +128,17 @@ export function useCarLedgerStore() {
   const [data, setData] = useState<CarLedgerData>(loadData);
 
   useEffect(() => {
+    const handleCarLedgerUpdated = () => {
+      setData(loadData());
+    };
+    window.addEventListener('car_ledger_updated', handleCarLedgerUpdated);
+    
+    return () => {
+      window.removeEventListener('car_ledger_updated', handleCarLedgerUpdated);
+    };
+  }, []);
+
+  useEffect(() => {
     saveData(data);
   }, [data]);
 

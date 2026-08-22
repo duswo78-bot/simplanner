@@ -2,6 +2,7 @@ import React, { useState, useRef, useMemo } from 'react';
 import { Camera, Fuel, Trash2, Droplets, Zap } from 'lucide-react';
 import Tesseract from 'tesseract.js';
 import { useCarLedgerStore } from '../CarLedgerStore';
+import { pushToAccountBook } from '../../shared/EventBus';
 
 interface FuelPageProps {
   store: ReturnType<typeof useCarLedgerStore>;
@@ -105,6 +106,8 @@ export const FuelPage: React.FC<FuelPageProps> = ({ store }) => {
     }
   };
 
+  const [syncToAccountBook, setSyncToAccountBook] = useState(false);
+
   const handleSave = () => {
     if (!vehicleId || !date || !amount || !quantity || !odometer) {
       alert('필수 항목을 모두 입력해주세요.');
@@ -121,11 +124,22 @@ export const FuelPage: React.FC<FuelPageProps> = ({ store }) => {
       odometer: Number(odometer),
     });
 
+    if (syncToAccountBook) {
+      pushToAccountBook({
+        type: 'expense',
+        amount: Number(amount),
+        category: '차량',
+        date,
+        memo: `${station || '주유소'} 주유 (${quantity}L)`,
+      });
+    }
+
     // Reset form
     setStation('');
     setAmount('');
     setQuantity('');
     setOdometer(Number(odometer)); // Keep current odometer as new baseline
+    setSyncToAccountBook(false);
   };
 
   const fuels = [...store.fuels].sort((a, b) => b.timestamp - a.timestamp);
@@ -273,6 +287,16 @@ export const FuelPage: React.FC<FuelPageProps> = ({ store }) => {
             <Zap size={16} />
             비용: {computedCostPerKm !== '-' ? `${computedCostPerKm}원/km` : '-'}
           </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', padding: '8px', background: '#f8fafc', borderRadius: '8px' }}>
+          <input 
+            type="checkbox" 
+            id="syncAccountBook" 
+            checked={syncToAccountBook} 
+            onChange={(e) => setSyncToAccountBook(e.target.checked)} 
+          />
+          <label htmlFor="syncAccountBook" style={{ fontSize: '0.9rem', color: '#475569' }}>가계부 지출로 자동 기록하기</label>
         </div>
 
         <button 

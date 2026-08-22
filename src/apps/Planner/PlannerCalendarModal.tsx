@@ -49,11 +49,14 @@ export function PlannerCalendarModal({ onClose, toggleEventCompletion }: Planner
 
     return (
       <div className="cal-cell-events">
-        {displayEvents.map(e => (
-          <div key={e.id} className={`cal-chip ${e.isTodo ? 'todo-chip' : 'event-chip'}`}>
-            {e.what}
-          </div>
-        ))}
+        {displayEvents.map(e => {
+          const text = e.what.length > 5 ? e.what.substring(0, 5) + '..' : e.what;
+          return (
+            <div key={e.id} className={`cal-chip ${e.isTodo ? 'todo-chip' : 'event-chip'}`} title={e.what}>
+              {text}
+            </div>
+          );
+        })}
         {hiddenCount > 0 && (
           <div className="cal-chip more-chip">+{hiddenCount}</div>
         )}

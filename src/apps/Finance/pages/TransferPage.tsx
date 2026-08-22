@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { CalendarDays, Wallet, Home, Phone, Shield, MonitorPlay, Plus, Trash2 } from 'lucide-react';
 import { useFinanceStore } from '../FinanceStore';
 import { formatAmountInput, parseAmountInput } from '../utils/amountFormat';
+import { pushToAccountBook } from '../../shared/EventBus';
 
 interface TransferPageProps {
   store: ReturnType<typeof useFinanceStore>;
@@ -185,14 +186,33 @@ export function TransferPage({ store }: TransferPageProps) {
                     </div>
                   </div>
                   <div className="f-tl-card-side">
-                    <button
-                      type="button"
-                      className="f-icon-btn-danger"
-                      onClick={() => handleRemove(item.id, item.name)}
-                      aria-label={`${item.name} 삭제`}
-                    >
-                      <Trash2 size={15} />
-                    </button>
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '8px', justifyContent: 'flex-end' }}>
+                      <button
+                        type="button"
+                        className="f-icon-btn-secondary"
+                        style={{ padding: '4px 8px', fontSize: '0.75rem', borderRadius: '4px', backgroundColor: '#e2e8f0', color: '#475569', border: 'none' }}
+                        onClick={() => {
+                          const success = pushToAccountBook({
+                            type: 'expense',
+                            amount: item.amount,
+                            category: item.category,
+                            date: new Date().toISOString().split('T')[0],
+                            memo: `${item.name} (자동이체)`,
+                          });
+                          if (success) alert('가계부에 지출 내역으로 추가되었습니다.');
+                        }}
+                      >
+                        가계부 기록
+                      </button>
+                      <button
+                        type="button"
+                        className="f-icon-btn-danger"
+                        onClick={() => handleRemove(item.id, item.name)}
+                        aria-label={`${item.name} 삭제`}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
                     <div className="f-tl-card-amount">
                       {item.amount.toLocaleString()}원
                     </div>

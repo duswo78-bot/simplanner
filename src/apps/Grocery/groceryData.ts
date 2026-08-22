@@ -38,8 +38,20 @@ export const FALLBACK_REGIONS: RegionOption[] = [
   { code: '020000000', name: '서울특별시' },
   { code: '031000000', name: '경기도' },
   { code: '032000000', name: '인천광역시' },
+  { code: '033000000', name: '강원도' },
+  { code: '041000000', name: '충청남도' },
+  { code: '042000000', name: '대전광역시' },
+  { code: '043000000', name: '충청북도' },
+  { code: '044000000', name: '세종특별자치시' },
   { code: '051000000', name: '부산광역시' },
-  { code: '053000000', name: '대구광역시' }
+  { code: '052000000', name: '울산광역시' },
+  { code: '053000000', name: '대구광역시' },
+  { code: '054000000', name: '경상북도' },
+  { code: '055000000', name: '경상남도' },
+  { code: '061000000', name: '전라남도' },
+  { code: '062000000', name: '광주광역시' },
+  { code: '063000000', name: '전라북도' },
+  { code: '064000000', name: '제주특별자치도' }
 ];
 
 export interface MealPreset {

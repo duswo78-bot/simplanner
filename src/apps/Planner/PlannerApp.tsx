@@ -5,6 +5,7 @@ import { parseInput, type ParsedInput } from '../shared/nlParser';
 import type { ScheduleEvent, Memo, RecurrenceType } from '../shared/ScheduleContext';
 import { downloadIcsForEvent } from '../shared/icsHelper';
 import { PlannerCalendarModal } from './PlannerCalendarModal';
+import { pushToCarLedger } from '../shared/EventBus';
 import './PlannerApp.css';
 
 interface PlannerAppProps {
@@ -17,6 +18,7 @@ export function PlannerApp({ onBack }: PlannerAppProps) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [pendingEvent, setPendingEvent] = useState<ParsedInput | null>(null);
   const [syncToPhone, setSyncToPhone] = useState(false);
+  const [syncToCarLedger, setSyncToCarLedger] = useState(false);
 
   const getRecurrenceLabel = (recurrence: string) => {
     if (recurrence === 'none') return '반복 안함';
@@ -148,10 +150,23 @@ export function PlannerApp({ onBack }: PlannerAppProps) {
       if (syncToPhone) {
         downloadIcsForEvent(pendingEvent as any);
       }
+
+      if (syncToCarLedger) {
+        pushToCarLedger(
+          'maintenance',
+          {
+            date: pendingEvent.when.split('T')[0],
+            category: '점검', // Default to inspection
+            amount: 0,
+            memo: `[플래너] ${pendingEvent.what}`
+          }
+        );
+      }
     }
     setPendingEvent(null);
     setInputText('');
     setSyncToPhone(false);
+    setSyncToCarLedger(false);
   };
 
   const addSimpleTodo = () => {
@@ -350,6 +365,15 @@ export function PlannerApp({ onBack }: PlannerAppProps) {
                           style={{ width: '18px', height: '18px', accentColor: '#10b981' }}
                         />
                         폰 캘린더에도 저장
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#3b82f6', fontWeight: 600, marginTop: '8px' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={syncToCarLedger} 
+                          onChange={(e) => setSyncToCarLedger(e.target.checked)}
+                          style={{ width: '18px', height: '18px', accentColor: '#3b82f6' }}
+                        />
+                        차량 관리 일정에도 추가
                       </label>
                     </div>
                   </>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCarLedgerStore } from '../CarLedgerStore';
 import type { MaintenanceCategory } from '../CarLedgerStore';
 import { Wrench, Trash2, Camera, AlertCircle } from 'lucide-react';
+import { pushToAccountBook } from '../../shared/EventBus';
 
 interface MaintenancePageProps {
   store: ReturnType<typeof useCarLedgerStore>;
@@ -36,6 +37,8 @@ export const MaintenancePage: React.FC<MaintenancePageProps> = ({ store }) => {
     }
   };
 
+  const [syncToAccountBook, setSyncToAccountBook] = useState(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!vehicleId) return;
@@ -50,10 +53,21 @@ export const MaintenancePage: React.FC<MaintenancePageProps> = ({ store }) => {
       photo,
     });
 
+    if (syncToAccountBook && Number(cost) > 0) {
+      pushToAccountBook({
+        type: 'expense',
+        amount: Number(cost),
+        category: '차량',
+        date,
+        memo: `[정비] ${category} ${memo ? '- ' + memo : ''}`,
+      });
+    }
+
     // Reset some fields
     setCost('');
     setMemo('');
     setPhoto('');
+    setSyncToAccountBook(false);
   };
 
   if (store.vehicles.length === 0) {
@@ -159,6 +173,16 @@ export const MaintenancePage: React.FC<MaintenancePageProps> = ({ store }) => {
             )}
             <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
           </label>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', padding: '8px', background: '#f8fafc', borderRadius: '8px' }}>
+          <input 
+            type="checkbox" 
+            id="syncAccountBookMaint" 
+            checked={syncToAccountBook} 
+            onChange={(e) => setSyncToAccountBook(e.target.checked)} 
+          />
+          <label htmlFor="syncAccountBookMaint" style={{ fontSize: '0.9rem', color: '#475569' }}>가계부 지출로 자동 기록하기</label>
         </div>
 
         <button type="submit" className="cl-submit-btn">저장하기</button>

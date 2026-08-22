@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useCarLedgerStore } from '../CarLedgerStore';
 import type { ExpenseCategory } from '../CarLedgerStore';
 import { Trash2, AlertCircle, Receipt } from 'lucide-react';
+import { pushToAccountBook } from '../../shared/EventBus';
 
 interface ExpensePageProps {
   store: ReturnType<typeof useCarLedgerStore>;
@@ -16,6 +17,8 @@ export const ExpensePage: React.FC<ExpensePageProps> = ({ store }) => {
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
 
+  const [syncToAccountBook, setSyncToAccountBook] = useState(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!vehicleId) return;
@@ -28,8 +31,19 @@ export const ExpensePage: React.FC<ExpensePageProps> = ({ store }) => {
       memo,
     });
 
+    if (syncToAccountBook && Number(amount) > 0) {
+      pushToAccountBook({
+        type: 'expense',
+        amount: Number(amount),
+        category: '차량',
+        date,
+        memo: `[${category}] ${memo}`,
+      });
+    }
+
     setAmount('');
     setMemo('');
+    setSyncToAccountBook(false);
   };
 
   if (store.vehicles.length === 0) {
@@ -115,6 +129,16 @@ export const ExpensePage: React.FC<ExpensePageProps> = ({ store }) => {
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
           />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', padding: '8px', background: '#f8fafc', borderRadius: '8px' }}>
+          <input 
+            type="checkbox" 
+            id="syncAccountBookExp" 
+            checked={syncToAccountBook} 
+            onChange={(e) => setSyncToAccountBook(e.target.checked)} 
+          />
+          <label htmlFor="syncAccountBookExp" style={{ fontSize: '0.9rem', color: '#475569' }}>가계부 지출로 자동 기록하기</label>
         </div>
 
         <button type="submit" className="cl-submit-btn">저장하기</button>

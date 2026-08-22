@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useCarLedgerStore } from '../CarLedgerStore';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { pushToPlanner } from '../../shared/EventBus';
 
 interface CalendarPageProps {
   store: ReturnType<typeof useCarLedgerStore>;
@@ -147,9 +148,24 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ store }) => {
           </div>
         ) : (
           selectedDayEvents.map(e => (
-            <div key={e.id} className="cl-calendar-event-item">
-              <div className={`cl-calendar-event-badge ${e.type}`}></div>
-              <div className="cl-calendar-event-text">{e.summary}</div>
+            <div key={e.id} className="cl-calendar-event-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: '#fff', borderRadius: '8px', marginBottom: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className={`cl-calendar-event-badge ${e.type}`}></div>
+                <div className="cl-calendar-event-text" style={{ fontSize: '0.95rem', color: '#1e293b' }}>{e.summary}</div>
+              </div>
+              <button 
+                className="f-icon-btn-secondary"
+                style={{ padding: '4px 8px', fontSize: '0.75rem', borderRadius: '4px', backgroundColor: '#e2e8f0', color: '#475569', border: 'none' }}
+                onClick={() => {
+                  const success = pushToPlanner({
+                    what: `[차량] ${e.summary}`,
+                    when: `${e.date}T09:00:00`,
+                  });
+                  if (success) alert('플래너에 추가되었습니다.');
+                }}
+              >
+                플래너로 보내기
+              </button>
             </div>
           ))
         )}

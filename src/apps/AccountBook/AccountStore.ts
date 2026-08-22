@@ -15,7 +15,7 @@ export interface Transaction {
 const STORAGE_KEY = 'simplanner_account_book_data';
 
 export function useAccountStore() {
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+  const loadTransactions = () => {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       return data ? JSON.parse(data) : [];
@@ -23,11 +23,21 @@ export function useAccountStore() {
       console.error("Failed to parse account book data", e);
       return [];
     }
-  });
+  };
+
+  const [transactions, setTransactions] = useState<Transaction[]>(loadTransactions);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
   }, [transactions]);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setTransactions(loadTransactions());
+    };
+    window.addEventListener('account_book_updated', handleUpdate);
+    return () => window.removeEventListener('account_book_updated', handleUpdate);
+  }, []);
 
   const addTransaction = (transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
     const newTransaction: Transaction = {
