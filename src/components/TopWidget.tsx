@@ -66,34 +66,33 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
     <>
       <div className="top-widget glass-panel animate-fade-in">
         <div className="widget-header">
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <img 
               src={`${import.meta.env.BASE_URL}icon.png`}
               alt="logo" 
-              style={{ width: 44, height: 44, borderRadius: 14, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', marginTop: '2px' }} 
+              style={{ width: 44, height: 44, borderRadius: 14, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
             />
             <div style={{ flex: 1 }}>
               <h2 style={{ margin: 0, fontSize: '1.4rem' }}>Simplanner</h2>
-              <p className="subtitle" style={{ margin: '4px 0 8px 0', color: '#94a3b8', fontSize: '0.85rem', lineHeight: '1.3' }}>
+              <p className="subtitle" style={{ margin: '2px 0 0 0', color: '#94a3b8', fontSize: '0.85rem' }}>
                 일정을 넘어 가족을 관리하다
               </p>
-              {weather && (
-                <div style={{ 
-                  display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', fontSize: '0.85rem', 
-                  color: '#e2e8f0', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', 
-                  borderRadius: '20px', width: 'fit-content', marginTop: '4px' 
-                }}>
-                  <span>📍 {weather.city}</span>
-                  <span style={{ color: '#64748b' }}>|</span>
-                  <span>{weather.desc === '맑음' ? '☀️' : weather.desc.includes('비') ? '🌧️' : weather.desc.includes('구름') ? '⛅' : '☁️'} {weather.temp}°C</span>
-                  <span style={{ color: '#64748b' }}>|</span>
-                  <span>{weather.desc}</span>
-                  <span style={{ color: '#64748b' }}>|</span>
-                  <span>강수 {weather.pop}%</span>
-                </div>
-              )}
             </div>
           </div>
+          {weather && (
+            <div style={{ 
+              display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', fontSize: '0.85rem', 
+              color: '#e2e8f0', marginTop: '8px' 
+            }}>
+              <span>📍 {weather.city}</span>
+              <span style={{ color: '#64748b' }}>|</span>
+              <span>{weather.desc === '맑음' ? '☀️' : weather.desc.includes('비') ? '🌧️' : weather.desc.includes('구름') ? '⛅' : '☁️'} {weather.temp}°C</span>
+              <span style={{ color: '#64748b' }}>|</span>
+              <span>{weather.desc}</span>
+              <span style={{ color: '#64748b' }}>|</span>
+              <span>강수 {weather.pop}%</span>
+            </div>
+          )}
         </div>
         
         <div className="widget-stats">
