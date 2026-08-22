@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, CheckCircle2, X, Bell } from 'lucide-react';
 import { useSchedule, isEventOccurringOnDate } from '../apps/shared/ScheduleContext';
 import type { AppNotification } from './NotificationManager';
