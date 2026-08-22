@@ -312,7 +312,7 @@ export function GroceryApp({ onBack }: GroceryAppProps) {
           const lng = pos.coords.longitude;
           const baseUrl = import.meta.env.DEV ? '/kakao-api' : 'https://dapi.kakao.com';
           const res = await fetch(`${baseUrl}/v2/local/geo/coord2regioncode.json?x=${lng}&y=${lat}`, {
-            headers: { 'Authorization': 'KakaoAK 167bb3713d47a624020a8820a96b95b3' }
+            headers: { 'Authorization': `KakaoAK ${import.meta.env.VITE_KAKAO_API_KEY}` }
           });
           const data = await res.json();
           if (data.documents && data.documents.length > 0) {

@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Loader2, MapPin, Navigation, Store } from 'lucide-react';
 
-const KAKAO_REST_API_KEY = '167bb3713d47a624020a8820a96b95b3';
+const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_API_KEY;
 
 export type CvsPlace = {
   id: string;
