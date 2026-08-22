@@ -49,25 +49,20 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
             <img 
               src={`${import.meta.env.BASE_URL}icon.png`}
               alt="logo" 
-              style={{ width: 44, height: 44, borderRadius: 14, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
+              style={{ width: 40, height: 40, borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
             />
-            <h2 style={{ margin: 0 }}>Simplanner</h2>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '8px' }}>
-            <p className="subtitle" style={{ margin: 0 }}>일정을 넘어<br/>가족을 관리하다</p>
-            {weather && (
-              <div style={{ 
-                background: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: '12px', 
-                display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: '0.85rem' 
-              }}>
-                <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '1rem' }}>
-                  {weather.desc === '맑음' ? '☀️' : weather.desc.includes('비') ? '🌧️' : weather.desc.includes('구름') ? '⛅' : '☁️'} {weather.temp}°C
+            <div>
+              <h2 style={{ margin: 0, fontSize: '1.4rem' }}>Simplanner</h2>
+              {weather && (
+                <div style={{ color: '#e2e8f0', fontSize: '0.85rem', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>{weather.desc === '맑음' ? '☀️' : weather.desc.includes('비') ? '🌧️' : weather.desc.includes('구름') ? '⛅' : '☁️'} {weather.temp}°C</span>
+                  <span style={{ color: '#94a3b8' }}>|</span>
+                  <span>{weather.desc}</span>
+                  <span style={{ color: '#94a3b8' }}>|</span>
+                  <span>강수 {weather.pop}%</span>
                 </div>
-                <div style={{ color: '#e2e8f0', fontSize: '0.75rem', marginTop: '2px' }}>
-                  {weather.desc} · 강수 {weather.pop}%
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
         
