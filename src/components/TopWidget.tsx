@@ -82,9 +82,9 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
               alt="logo" 
               style={{ width: 44, height: 44, borderRadius: 14, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
             />
-            <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flex: 1, flexWrap: 'wrap' }}>
               <h2 style={{ margin: 0, fontSize: '1.4rem' }}>Simplanner</h2>
-              <p className="subtitle" style={{ margin: '2px 0 0 0', color: '#94a3b8', fontSize: '0.85rem' }}>
+              <p className="subtitle" style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem' }}>
                 일정을 넘어 가족을 관리하다
               </p>
             </div>
