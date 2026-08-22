@@ -11,7 +11,14 @@ interface TopWidgetProps {
 export function TopWidget({ notifications = [] }: TopWidgetProps) {
   const { events } = useSchedule();
   const [popupType, setPopupType] = useState<'none' | 'schedule' | 'todo' | 'notification'>('none');
-  const [weather, setWeather] = useState<{ temp: number, desc: string, pop: number, city: string } | null>(null);
+  const [weather, setWeather] = useState<{ temp: number, desc: string, pop: number, city: string } | null>(() => {
+    try {
+      const cached = localStorage.getItem('weather_cache');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
     const loadWeather = (lat: number, lon: number, city: string) => {
@@ -27,12 +34,14 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
           if (code >= 80 && code <= 82) desc = '소나기';
           if (code >= 95) desc = '뇌우';
 
-          setWeather({
+          const newWeather = {
             temp: data.current?.temperature_2m || 0,
             desc,
             pop: data.daily?.precipitation_probability_max?.[0] || 0,
             city
-          });
+          };
+          setWeather(newWeather);
+          localStorage.setItem('weather_cache', JSON.stringify(newWeather));
         })
         .catch(err => console.error('Weather fetch error:', err));
     };
@@ -50,7 +59,8 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
             })
             .catch(() => loadWeather(lat, lon, '현재 위치'));
         },
-        () => loadWeather(37.566, 126.978, '서울')
+        () => loadWeather(37.566, 126.978, '서울'),
+        { timeout: 3000, maximumAge: 600000 }
       );
     } else {
       loadWeather(37.566, 126.978, '서울');
