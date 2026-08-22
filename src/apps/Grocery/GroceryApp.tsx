@@ -18,9 +18,10 @@ import {
   MapPin,
   Tag,
   Utensils,
+  Mic,
 } from 'lucide-react';
 
-import { GROCERY_ITEMS, REGION_ALL, KOREAN_MEAL_PRESETS } from './groceryData';
+import { GROCERY_ITEMS, REGION_ALL, MEAL_PRESETS } from './groceryData';
 import type { GroceryItem, Category, RegionOption, MealPreset } from './groceryData';
 import { fetchPriceCatalog, attachProductImages } from './api';
 import './GroceryApp.css';
@@ -227,16 +228,38 @@ export function GroceryApp({ onBack }: GroceryAppProps) {
       const stored = localStorage.getItem('grocery_meal_presets');
       if (stored) return JSON.parse(stored);
     } catch {}
-    return KOREAN_MEAL_PRESETS;
+    return MEAL_PRESETS;
   });
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
   const [editingPreset, setEditingPreset] = useState<MealPreset | null>(null);
 
   const loadGenRef = useRef(0);
 
+  const [presetSearchQuery, setPresetSearchQuery] = useState('');
+  const [isPresetListening, setIsPresetListening] = useState(false);
+
   useEffect(() => {
     localStorage.setItem('grocery_meal_presets', JSON.stringify(presets));
   }, [presets]);
+
+  const handlePresetVoiceSearch = () => {
+    // @ts-ignore
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('이 브라우저에서는 음성 인식을 지원하지 않습니다.');
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR';
+    recognition.onstart = () => setIsPresetListening(true);
+    recognition.onresult = (e: any) => {
+      const transcript = e.results[0][0].transcript;
+      setPresetSearchQuery(transcript);
+    };
+    recognition.onerror = () => setIsPresetListening(false);
+    recognition.onend = () => setIsPresetListening(false);
+    recognition.start();
+  };
 
   const handleAddPresetToCart = useCallback((preset: MealPreset) => {
     setCart((prev) => {
@@ -294,7 +317,7 @@ export function GroceryApp({ onBack }: GroceryAppProps) {
           const data = await res.json();
           if (data.documents && data.documents.length > 0) {
             const doc = data.documents[0];
-            const regionName = doc.region_2depth_name || doc.region_1depth_name;
+            const regionName = doc.region_1depth_name;
             const match = regions.find(r => r.name.includes(regionName) || regionName.includes(r.name));
             if (match) {
               setRegionCode(match.code);
@@ -622,6 +645,8 @@ export function GroceryApp({ onBack }: GroceryAppProps) {
       ? '전국'
       : regions.find((r) => r.code === regionCode)?.name || '지역';
 
+  const filteredPresets = presets.filter(p => p.name.includes(presetSearchQuery) || p.ingredients.some(i => i.includes(presetSearchQuery)));
+
   return (
     <div className="grocery-app">
       <header className="grocery-header">
@@ -703,11 +728,11 @@ export function GroceryApp({ onBack }: GroceryAppProps) {
         </button>
       </div>
 
-      <div className="search-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div style={{ fontSize: '13px', color: '#64748b', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <div className="search-container">
+        <div style={{ position: 'absolute', top: '2px', left: '16px', right: '16px', fontSize: '11px', color: '#64748b', textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {isLoadingPrices ? (
             <span className="loading-inline">
-              <Loader2 size={12} className="spin" /> 참가격 불러오는 중…
+              <Loader2 size={10} className="spin" style={{ display: 'inline-block', verticalAlign: 'middle' }} /> 참가격 불러오는 중…
             </span>
           ) : (
             <>
@@ -1064,8 +1089,30 @@ export function GroceryApp({ onBack }: GroceryAppProps) {
               </button>
             </div>
             
+            <div className="preset-search-container" style={{ padding: '0 16px 12px 16px' }}>
+              <div className="search-input-wrapper">
+                <Search size={18} className="search-icon" />
+                <input
+                  type="text"
+                  className="search-input"
+                  style={{ paddingRight: '40px' }}
+                  placeholder="프리셋 및 재료 검색..."
+                  value={presetSearchQuery}
+                  onChange={(e) => setPresetSearchQuery(e.target.value)}
+                />
+                <button 
+                  className="icon-button voice-search-btn" 
+                  onClick={handlePresetVoiceSearch}
+                  style={{ position: 'absolute', right: '4px', color: isPresetListening ? '#ef4444' : '#64748b' }}
+                  title="음성 검색"
+                >
+                  <Mic size={18} className={isPresetListening ? 'pulse' : ''} />
+                </button>
+              </div>
+            </div>
+
             <div className="preset-list">
-              {presets.map((preset) => (
+              {filteredPresets.map((preset) => (
                 <div key={preset.id} className="preset-card">
                   <div className="preset-info">
                     <h3>{preset.name}</h3>

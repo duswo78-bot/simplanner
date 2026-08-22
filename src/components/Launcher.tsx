@@ -36,6 +36,8 @@ const INITIAL_APPS: AppData[] = [
   { id: 'app-delivery', name: '택배/배송', icon: 'Package', color: 'linear-gradient(135deg, #fb923c, #c2410c)' },
   { id: 'app-restaurant', name: '맛집 추천', icon: 'MapPin', color: 'linear-gradient(135deg, #ec4899, #be185d)' },
   { id: 'app-calculator', name: '계산기', icon: 'Calculator', color: 'linear-gradient(135deg, #38bdf8, #0284c7)' },
+  { id: 'app-timer', name: '타이머', icon: 'Clock', color: 'linear-gradient(135deg, #10b981, #059669)' },
+  { id: 'app-roulette', name: '랜덤 룰렛', icon: 'Dices', color: 'linear-gradient(135deg, #f43f5e, #be123c)' },
   { id: 'app-settings', name: '설정', icon: 'Settings', color: 'linear-gradient(135deg, #64748b, #475569)' },
 ];
 

@@ -11,6 +11,30 @@ interface TopWidgetProps {
 export function TopWidget({ notifications = [] }: TopWidgetProps) {
   const { events } = useSchedule();
   const [popupType, setPopupType] = useState<'none' | 'schedule' | 'todo' | 'notification'>('none');
+  const [weather, setWeather] = useState<{ temp: number, desc: string, pop: number } | null>(null);
+
+  useEffect(() => {
+    // Seoul coordinates for Open-Meteo
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=37.566&longitude=126.978&current=temperature_2m,weather_code&daily=precipitation_probability_max&timezone=Asia%2FSeoul')
+      .then(res => res.json())
+      .then(data => {
+        const code = data.current?.weather_code || 0;
+        let desc = '맑음';
+        if (code >= 1 && code <= 3) desc = '구름조금';
+        if (code >= 45 && code <= 48) desc = '안개';
+        if (code >= 51 && code <= 67) desc = '비';
+        if (code >= 71 && code <= 77) desc = '눈';
+        if (code >= 80 && code <= 82) desc = '소나기';
+        if (code >= 95) desc = '뇌우';
+
+        setWeather({
+          temp: data.current?.temperature_2m || 0,
+          desc,
+          pop: data.daily?.precipitation_probability_max?.[0] || 0
+        });
+      })
+      .catch(err => console.error('Weather fetch error:', err));
+  }, []);
 
   const today = new Date();
   
@@ -29,7 +53,22 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
             />
             <h2 style={{ margin: 0 }}>Simplanner</h2>
           </div>
-          <p className="subtitle" style={{ marginTop: '8px' }}>일정을 넘어<br/>가족을 관리하다</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '8px' }}>
+            <p className="subtitle" style={{ margin: 0 }}>일정을 넘어<br/>가족을 관리하다</p>
+            {weather && (
+              <div style={{ 
+                background: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: '12px', 
+                display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: '0.85rem' 
+              }}>
+                <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '1rem' }}>
+                  {weather.desc === '맑음' ? '☀️' : weather.desc.includes('비') ? '🌧️' : weather.desc.includes('구름') ? '⛅' : '☁️'} {weather.temp}°C
+                </div>
+                <div style={{ color: '#e2e8f0', fontSize: '0.75rem', marginTop: '2px' }}>
+                  {weather.desc} · 강수 {weather.pop}%
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="widget-stats">

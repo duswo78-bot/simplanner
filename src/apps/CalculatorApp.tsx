@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppContainer } from '../components/AppContainer';
 import './CalculatorApp.css';
-import { Save, Share2, Trash2, Sigma, Calculator, Delete } from 'lucide-react';
+import { Save, Share2, Trash2, Sigma, Calculator, Delete, Scale } from 'lucide-react';
 
 interface CalculatorAppProps {
   onBack: () => void;
@@ -18,6 +18,12 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
   const [expression, setExpression] = useState('');
   const [justEvaluated, setJustEvaluated] = useState(false);
   const [isEngineering, setIsEngineering] = useState(false);
+  const [isUnitMode, setIsUnitMode] = useState(false);
+  
+  // Unit converter states
+  const [unitType, setUnitType] = useState('length');
+  const [unitFrom, setUnitFrom] = useState('m');
+  const [unitTo, setUnitTo] = useState('cm');
 
   // For saving history
   const [lastCalc, setLastCalc] = useState<{ eq: string; res: string } | null>(null);
@@ -75,6 +81,8 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
   };
 
   const handleInput = (val: string) => {
+    if (isUnitMode && ['+', '-', '×', '÷', '(', ')', '%'].includes(val)) return;
+    
     if (justEvaluated) {
       if (['+', '-', '×', '÷'].includes(val)) {
         setExpression(expression + val);
@@ -223,6 +231,37 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
 
 
 
+  const unitOptions = {
+    length: { name: '길이', units: { mm: 0.001, cm: 0.01, m: 1, km: 1000, in: 0.0254, ft: 0.3048, yd: 0.9144, mile: 1609.34 } },
+    weight: { name: '무게', units: { mg: 0.000001, g: 0.001, kg: 1, t: 1000, oz: 0.0283495, lb: 0.453592 } },
+    area: { name: '넓이', units: { 'm²': 1, 'a': 100, 'ha': 10000, 'km²': 1000000, '평': 3.305785 } },
+    temperature: { name: '온도', units: { '°C': 1, '°F': 1, 'K': 1 } }
+  };
+
+  const getConvertedValue = () => {
+    if (expression === 'Error' || !expression) return '0';
+    let val = parseFloat(expression);
+    if (isNaN(val)) return '0';
+    
+    if (unitType === 'temperature') {
+      if (unitFrom === '°C' && unitTo === '°F') val = (val * 9/5) + 32;
+      else if (unitFrom === '°C' && unitTo === 'K') val = val + 273.15;
+      else if (unitFrom === '°F' && unitTo === '°C') val = (val - 32) * 5/9;
+      else if (unitFrom === '°F' && unitTo === 'K') val = (val - 32) * 5/9 + 273.15;
+      else if (unitFrom === 'K' && unitTo === '°C') val = val - 273.15;
+      else if (unitFrom === 'K' && unitTo === '°F') val = (val - 273.15) * 9/5 + 32;
+      return String(Math.round(val * 1000000) / 1000000);
+    }
+
+    const typeData = unitOptions[unitType as keyof typeof unitOptions];
+    if (!typeData) return '0';
+    
+    const baseValue = val * (typeData.units as any)[unitFrom];
+    const targetValue = baseValue / (typeData.units as any)[unitTo];
+    
+    return String(Math.round(targetValue * 100000000) / 100000000);
+  };
+
   const formatExpression = (expr: string) => {
     return expr.replace(/\d+(?:\.\d+)?/g, (match) => {
       const parts = match.split('.');
@@ -232,26 +271,36 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
   };
 
   const headerAction = (
-    <button 
-      onClick={() => setIsEngineering(!isEngineering)}
-      style={{
-        background: 'none',
-        border: 'none',
-        color: isEngineering ? '#22d3ee' : '#fff',
-        cursor: 'pointer',
-        padding: '6px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '8px',
-        backgroundColor: isEngineering ? 'rgba(34, 211, 238, 0.2)' : 'rgba(255, 255, 255, 0.15)',
-        transition: 'all 0.2s',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-      }}
-      title={isEngineering ? "일반 계산기 모드" : "공학 계산기 모드"}
-    >
-      {isEngineering ? <Calculator size={20} /> : <Sigma size={20} />}
-    </button>
+    <div style={{ display: 'flex', gap: '8px' }}>
+      <button 
+        onClick={() => { setIsUnitMode(!isUnitMode); setIsEngineering(false); setExpression(''); }}
+        style={{
+          background: 'none', border: 'none',
+          color: isUnitMode ? '#10b981' : '#fff', cursor: 'pointer',
+          padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderRadius: '8px',
+          backgroundColor: isUnitMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.15)',
+          transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+        }}
+        title="단위 변환기"
+      >
+        <Scale size={20} />
+      </button>
+      <button 
+        onClick={() => { setIsEngineering(!isEngineering); setIsUnitMode(false); }}
+        style={{
+          background: 'none', border: 'none',
+          color: isEngineering ? '#22d3ee' : '#fff', cursor: 'pointer',
+          padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderRadius: '8px',
+          backgroundColor: isEngineering ? 'rgba(34, 211, 238, 0.2)' : 'rgba(255, 255, 255, 0.15)',
+          transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+        }}
+        title={isEngineering ? "일반 계산기 모드" : "공학 계산기 모드"}
+      >
+        {isEngineering ? <Calculator size={20} /> : <Sigma size={20} />}
+      </button>
+    </div>
   );
 
   return (
@@ -260,67 +309,118 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
         
         <div className="calc-chassis">
           {/* Display */}
-          <div className="calc-display">
-            {(() => {
-              const eqStr = justEvaluated && lastCalc ? `${formatExpression(lastCalc.eq)} =` : '';
-              const resStr = formatExpression(expression) || '0';
-              const isOverflow = eqStr.length + resStr.length > 18;
+          {isUnitMode ? (
+            <div className="calc-display" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                {Object.keys(unitOptions).map(k => (
+                  <button 
+                    key={k} 
+                    onClick={() => {
+                      setUnitType(k);
+                      setUnitFrom(Object.keys(unitOptions[k as keyof typeof unitOptions].units)[0]);
+                      setUnitTo(Object.keys(unitOptions[k as keyof typeof unitOptions].units)[1] || Object.keys(unitOptions[k as keyof typeof unitOptions].units)[0]);
+                      setExpression('');
+                    }}
+                    style={{
+                      background: unitType === k ? '#10b981' : 'transparent',
+                      border: '1px solid #10b981', color: unitType === k ? '#fff' : '#10b981',
+                      borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '0.8rem'
+                    }}
+                  >
+                    {unitOptions[k as keyof typeof unitOptions].name}
+                  </button>
+                ))}
+              </div>
               
-              let resFontSize = '2.5rem';
-              if (isOverflow) {
-                if (resStr.length > 25) resFontSize = '1rem';
-                else if (resStr.length > 15) resFontSize = '1.2rem';
-                else resFontSize = '1.8rem';
-              } else {
-                if (resStr.length > 30) resFontSize = '0.9rem';
-                else if (resStr.length > 22) resFontSize = '1.1rem';
-                else if (resStr.length > 16) resFontSize = '1.4rem';
-                else if (resStr.length > 11) resFontSize = '1.8rem';
-                else resFontSize = '2.5rem';
-              }
-
-              return (
-                <div style={{ 
-                  display: 'flex', 
-                  flexDirection: isOverflow ? 'column' : 'row', 
-                  justifyContent: isOverflow ? 'center' : 'space-between', 
-                  alignItems: isOverflow ? 'flex-end' : 'flex-end', 
-                  position: 'relative', 
-                  zIndex: 1, 
-                  width: '100%', 
-                  gap: isOverflow ? '4px' : '8px' 
-                }}>
-                  <div style={{ 
-                    color: '#9ca3af', 
-                    fontSize: isOverflow ? '0.9rem' : '1rem', 
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    textAlign: isOverflow ? 'right' : 'left', 
-                    marginBottom: isOverflow ? '0' : '4px', 
-                    flexShrink: 0, 
-                    maxWidth: isOverflow ? '100%' : '40%' 
-                  }}>
-                    {eqStr}
-                  </div>
-                  <div style={{ 
-                    color: '#fff', 
-                    fontSize: resFontSize, 
-                    fontWeight: '500', 
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    textAlign: 'right', 
-                    lineHeight: 1.2, 
-                    flex: 1,
-                    width: isOverflow ? '100%' : 'auto'
-                  }}>
-                    {resStr}
-                  </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <select 
+                  value={unitFrom} 
+                  onChange={e => setUnitFrom(e.target.value)}
+                  style={{ background: '#1e293b', color: '#9ca3af', border: 'none', fontSize: '1.2rem', outline: 'none', padding: '4px', borderRadius: '4px' }}
+                >
+                  {Object.keys(unitOptions[unitType as keyof typeof unitOptions].units).map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+                <div style={{ color: '#fff', fontSize: '1.8rem' }}>{formatExpression(expression) || '0'}</div>
+              </div>
+              
+              <div style={{ height: '1px', background: 'rgba(255,255,255,0.2)', margin: '4px 0' }} />
+              
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <select 
+                  value={unitTo} 
+                  onChange={e => setUnitTo(e.target.value)}
+                  style={{ background: '#1e293b', color: '#10b981', border: 'none', fontSize: '1.2rem', outline: 'none', padding: '4px', borderRadius: '4px' }}
+                >
+                  {Object.keys(unitOptions[unitType as keyof typeof unitOptions].units).map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+                <div style={{ color: '#10b981', fontSize: '1.8rem', fontWeight: 'bold', maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {formatExpression(getConvertedValue())}
                 </div>
-              );
-            })()}
-          </div>
+              </div>
+            </div>
+          ) : (
+            <div className="calc-display">
+              {(() => {
+                const eqStr = justEvaluated && lastCalc ? `${formatExpression(lastCalc.eq)} =` : '';
+                const resStr = formatExpression(expression) || '0';
+                const isOverflow = eqStr.length + resStr.length > 18;
+                
+                let resFontSize = '2.5rem';
+                if (isOverflow) {
+                  if (resStr.length > 25) resFontSize = '1rem';
+                  else if (resStr.length > 15) resFontSize = '1.2rem';
+                  else resFontSize = '1.8rem';
+                } else {
+                  if (resStr.length > 30) resFontSize = '0.9rem';
+                  else if (resStr.length > 22) resFontSize = '1.1rem';
+                  else if (resStr.length > 16) resFontSize = '1.4rem';
+                  else if (resStr.length > 11) resFontSize = '1.8rem';
+                  else resFontSize = '2.5rem';
+                }
+  
+                return (
+                  <div style={{ 
+                    display: 'flex', 
+                    flexDirection: isOverflow ? 'column' : 'row', 
+                    justifyContent: isOverflow ? 'center' : 'space-between', 
+                    alignItems: isOverflow ? 'flex-end' : 'flex-end', 
+                    position: 'relative', 
+                    zIndex: 1, 
+                    width: '100%', 
+                    gap: isOverflow ? '4px' : '8px' 
+                  }}>
+                    <div style={{ 
+                      color: '#9ca3af', 
+                      fontSize: isOverflow ? '0.9rem' : '1rem', 
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      textAlign: isOverflow ? 'right' : 'left', 
+                      marginBottom: isOverflow ? '0' : '4px', 
+                      flexShrink: 0, 
+                      maxWidth: isOverflow ? '100%' : '40%' 
+                    }}>
+                      {eqStr}
+                    </div>
+                    <div style={{ 
+                      color: '#fff', 
+                      fontSize: resFontSize, 
+                      fontWeight: '500', 
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      textAlign: 'right', 
+                      lineHeight: 1.2, 
+                      flex: 1,
+                      width: isOverflow ? '100%' : 'auto'
+                    }}>
+                      {resStr}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
 
           {/* Keypad */}
           <div className="calc-keypad">

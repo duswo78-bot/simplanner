@@ -19,6 +19,8 @@ import { HealthApp } from './apps/Health/HealthApp';
 import { CarLedgerApp } from './apps/CarLedger/CarLedgerApp';
 import { ParcelApp } from './apps/Parcel/ParcelApp';
 import { FinanceApp } from './apps/Finance/FinanceApp';
+import { TimerApp } from './apps/Timer/TimerApp';
+import { RouletteApp } from './apps/Roulette/RouletteApp';
 
 function App() {
   const [currentApp, setCurrentApp] = useState<AppData | null>(() => {
@@ -77,6 +79,10 @@ function App() {
         return <ParcelApp onBack={handleBack} />;
       case 'app-card':
         return <FinanceApp onBack={handleBack} />;
+      case 'app-timer':
+        return <TimerApp onBack={handleBack} />;
+      case 'app-roulette':
+        return <RouletteApp onBack={handleBack} />;
       default:
         return <EmptyApp title={app.name} onBack={handleBack} />;
     }

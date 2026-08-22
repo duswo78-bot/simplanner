@@ -74,7 +74,7 @@
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 4px;
 }
 
 .filters-bar {
@@ -308,9 +308,9 @@
   color: #94a3b8;
 }
 
-.search-input {
+.grocery-app .search-input {
   width: 100%;
-  padding: 12px 12px 12px 40px;
+  padding: 12px 12px 12px 48px !important;
   border: 1px solid #cbd5e1;
   border-radius: 12px;
   font-size: 16px;
@@ -319,7 +319,7 @@
   box-sizing: border-box;
 }
 
-.search-input:focus {
+.grocery-app .search-input:focus {
   outline: none;
   border-color: #84cc16;
   box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.2);
@@ -1147,3 +1147,6 @@
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+
+@keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+.pulse { animation: pulse 1s infinite; }
