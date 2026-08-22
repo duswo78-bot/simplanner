@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppContainer } from '../components/AppContainer';
 import './CalculatorApp.css';
-import { Save, Share2, Trash2, Sigma, Calculator, Delete, Scale } from 'lucide-react';
+import { Save, Share2, Trash2, Sigma, Calculator, Delete, Scale, ArrowDownUp } from 'lucide-react';
 
 interface CalculatorAppProps {
   onBack: () => void;
@@ -342,9 +342,16 @@ export function CalculatorApp({ onBack }: CalculatorAppProps) {
                 </select>
                 <div style={{ color: '#fff', fontSize: '1.8rem' }}>{formatExpression(expression) || '0'}</div>
               </div>
-              
-              <div style={{ height: '1px', background: 'rgba(255,255,255,0.2)', margin: '4px 0' }} />
-              
+                <div style={{ position: 'relative', margin: '12px 0' }}>
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.2)', width: '100%' }} />
+                  <button 
+                    onClick={() => { const temp = unitFrom; setUnitFrom(unitTo); setUnitTo(temp); }}
+                    style={{ position: 'absolute', top: '50%', left: '16px', transform: 'translateY(-50%)', background: '#1e293b', border: '1px solid rgba(255,255,255,0.2)', color: '#38bdf8', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                    title="단위 전환"
+                  >
+                    <ArrowDownUp size={14} />
+                  </button>
+                </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <select 
                   value={unitTo} 
