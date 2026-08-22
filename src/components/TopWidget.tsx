@@ -75,7 +75,7 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
   return (
     <>
       <div className="top-widget glass-panel animate-fade-in">
-        <div className="widget-header">
+        <div className="top-widget-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <img 
               src={`${import.meta.env.BASE_URL}icon.png`}
