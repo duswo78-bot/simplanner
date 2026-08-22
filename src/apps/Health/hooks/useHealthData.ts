@@ -18,6 +18,7 @@ export interface FamilyMember {
   weight?: number;
   bloodType?: string;
   sidoCd?: string; // 거주지 (시도 코드)
+  allergies?: string[]; // 알러지 목록 (예: "우유", "땅콩", "대두" 등)
   records: HealthRecord[];
 }
 

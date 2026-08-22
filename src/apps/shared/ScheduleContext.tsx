@@ -68,6 +68,10 @@ interface ScheduleContextType {
   memos: Memo[];
   addMemo: (memo: Omit<Memo, 'id' | 'createdAt'>) => void;
   removeMemo: (id: string) => void;
+
+  familyBirthdays: { id: string, name: string, date: string }[];
+  addFamilyBirthday: (name: string, date: string) => void;
+  removeFamilyBirthday: (id: string) => void;
 }
 
 const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined);
@@ -166,8 +170,33 @@ export const ScheduleProvider: React.FC<{ children: ReactNode }> = ({ children }
     setMemos(prev => prev.filter(m => m.id !== id));
   };
 
+  const [familyBirthdays, setFamilyBirthdays] = useState<{id: string, name: string, date: string}[]>([]);
+
+  useEffect(() => {
+    const savedBirthdays = localStorage.getItem('simplanner_family_birthdays');
+    if (savedBirthdays) {
+      try { setFamilyBirthdays(JSON.parse(savedBirthdays)); } catch (e) {}
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('simplanner_family_birthdays', JSON.stringify(familyBirthdays));
+  }, [familyBirthdays]);
+
+  const addFamilyBirthday = (name: string, date: string) => {
+    setFamilyBirthdays(prev => [...prev, { id: crypto.randomUUID(), name, date }]);
+  };
+
+  const removeFamilyBirthday = (id: string) => {
+    setFamilyBirthdays(prev => prev.filter(b => b.id !== id));
+  };
+
   return (
-    <ScheduleContext.Provider value={{ events, addEvent, removeEvent, toggleEventCompletion, updateEventStatus, memos, addMemo, removeMemo }}>
+    <ScheduleContext.Provider value={{ 
+      events, addEvent, removeEvent, toggleEventCompletion, updateEventStatus, 
+      memos, addMemo, removeMemo,
+      familyBirthdays, addFamilyBirthday, removeFamilyBirthday 
+    }}>
       {children}
     </ScheduleContext.Provider>
   );

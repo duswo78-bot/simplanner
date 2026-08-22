@@ -631,19 +631,6 @@ export function GroceryApp({ onBack }: GroceryAppProps) {
           </button>
           <div className="header-title-block">
             <h2>장보기</h2>
-            <p className="header-subtitle">
-              {isLoadingPrices ? (
-                <span className="loading-inline">
-                  <Loader2 size={12} className="spin" /> 참가격 불러오는 중…
-                </span>
-              ) : (
-                <>
-                  {regionLabel}
-                  {inspectDay ? ` · ${inspectDay} 조사` : ''}
-                  {catalogItems.length > 0 ? ` · ${catalogItems.length}개 상품` : ''}
-                </>
-              )}
-            </p>
           </div>
         </div>
         <div className="header-actions">
@@ -716,7 +703,20 @@ export function GroceryApp({ onBack }: GroceryAppProps) {
         </button>
       </div>
 
-      <div className="search-container">
+      <div className="search-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ fontSize: '13px', color: '#64748b', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {isLoadingPrices ? (
+            <span className="loading-inline">
+              <Loader2 size={12} className="spin" /> 참가격 불러오는 중…
+            </span>
+          ) : (
+            <>
+              {regionLabel}
+              {inspectDay ? ` · ${inspectDay} 조사` : ''}
+              {catalogItems.length > 0 ? ` · ${catalogItems.length}개 상품` : ''}
+            </>
+          )}
+        </div>
         <div className="search-input-wrapper">
           <Search size={20} className="search-icon" />
           <input

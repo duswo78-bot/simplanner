@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { ArrowLeft, Sparkles, Mic, Calendar as CalIcon, MapPin, Users, Check, Plus, X, Repeat, CornerDownLeft } from 'lucide-react';
+import { ArrowLeft, Sparkles, Mic, Calendar as CalIcon, MapPin, Users, Check, Plus, X, Repeat, CornerDownLeft, Trash2 } from 'lucide-react';
 import { useSchedule, isEventOccurringOnDate, getYYYYMMDD } from '../shared/ScheduleContext';
 import { parseInput, type ParsedInput } from '../shared/nlParser';
 import type { ScheduleEvent, Memo, RecurrenceType } from '../shared/ScheduleContext';
@@ -13,7 +13,10 @@ interface PlannerAppProps {
 }
 
 export function PlannerApp({ onBack }: PlannerAppProps) {
-  const { events, memos, addEvent, addMemo, toggleEventCompletion } = useSchedule();
+  const { 
+    events, memos, addEvent, addMemo, toggleEventCompletion,
+    familyBirthdays, addFamilyBirthday, removeFamilyBirthday 
+  } = useSchedule();
   const [inputText, setInputText] = useState('');
   const [showCalendar, setShowCalendar] = useState(false);
   const [pendingEvent, setPendingEvent] = useState<ParsedInput | null>(null);
@@ -499,6 +502,45 @@ export function PlannerApp({ onBack }: PlannerAppProps) {
                 <div style={{ fontSize: '0.8rem', color: '#78716c' }}>메모가 없습니다.</div>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Family Birthdays Widget */}
+        <div className="widget-card" style={{ marginTop: '16px' }}>
+          <div className="widget-header">
+            <div className="widget-title">
+              <span style={{ color: '#ec4899' }}>🎂</span> 가족 생일 관리
+            </div>
+            <button className="add-btn-small" onClick={() => {
+              const name = prompt("가족 이름 (예: 어머니):");
+              if (name) {
+                const date = prompt("생일 날짜 (MM-DD, 예: 03-15):");
+                if (date) {
+                  addFamilyBirthday(name, date);
+                }
+              }
+            }}>
+              <Plus size={16} color="#ea580c" />
+            </button>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+            {familyBirthdays.map((b) => (
+              <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: '#fafaf9', borderRadius: '8px' }}>
+                <span style={{ fontWeight: 600, color: '#44403c' }}>{b.name}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ color: '#78716c', fontSize: '0.9rem' }}>{b.date}</span>
+                  <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }} onClick={() => removeFamilyBirthday(b.id)}>
+                    <Trash2 size={14} color="#ef4444" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {familyBirthdays.length === 0 && (
+              <div style={{ fontSize: '0.9rem', color: '#78716c', textAlign: 'center', padding: '10px 0' }}>
+                등록된 가족 생일이 없습니다.
+              </div>
+            )}
           </div>
         </div>
       </div>

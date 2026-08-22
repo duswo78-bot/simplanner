@@ -116,11 +116,8 @@
 .notification-dot {
     width: 8px;
     height: 8px;
-    background-color: #e2e8f0;
-    border-radius: 50%;
-}
-.notification-dot.active {
     background-color: #ef4444;
+    border-radius: 50%;
 }
 
 .clickable-stat:hover {

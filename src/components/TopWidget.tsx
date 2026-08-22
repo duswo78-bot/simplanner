@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Calendar, CheckCircle2, X, Bell } from 'lucide-react';
 import { useSchedule, isEventOccurringOnDate } from '../apps/shared/ScheduleContext';
-import type { ParcelRecord } from '../apps/Parcel/ParcelStore';
+import type { AppNotification } from './NotificationManager';
 import './TopWidget.css';
 
 interface TopWidgetProps {
-  parcelNotifications?: ParcelRecord[];
+  notifications?: AppNotification[];
 }
 
-export function TopWidget({ parcelNotifications = [] }: TopWidgetProps) {
+export function TopWidget({ notifications = [] }: TopWidgetProps) {
   const { events } = useSchedule();
   const [popupType, setPopupType] = useState<'none' | 'schedule' | 'todo' | 'notification'>('none');
 
@@ -16,12 +16,6 @@ export function TopWidget({ parcelNotifications = [] }: TopWidgetProps) {
   
   const todaysEvents = events.filter(e => !e.isTodo && isEventOccurringOnDate(e, today));
   const todaysTodos = events.filter(e => e.isTodo && isEventOccurringOnDate(e, today));
-
-  const notifications = parcelNotifications.map(p => ({
-    id: p.id,
-    text: `📦 [${p.itemName}] 택배가 오늘 도착할 예정입니다!`,
-    isRead: false
-  }));
 
   return (
     <>
@@ -66,7 +60,9 @@ export function TopWidget({ parcelNotifications = [] }: TopWidgetProps) {
           <div className="stat-item clickable-stat" onClick={() => setPopupType('notification')} style={{ position: 'relative' }}>
             <div className="icon-wrapper bg-orange">
               <Bell size={18} color="white" />
-              <div className={`notification-dot ${notifications.some(n => !n.isRead) ? 'active' : ''}`} style={{ position: 'absolute', top: 4, right: 4 }} />
+              {notifications.some(n => !n.isRead) && (
+                <div className="notification-dot active" style={{ position: 'absolute', top: 4, right: 4 }} />
+              )}
             </div>
             <div className="stat-text">
               <span className="stat-label">알림</span>

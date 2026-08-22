@@ -15,6 +15,7 @@ export function FamilyProfile({ onSave, initialData, onCancel }: FamilyProfilePr
   const [weight, setWeight] = useState<string>(initialData?.weight?.toString() || '');
   const [bloodType, setBloodType] = useState<string>(initialData?.bloodType || 'A');
   const [sidoCd, setSidoCd] = useState<string>(initialData?.sidoCd || '11'); // 기본값: 서울
+  const [allergies, setAllergies] = useState<string>(initialData?.allergies?.join(', ') || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +31,8 @@ export function FamilyProfile({ onSave, initialData, onCancel }: FamilyProfilePr
       height: height ? parseFloat(height) : undefined,
       weight: weight ? parseFloat(weight) : undefined,
       bloodType,
-      sidoCd
+      sidoCd,
+      allergies: allergies.split(',').map(a => a.trim()).filter(a => a.length > 0)
     });
   };
 
@@ -127,6 +129,19 @@ export function FamilyProfile({ onSave, initialData, onCancel }: FamilyProfilePr
               <option value="49">제주특별자치도</option>
             </select>
           </div>
+        </div>
+
+        <div className="form-group" style={{ marginTop: '8px' }}>
+          <label>알러지 유발 물질 (쉼표로 구분하여 입력)</label>
+          <input
+            type="text"
+            placeholder="예: 우유, 땅콩, 대두, 밀, 토마토"
+            value={allergies}
+            onChange={(e) => setAllergies(e.target.value)}
+          />
+          <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
+            입력해두시면 급식 앱과 연동하여 위험 물질 포함 여부를 알려드립니다.
+          </p>
         </div>
 
         <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
