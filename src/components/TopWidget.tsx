@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { Calendar, CheckCircle2, X, Bell } from 'lucide-react';
 import { useSchedule, isEventOccurringOnDate } from '../apps/shared/ScheduleContext';
+import type { ParcelRecord } from '../apps/Parcel/ParcelStore';
 import './TopWidget.css';
 
-export function TopWidget() {
+interface TopWidgetProps {
+  parcelNotifications?: ParcelRecord[];
+}
+
+export function TopWidget({ parcelNotifications = [] }: TopWidgetProps) {
   const { events } = useSchedule();
   const [popupType, setPopupType] = useState<'none' | 'schedule' | 'todo' | 'notification'>('none');
 
@@ -12,10 +17,11 @@ export function TopWidget() {
   const todaysEvents = events.filter(e => !e.isTodo && isEventOccurringOnDate(e, today));
   const todaysTodos = events.filter(e => e.isTodo && isEventOccurringOnDate(e, today));
 
-  // Placeholder for notifications (package delivery, school events, etc.)
-  const notifications = [
-    { id: 'n1', text: '오늘 오후 우체국 택배 도착 예정' },
-  ];
+  const notifications = parcelNotifications.map(p => ({
+    id: p.id,
+    text: `📦 [${p.itemName}] 택배가 오늘 도착할 예정입니다!`,
+    isRead: false
+  }));
 
   return (
     <>

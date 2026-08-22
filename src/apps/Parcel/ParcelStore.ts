@@ -556,9 +556,8 @@ export function useParcelStore() {
   };
 }
 
-export async function checkParcelBadges(): Promise<number> {
+export async function checkParcelBadges(): Promise<ParcelRecord[]> {
   const data = loadData();
-  let count = 0;
   let hasChanges = false;
 
   const updatedParcels = await Promise.all(
@@ -588,11 +587,12 @@ export async function checkParcelBadges(): Promise<number> {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
+  const todayArrivals: ParcelRecord[] = [];
   updatedParcels.forEach(p => {
     if (p.status === '오늘도착' && p.direction !== 'out' && p.direction !== 'return') {
-      count++;
+      todayArrivals.push(p);
     }
   });
 
-  return count;
+  return todayArrivals;
 }

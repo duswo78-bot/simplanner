@@ -43,14 +43,18 @@ interface LauncherProps {
   onAppClick: (app: AppData) => void;
 }
 
+import type { ParcelRecord } from '../apps/Parcel/ParcelStore';
+
 export function Launcher({ onAppClick }: LauncherProps) {
   const [apps, setApps] = useState<AppData[]>(INITIAL_APPS);
+  const [parcelNotifications, setParcelNotifications] = useState<ParcelRecord[]>([]);
 
   useEffect(() => {
-    checkParcelBadges().then(count => {
-      if (count > 0) {
+    checkParcelBadges().then(arrivals => {
+      if (arrivals.length > 0) {
+        setParcelNotifications(arrivals);
         setApps(prev => prev.map(a => 
-          a.id === 'app-delivery' ? { ...a, badgeCount: count } : a
+          a.id === 'app-delivery' ? { ...a, badgeCount: arrivals.length } : a
         ));
       }
     });
@@ -96,7 +100,7 @@ export function Launcher({ onAppClick }: LauncherProps) {
 
   return (
     <div className="launcher-container">
-      <TopWidget />
+      <TopWidget parcelNotifications={parcelNotifications} />
       
       <div className="apps-grid-wrapper animate-fade-in" style={{ animationDelay: '0.1s' }}>
         <DndContext
