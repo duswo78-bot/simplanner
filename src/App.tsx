@@ -3,6 +3,7 @@ import { MobileContainer } from './components/MobileContainer';
 import { Launcher } from './components/Launcher';
 import type { AppData } from './components/AppIcon';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { SettingsProvider } from './contexts/SettingsContext';
 
 // Apps
 import { MealApp } from './apps/MealApp';
@@ -21,6 +22,7 @@ import { ParcelApp } from './apps/Parcel/ParcelApp';
 import { FinanceApp } from './apps/Finance/FinanceApp';
 import { TimerApp } from './apps/Timer/TimerApp';
 import { RouletteApp } from './apps/Roulette/RouletteApp';
+import { SettingsApp } from './apps/Settings/SettingsApp';
 
 function App() {
   const [currentApp, setCurrentApp] = useState<AppData | null>(() => {
@@ -100,37 +102,41 @@ function App() {
         return <TimerApp onBack={handleBack} />;
       case 'app-roulette':
         return <RouletteApp onBack={handleBack} />;
+      case 'app-settings':
+        return <SettingsApp onBack={handleBack} />;
       default:
         return <EmptyApp title={app.name} onBack={handleBack} />;
     }
   };
 
   return (
-    <MobileContainer>
-      <ErrorBoundary>
-        <div style={{ display: currentApp ? 'none' : 'block', height: '100%', width: '100%' }}>
-          <Launcher onAppClick={handleAppClick} />
-        </div>
-        
-        {openApps.map(app => (
-          <div 
-            key={app.id} 
-            style={{ 
-              display: currentApp?.id === app.id ? 'block' : 'none',
-              height: '100%',
-              width: '100%',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              zIndex: currentApp?.id === app.id ? 10 : -1,
-              backgroundColor: '#020617'
-            }}
-          >
-            {renderAppContent(app)}
+    <SettingsProvider>
+      <MobileContainer>
+        <ErrorBoundary>
+          <div style={{ display: currentApp ? 'none' : 'block', height: '100%', width: '100%' }}>
+            <Launcher onAppClick={handleAppClick} />
           </div>
-        ))}
-      </ErrorBoundary>
-    </MobileContainer>
+          
+          {openApps.map(app => (
+            <div 
+              key={app.id} 
+              style={{ 
+                display: currentApp?.id === app.id ? 'block' : 'none',
+                height: '100%',
+                width: '100%',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                zIndex: currentApp?.id === app.id ? 10 : -1,
+                backgroundColor: '#020617'
+              }}
+            >
+              {renderAppContent(app)}
+            </div>
+          ))}
+        </ErrorBoundary>
+      </MobileContainer>
+    </SettingsProvider>
   );
 }
 

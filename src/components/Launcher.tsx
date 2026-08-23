@@ -21,6 +21,7 @@ import type { AppData } from './AppIcon';
 import { TopWidget } from './TopWidget';
 import { checkParcelBadges } from '../apps/Parcel/ParcelStore';
 import './Launcher.css';
+import { useSettings } from '../contexts/SettingsContext';
 
 const INITIAL_APPS: AppData[] = [
   { id: 'app-planner', name: '플래너', icon: 'Calendar', color: 'linear-gradient(135deg, #fb923c, #ea580c)' },
@@ -50,6 +51,9 @@ import { gatherAllNotifications, type AppNotification } from './NotificationMana
 export function Launcher({ onAppClick }: LauncherProps) {
   const [apps, setApps] = useState<AppData[]>(INITIAL_APPS);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const { settings } = useSettings();
+
+  const visibleApps = apps.filter(app => app.id === 'app-settings' || !settings.hiddenApps.includes(app.id));
 
   useEffect(() => {
     gatherAllNotifications().then(alerts => {
@@ -114,11 +118,11 @@ export function Launcher({ onAppClick }: LauncherProps) {
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={apps.map(app => app.id)}
+            items={visibleApps.map(app => app.id)}
             strategy={rectSortingStrategy}
           >
             <div className="apps-grid">
-              {apps.map((app) => (
+              {visibleApps.map((app) => (
                 <AppIcon key={app.id} app={app} onClick={handleAppClick} />
               ))}
             </div>

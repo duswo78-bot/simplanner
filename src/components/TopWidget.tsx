@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, CheckCircle2, X, Bell } from 'lucide-react';
+import { Calendar, CheckCircle2, X, Bell, ChevronRight } from 'lucide-react';
 import { useSchedule, isEventOccurringOnDate } from '../apps/shared/ScheduleContext';
+import { useSettings } from '../contexts/SettingsContext';
 import type { AppNotification } from './NotificationManager';
 import './TopWidget.css';
 
@@ -10,6 +11,7 @@ interface TopWidgetProps {
 
 export function TopWidget({ notifications = [] }: TopWidgetProps) {
   const { events } = useSchedule();
+  const { settings } = useSettings();
   const [popupType, setPopupType] = useState<'none' | 'schedule' | 'todo' | 'notification'>('none');
   const [weather, setWeather] = useState<{ temp: number, desc: string, pop: number, city: string } | null>(() => {
     try {
@@ -47,6 +49,13 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
     };
 
     const fetchGpsAndUpdate = () => {
+      if (settings.locationMode === 'fixed') {
+        const { lat, lng, city } = settings.fixedLocation;
+        localStorage.setItem('user_location', JSON.stringify({ lat, lng, city }));
+        loadWeather(lat, lng, city);
+        return;
+      }
+
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           pos => {
@@ -93,7 +102,7 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
     }
     
     fetchGpsAndUpdate();
-  }, []);
+  }, [settings.locationMode, settings.fixedLocation]);
 
   const today = new Date();
   
