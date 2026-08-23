@@ -1,6 +1,7 @@
 import type { RecurrenceType } from './ScheduleContext';
 
 export interface ParsedInput {
+  id?: string;
   type: 'event' | 'memo' | 'error';
   what: string;
   where: string;

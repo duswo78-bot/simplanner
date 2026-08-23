@@ -63,6 +63,7 @@ interface ScheduleContextType {
   events: ScheduleEvent[];
   addEvent: (event: Omit<ScheduleEvent, 'id'>) => void;
   removeEvent: (id: string) => void;
+  updateEvent: (id: string, updates: Partial<Omit<ScheduleEvent, 'id'>>) => void;
   toggleEventCompletion: (id: string, targetDateStr?: string) => void;
   updateEventStatus: (id: string, status: TodoStatus) => void;
   
@@ -125,6 +126,10 @@ export const ScheduleProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const removeEvent = (id: string) => {
     setEvents((prev) => prev.filter((e) => e.id !== id));
+  };
+
+  const updateEvent = (id: string, updates: Partial<Omit<ScheduleEvent, 'id'>>) => {
+    setEvents((prev) => prev.map((e) => e.id === id ? { ...e, ...updates } : e));
   };
 
   const toggleEventCompletion = (id: string, targetDateStr?: string) => {
@@ -200,7 +205,7 @@ export const ScheduleProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   return (
     <ScheduleContext.Provider value={{ 
-      events, addEvent, removeEvent, toggleEventCompletion, updateEventStatus, 
+      events, addEvent, removeEvent, updateEvent, toggleEventCompletion, updateEventStatus, 
       memos, addMemo, removeMemo,
       familyBirthdays, addFamilyBirthday, removeFamilyBirthday 
     }}>

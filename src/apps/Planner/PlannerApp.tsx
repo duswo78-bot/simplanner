@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { ArrowLeft, Sparkles, Mic, Calendar as CalIcon, MapPin, Users, Check, Plus, X, Repeat, CornerDownLeft, Trash2 } from 'lucide-react';
+import { ArrowLeft, Sparkles, Mic, Calendar as CalIcon, MapPin, Users, Check, Plus, X, Repeat, CornerDownLeft, Trash2, Edit2 } from 'lucide-react';
 import { useSchedule, isEventOccurringOnDate, getYYYYMMDD } from '../shared/ScheduleContext';
 import { parseInput, type ParsedInput } from '../shared/nlParser';
 import type { ScheduleEvent, Memo, RecurrenceType } from '../shared/ScheduleContext';
@@ -14,7 +14,7 @@ interface PlannerAppProps {
 
 export function PlannerApp({ onBack }: PlannerAppProps) {
   const { 
-    events, memos, addEvent, addMemo, toggleEventCompletion,
+    events, memos, addEvent, updateEvent, addMemo, toggleEventCompletion,
     familyBirthdays, addFamilyBirthday, removeFamilyBirthday 
   } = useSchedule();
   const [inputText, setInputText] = useState('');
@@ -140,15 +140,25 @@ export function PlannerApp({ onBack }: PlannerAppProps) {
         alert("내용을 입력해주세요.");
         return;
       }
-      addEvent({
-        what: pendingEvent.what,
-        when: pendingEvent.when,
-        where: pendingEvent.where,
-        isTodo: pendingEvent.isTodo,
-        completed: false,
-        status: 'todo',
-        recurrence: pendingEvent.recurrence,
-      });
+      if (pendingEvent.id) {
+        updateEvent(pendingEvent.id, {
+          what: pendingEvent.what,
+          when: pendingEvent.when,
+          where: pendingEvent.where,
+          isTodo: pendingEvent.isTodo,
+          recurrence: pendingEvent.recurrence,
+        });
+      } else {
+        addEvent({
+          what: pendingEvent.what,
+          when: pendingEvent.when,
+          where: pendingEvent.where,
+          isTodo: pendingEvent.isTodo,
+          completed: false,
+          status: 'todo',
+          recurrence: pendingEvent.recurrence,
+        });
+      }
 
       if (syncToPhone) {
         downloadIcsForEvent(pendingEvent as any);
@@ -261,11 +271,11 @@ export function PlannerApp({ onBack }: PlannerAppProps) {
 
           {/* Confirmation UI */}
           {pendingEvent && (
-            <div className="confirmation-card animate-slide-down">
+            <div className="confirmation-card">
               <div className="confirmation-header">
-                <h3>입력 내용 확인</h3>
+                <h3>{pendingEvent.id ? '일정 수정' : (pendingEvent.type === 'memo' ? '메모 확인' : '일정 확인')}</h3>
               </div>
-              <form onSubmit={handleConfirmSubmit} className="confirmation-form">
+              <form className="confirmation-form" onSubmit={handleConfirmSubmit}>
                 <div className="form-group">
                   <label>분류</label>
                   <select 
@@ -384,7 +394,7 @@ export function PlannerApp({ onBack }: PlannerAppProps) {
 
                 <div className="form-actions">
                   <button type="button" className="btn-cancel" onClick={handleConfirmCancel}>취소</button>
-                  <button type="submit" className="btn-confirm">OK 등록</button>
+                  <button type="submit" className="btn-confirm">{pendingEvent.id ? 'OK 수정' : 'OK 등록'}</button>
                 </div>
               </form>
             </div>
@@ -427,8 +437,19 @@ export function PlannerApp({ onBack }: PlannerAppProps) {
                       </div>
                     )}
                   </div>
-                  <div className="schedule-icon-right">
-                    <CalIcon size={16} color="#78716c" />
+                  <div className="schedule-icon-right" 
+                    onClick={() => setPendingEvent({
+                      id: event.id,
+                      type: 'event',
+                      what: event.what,
+                      when: event.when,
+                      where: event.where || '',
+                      isTodo: event.isTodo || false,
+                      recurrence: event.recurrence || 'none'
+                    })}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <Edit2 size={16} color="#78716c" />
                   </div>
                 </div>
               );
