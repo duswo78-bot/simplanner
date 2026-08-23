@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AppNotification, scheduleNotification, gatherAllNotifications } from '../../components/NotificationManager';
 import { soundManager } from '../../utils/SoundManager';
 
 export type TodoStatus = 'todo' | 'in_progress' | 'done';
