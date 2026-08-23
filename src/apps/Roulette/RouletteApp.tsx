@@ -161,7 +161,7 @@ export function RouletteApp({ onBack }: RouletteAppProps) {
                 position: 'absolute', top: '50%', left: '50%',
                 width: '50%', height: '20px',
                 transformOrigin: '0% 50%',
-                transform: `translateY(-50%) rotate(${angle}deg)`,
+                transform: `translateY(-50%) rotate(${angle - 90}deg)`,
                 textAlign: 'right', paddingRight: '25px', boxSizing: 'border-box',
                 color: '#fff', fontWeight: '800', fontSize: '15px', 
                 textShadow: '1px 1px 3px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
