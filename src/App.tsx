@@ -37,7 +37,20 @@ function App() {
     return [];
   });
 
+  React.useEffect(() => {
+    const handlePopState = () => {
+      if (!window.location.hash || window.location.hash === '#' || window.location.hash === '#routing') {
+        setCurrentApp(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const handleAppClick = (app: AppData) => {
+    if (window.location.hash !== `#${app.id}`) {
+      window.history.pushState(null, '', `#${app.id}`);
+    }
     setOpenApps(prev => {
       if (!prev.find(a => a.id === app.id)) {
         return [...prev, app];
@@ -48,7 +61,11 @@ function App() {
   };
 
   const handleBack = () => {
-    setCurrentApp(null);
+    if (window.location.hash && window.location.hash !== '#routing') {
+      window.history.back();
+    } else {
+      setCurrentApp(null);
+    }
   };
 
   const renderAppContent = (app: AppData) => {
