@@ -23,7 +23,7 @@ import { checkParcelBadges } from '../apps/Parcel/ParcelStore';
 import './Launcher.css';
 import { useSettings } from '../contexts/SettingsContext';
 
-const INITIAL_APPS: AppData[] = [
+export const INITIAL_APPS: AppData[] = [
   { id: 'app-planner', name: '플래너', icon: 'Calendar', color: 'linear-gradient(135deg, #fb923c, #ea580c)' },
   { id: 'app-school', name: '학교', icon: 'School', color: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
   { id: 'app-account', name: '가계부', icon: 'Wallet', color: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },

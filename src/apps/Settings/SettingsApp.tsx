@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { ChevronLeft, MonitorSmartphone, MapPin, Bell, Database, Info, Download, Upload, Trash2, Search } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
+import { INITIAL_APPS } from '../../components/Launcher';
 import './SettingsApp.css';
 
 interface SettingsAppProps {
@@ -12,24 +14,6 @@ export function SettingsApp({ onBack }: SettingsAppProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [locInput, setLocInput] = useState(settings.fixedLocation.city);
   const [isSearching, setIsSearching] = useState(false);
-
-  const ALL_APPS = [
-    { id: 'app-planner', name: '일정' },
-    { id: 'app-meals', name: '식단' },
-    { id: 'app-pharmacy', name: '약국' },
-    { id: 'app-health', name: '복약/건강' },
-    { id: 'app-bus', name: '대중교통' },
-    { id: 'app-car', name: '차계부' },
-    { id: 'app-delivery', name: '택배조회' },
-    { id: 'app-cart', name: '장보기' },
-    { id: 'app-account', name: '가계부' },
-    { id: 'app-card', name: '금융/카드' },
-    { id: 'app-restaurant', name: '외식' },
-    { id: 'app-calculator', name: '계산기' },
-    { id: 'app-timer', name: '타이머' },
-    { id: 'app-roulette', name: '랜덤 룰렛' },
-    { id: 'app-school', name: '학교종이' }
-  ];
 
   const handleToggleApp = (appId: string) => {
     const isHidden = settings.hiddenApps.includes(appId);
@@ -148,21 +132,26 @@ export function SettingsApp({ onBack }: SettingsAppProps) {
                 <div className="settings-item-desc">사용하지 않는 앱을 홈 화면에서 숨길 수 있습니다.</div>
               </div>
             </div>
-            {ALL_APPS.map(app => (
-              <div key={app.id} className="settings-item" style={{ paddingLeft: '66px' }}>
-                <div className="settings-item-content">
-                  <div className="settings-item-title">{app.name}</div>
-                </div>
-                <div className="settings-item-action">
-                  <input 
-                    type="checkbox" 
-                    className="toggle-switch"
-                    checked={!settings.hiddenApps.includes(app.id)}
-                    onChange={() => handleToggleApp(app.id)}
-                  />
-                </div>
-              </div>
-            ))}
+            <div className="app-toggle-grid">
+              {INITIAL_APPS.map(app => {
+                if (app.id === 'app-settings') return null; // Hide settings from toggle
+                const isHidden = settings.hiddenApps.includes(app.id);
+                const Icon = app.icon ? (LucideIcons[app.icon as keyof typeof LucideIcons] as React.FC<any>) : null;
+                return (
+                  <div 
+                    key={app.id} 
+                    className={`app-toggle-item ${isHidden ? 'hidden' : ''}`}
+                    onClick={() => handleToggleApp(app.id)}
+                  >
+                    <div className="app-toggle-icon-wrap" style={{ background: isHidden ? '#334155' : (app.color || '#334155') }}>
+                      {Icon && <Icon size={24} />}
+                    </div>
+                    <div className="app-toggle-name">{app.name}</div>
+                    <div className={`tiny-switch ${!isHidden ? 'on' : ''}`}></div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 

@@ -85,7 +85,7 @@
 }
 
 .settings-item.clickable:active {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(148, 163, 184, 0.15);
 }
 
 .settings-item-icon {
@@ -203,4 +203,84 @@
 
 .file-input-hidden {
   display: none;
+}
+
+/* App Grid Toggle */
+.app-toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px 8px;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.3);
+}
+
+.app-toggle-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.app-toggle-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  margin-bottom: 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.app-toggle-name {
+  font-size: 0.7rem;
+  color: #f1f5f9;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  margin-bottom: 6px;
+}
+
+.app-toggle-item.hidden .app-toggle-icon-wrap {
+  opacity: 0.3;
+  filter: grayscale(100%);
+}
+.app-toggle-item.hidden .app-toggle-name {
+  color: #64748b;
+}
+
+/* Tiny switch */
+.tiny-switch {
+  width: 28px;
+  height: 16px;
+  background-color: #334155;
+  border-radius: 16px;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.tiny-switch.on {
+  background-color: #38bdf8;
+}
+
+.tiny-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.tiny-switch.on::after {
+  transform: translateX(12px);
 }
