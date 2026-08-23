@@ -140,7 +140,7 @@ export function SettingsApp({ onBack }: SettingsAppProps) {
                 return (
                   <div 
                     key={app.id} 
-                    className={`app-toggle-item ${isHidden ? 'hidden' : ''}`}
+                    className={`app-toggle-item clickable ${isHidden ? 'hidden' : ''}`}
                     onClick={() => handleToggleApp(app.id)}
                   >
                     <div className="app-toggle-icon-wrap" style={{ background: isHidden ? '#334155' : (app.color || '#334155') }}>

@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { AppNotification, scheduleNotification, gatherAllNotifications } from '../../components/NotificationManager';
+import { soundManager } from '../../utils/SoundManager';
 
 export type TodoStatus = 'todo' | 'in_progress' | 'done';
 export type RecurrenceType = string; // e.g., 'none', 'daily:1', 'weekly:2'
@@ -136,11 +138,13 @@ export const ScheduleProvider: React.FC<{ children: ReactNode }> = ({ children }
             if (dates.includes(targetDateStr)) {
               return { ...e, completedDates: dates.filter(d => d !== targetDateStr) };
             } else {
+              soundManager.playDing();
               return { ...e, completedDates: [...dates, targetDateStr] };
             }
           } else {
             // Non-recurring logic
             const newCompleted = !e.completed;
+            if (newCompleted) soundManager.playDing();
             return { ...e, completed: newCompleted, status: newCompleted ? 'done' : 'todo' };
           }
         }
@@ -151,9 +155,13 @@ export const ScheduleProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const updateEventStatus = (id: string, status: TodoStatus) => {
     setEvents((prev) =>
-      prev.map((e) =>
-        e.id === id ? { ...e, status, completed: status === 'done' } : e
-      )
+      prev.map((e) => {
+        if (e.id === id) {
+          if (status === 'done' && e.status !== 'done') soundManager.playDing();
+          return { ...e, status, completed: status === 'done' };
+        }
+        return e;
+      })
     );
   };
 

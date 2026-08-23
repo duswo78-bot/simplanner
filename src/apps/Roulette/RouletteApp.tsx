@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { AppContainer } from '../../components/AppContainer';
-import { Play, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Play } from 'lucide-react';
+import { soundManager } from '../../utils/SoundManager';
 
 interface RouletteAppProps {
   onBack: () => void;
@@ -42,6 +43,19 @@ export function RouletteApp({ onBack }: RouletteAppProps) {
     
     setRotation(totalRotation);
 
+    // Spin sound effect simulating deceleration
+    let speed = 30;
+    let timePassed = 0;
+    const spinTick = () => {
+      soundManager.playSpin();
+      timePassed += speed;
+      speed = speed * 1.08; // progressively slow down
+      if (timePassed < 2900) {
+        setTimeout(spinTick, speed);
+      }
+    };
+    spinTick();
+
     setTimeout(() => {
       setIsSpinning(false);
       // Calculate which item won
@@ -53,6 +67,7 @@ export function RouletteApp({ onBack }: RouletteAppProps) {
       const normalizedRotation = (360 - (totalRotation % 360)) % 360;
       const selectedIndex = Math.floor(normalizedRotation / sliceAngle);
       setSelectedItem(items[selectedIndex]);
+      soundManager.playWin();
     }, 3000); // match CSS transition time
   };
 

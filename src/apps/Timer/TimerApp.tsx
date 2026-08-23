@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppContainer } from '../../components/AppContainer';
 import { Play, Pause, Square, Plus, Trash2, Volume2 } from 'lucide-react';
+import { soundManager } from '../../utils/SoundManager';
 
 interface TimerAppProps {
   onBack: () => void;
@@ -29,8 +30,9 @@ export function TimerApp({ onBack }: TimerAppProps) {
             hasChanges = true;
             const newRemaining = timer.remainingSeconds - 1;
             if (newRemaining === 0) {
-              // TTS 알림
+              // TTS 알림 및 사운드 효과
               playTTS(timer.label);
+              soundManager.startAlarm();
               return { ...timer, remainingSeconds: 0, isRunning: false };
             }
             return { ...timer, remainingSeconds: newRemaining };
@@ -67,20 +69,29 @@ export function TimerApp({ onBack }: TimerAppProps) {
   };
 
   const toggleTimer = (id: number) => {
+    soundManager.stopAlarm();
     setTimers(timers.map(t => 
       t.id === id ? { ...t, isRunning: !t.isRunning } : t
     ));
   };
 
   const stopTimer = (id: number) => {
+    soundManager.stopAlarm();
     setTimers(timers.map(t => 
       t.id === id ? { ...t, isRunning: false, remainingSeconds: t.totalSeconds } : t
     ));
   };
 
   const deleteTimer = (id: number) => {
+    soundManager.stopAlarm();
     setTimers(timers.filter(t => t.id !== id));
   };
+
+  useEffect(() => {
+    return () => {
+      soundManager.stopAlarm();
+    };
+  }, []);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');

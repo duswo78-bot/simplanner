@@ -23,6 +23,7 @@ import { FinanceApp } from './apps/Finance/FinanceApp';
 import { TimerApp } from './apps/Timer/TimerApp';
 import { RouletteApp } from './apps/Roulette/RouletteApp';
 import { SettingsApp } from './apps/Settings/SettingsApp';
+import { soundManager } from './utils/SoundManager';
 
 function App() {
   const [currentApp, setCurrentApp] = useState<AppData | null>(() => {
@@ -45,8 +46,22 @@ function App() {
         setCurrentApp(null);
       }
     };
+    
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const isClickable = target.closest('button') || target.closest('a') || target.closest('.clickable') || target.closest('.app-icon-container');
+      if (isClickable) {
+        soundManager.playTick();
+      }
+    };
+    
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    document.addEventListener('click', handleGlobalClick);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      document.removeEventListener('click', handleGlobalClick);
+    };
   }, []);
 
   const handleAppClick = (app: AppData) => {
