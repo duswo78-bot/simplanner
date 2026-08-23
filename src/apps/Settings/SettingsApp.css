@@ -11,7 +11,8 @@
 .settings-header {
   display: flex;
   align-items: center;
-  padding: 16px 20px;
+  justify-content: space-between;
+  padding: 16px;
   background-color: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -24,21 +25,26 @@
 .settings-back-btn {
   background: none;
   border: none;
-  color: #38bdf8;
   padding: 8px;
   margin-left: -8px;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.settings-back-btn:active {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .settings-header h2 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  flex: 1;
-  text-align: center;
-  margin-right: 24px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .settings-content {

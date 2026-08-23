@@ -111,11 +111,11 @@ export function SettingsApp({ onBack }: SettingsAppProps) {
   return (
     <div className="settings-app animate-fade-in">
       <div className="settings-header">
-        <button className="settings-back-btn" onClick={onBack}>
-          <ChevronLeft size={24} />
-          <span>뒤로</span>
+        <button className="settings-back-btn" onClick={onBack} aria-label="Go back">
+          <ChevronLeft size={28} color="#fff" />
         </button>
         <h2>설정</h2>
+        <div style={{ minWidth: 44 }}></div>
       </div>
 
       <div className="settings-content">
