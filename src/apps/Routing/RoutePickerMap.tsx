@@ -70,22 +70,40 @@ function MapController({ setPos, setGpsLoc, centerTo, gpsTrigger, selectedRoute,
   const [isLocating, setIsLocating] = useState(false);
 
   useEffect(() => {
-    if (gpsTrigger > 0 && navigator.geolocation) {
+    if (gpsTrigger > 0) {
       setIsLocating(true);
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const coords: [number, number] = [pos.coords.latitude, pos.coords.longitude];
-          map.flyTo(coords, 15);
-          setPos(coords);
-          if (setGpsLoc) setGpsLoc(coords);
-          setIsLocating(false);
-        },
-        (err) => {
-          console.warn('Geolocation error:', err);
-          setIsLocating(false);
-        },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-      );
+      
+      const applyLocation = (lat: number, lng: number) => {
+        const coords: [number, number] = [lat, lng];
+        map.flyTo(coords, 15);
+        setPos(coords);
+        if (setGpsLoc) setGpsLoc(coords);
+        setIsLocating(false);
+      };
+
+      try {
+        const cachedLocStr = localStorage.getItem('user_location');
+        if (cachedLocStr) {
+          const { lat, lng } = JSON.parse(cachedLocStr);
+          if (typeof lat === 'number' && typeof lng === 'number') {
+            applyLocation(lat, lng);
+            return;
+          }
+        }
+      } catch (e) {}
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => applyLocation(pos.coords.latitude, pos.coords.longitude),
+          (err) => {
+            console.warn('Geolocation error:', err);
+            setIsLocating(false);
+          },
+          { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        );
+      } else {
+        setIsLocating(false);
+      }
     }
   }, [gpsTrigger, map, setPos, setGpsLoc]);
 
@@ -124,8 +142,26 @@ function MapResizer({ isMapVisible }: { isMapVisible?: boolean }) {
 }
 
 export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedRoute, autoGps = false, readonly = false, onActiveBusesChange, ridingState, onMatchBus, isMapVisible, refreshTrigger }: RoutePickerMapProps & { isMapVisible?: boolean }) {
-  const [pos, setPos] = useState<[number, number]>([37.5665, 126.9780]);
-  const [gpsLoc, setGpsLoc] = useState<[number, number] | null>(null);
+  const [pos, setPos] = useState<[number, number]>(() => {
+    try {
+      const cached = localStorage.getItem('user_location');
+      if (cached) {
+        const { lat, lng } = JSON.parse(cached);
+        if (typeof lat === 'number' && typeof lng === 'number') return [lat, lng];
+      }
+    } catch {}
+    return [37.5665, 126.9780];
+  });
+  const [gpsLoc, setGpsLoc] = useState<[number, number] | null>(() => {
+    try {
+      const cached = localStorage.getItem('user_location');
+      if (cached) {
+        const { lat, lng } = JSON.parse(cached);
+        if (typeof lat === 'number' && typeof lng === 'number') return [lat, lng];
+      }
+    } catch {}
+    return null;
+  });
   const [gpsTrigger, setGpsTrigger] = useState(0);
   const [activeBuses, setActiveBuses] = useState<any[]>([]);
 
@@ -147,14 +183,28 @@ export function RoutePickerMap({ onSelectStart, onSelectEnd, centerTo, selectedR
 
   // Try to get user location
   useEffect(() => {
-    if (navigator.geolocation && !autoGps) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setPos([pos.coords.latitude, pos.coords.longitude]);
-          setGpsLoc([pos.coords.latitude, pos.coords.longitude]);
-        },
-        () => {}
-      );
+    if (!autoGps) {
+      try {
+        const cachedLocStr = localStorage.getItem('user_location');
+        if (cachedLocStr) {
+          const { lat, lng } = JSON.parse(cachedLocStr);
+          if (typeof lat === 'number' && typeof lng === 'number') {
+            setPos([lat, lng]);
+            setGpsLoc([lat, lng]);
+            return;
+          }
+        }
+      } catch {}
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setPos([pos.coords.latitude, pos.coords.longitude]);
+            setGpsLoc([pos.coords.latitude, pos.coords.longitude]);
+          },
+          () => {}
+        );
+      }
     }
   }, []);
 

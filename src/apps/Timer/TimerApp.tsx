@@ -105,7 +105,7 @@ export function TimerApp({ onBack }: TimerAppProps) {
         padding: '20px', 
         height: '100%', 
         overflowY: 'auto',
-        background: `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1501139083538-0139583c060f?q=80&w=1000&auto=format&fit=crop')`,
+        background: `linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.8)), url('https://images.unsplash.com/photo-1501139083538-0139583c060f?q=80&w=1000&auto=format&fit=crop')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'
