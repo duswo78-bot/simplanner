@@ -223,13 +223,7 @@ export function GroceryApp({ onBack }: GroceryAppProps) {
   const [savedLists, setSavedLists] = useState<SavedList[]>([]);
   const [isSavedListsModalOpen, setIsSavedListsModalOpen] = useState(false);
   
-  const [presets, setPresets] = useState<MealPreset[]>(() => {
-    try {
-      const stored = localStorage.getItem('grocery_meal_presets');
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return MEAL_PRESETS;
-  });
+  const [presets, setPresets] = useState<MealPreset[]>(MEAL_PRESETS);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
   const [editingPreset, setEditingPreset] = useState<MealPreset | null>(null);
 
@@ -237,10 +231,6 @@ export function GroceryApp({ onBack }: GroceryAppProps) {
 
   const [presetSearchQuery, setPresetSearchQuery] = useState('');
   const [isPresetListening, setIsPresetListening] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem('grocery_meal_presets', JSON.stringify(presets));
-  }, [presets]);
 
   const handlePresetVoiceSearch = () => {
     // @ts-ignore

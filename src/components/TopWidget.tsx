@@ -46,25 +46,53 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
         .catch(err => console.error('Weather fetch error:', err));
     };
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=ko`)
-            .then(res => res.json())
-            .then(geo => {
-              const city = geo.city || geo.locality || geo.principalSubdivision || '현재 위치';
-              loadWeather(lat, lon, city);
-            })
-            .catch(() => loadWeather(lat, lon, '현재 위치'));
-        },
-        () => loadWeather(37.566, 126.978, '서울'),
-        { timeout: 10000, maximumAge: 600000 }
-      );
-    } else {
-      loadWeather(37.566, 126.978, '서울');
+    const fetchGpsAndUpdate = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=ko`)
+              .then(res => res.json())
+              .then(geo => {
+                const city = geo.city || geo.locality || geo.principalSubdivision || '현재 위치';
+                localStorage.setItem('user_location', JSON.stringify({ lat, lng: lon, city }));
+                loadWeather(lat, lon, city);
+              })
+              .catch(() => {
+                localStorage.setItem('user_location', JSON.stringify({ lat, lng: lon, city: '현재 위치' }));
+                loadWeather(lat, lon, '현재 위치');
+              });
+          },
+          () => {
+            const cachedLoc = localStorage.getItem('user_location');
+            if (!cachedLoc) {
+              localStorage.setItem('user_location', JSON.stringify({ lat: 37.566, lng: 126.978, city: '서울' }));
+              loadWeather(37.566, 126.978, '서울');
+            }
+          },
+          { timeout: 10000, maximumAge: 600000 }
+        );
+      } else {
+        const cachedLoc = localStorage.getItem('user_location');
+        if (!cachedLoc) {
+          localStorage.setItem('user_location', JSON.stringify({ lat: 37.566, lng: 126.978, city: '서울' }));
+          loadWeather(37.566, 126.978, '서울');
+        }
+      }
+    };
+
+    const cachedLocStr = localStorage.getItem('user_location');
+    if (cachedLocStr) {
+      try {
+        const { lat, lng, city } = JSON.parse(cachedLocStr);
+        loadWeather(lat, lng, city);
+      } catch (e) {
+        // Ignore
+      }
     }
+    
+    fetchGpsAndUpdate();
   }, []);
 
   const today = new Date();
@@ -94,7 +122,7 @@ export function TopWidget({ notifications = [] }: TopWidgetProps) {
               display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', fontSize: '0.85rem', 
               color: '#e2e8f0', marginTop: '8px' 
             }}>
-              <span>📍 {weather.city}</span>
+              <span>{weather.city}</span>
               <span style={{ color: '#64748b' }}>|</span>
               <span>{weather.desc === '맑음' ? '☀️' : weather.desc.includes('비') ? '🌧️' : weather.desc.includes('구름') ? '⛅' : '☁️'} {weather.temp}°C</span>
               <span style={{ color: '#64748b' }}>|</span>
