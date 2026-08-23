@@ -85,25 +85,75 @@ export function RouletteApp({ onBack }: RouletteAppProps) {
     
     gradient = gradient.slice(0, -2); // remove last comma and space
 
+    // Calculate pegs
+    const pegs = [];
+    for (let i = 0; i < items.length; i++) {
+      pegs.push(i * sliceAngle);
+    }
+
     return (
-      <div style={{ position: 'relative', width: '240px', height: '240px', margin: '0 auto' }}>
-        {/* Pointer */}
+      <div style={{ position: 'relative', width: '260px', height: '260px', margin: '10px auto' }}>
+        {/* Outer 3D Rim (Gold/Silver look) */}
         <div style={{
-          position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)',
-          width: '0', height: '0', borderLeft: '15px solid transparent', borderRight: '15px solid transparent',
-          borderTop: '25px solid #fff', zIndex: 10, filter: 'drop-shadow(0 4px 4px rgba(0,0,0,0.3))'
+          position: 'absolute', top: '-10px', left: '-10px', right: '-10px', bottom: '-10px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 50%, #94a3b8 100%)',
+          boxShadow: '0 12px 36px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.8), inset 0 -4px 8px rgba(0,0,0,0.3)',
+          zIndex: 1
         }} />
-        
-        {/* Wheel */}
+
+        {/* 3D Pointer (Needle) */}
         <div style={{
+          position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)',
+          width: '30px', height: '45px', zIndex: 10,
+          background: 'linear-gradient(to bottom, #f87171, #dc2626)',
+          clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
+          filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.5))'
+        }}>
+          <div style={{
+            position: 'absolute', top: 0, left: '50%', width: '50%', height: '100%',
+            background: 'rgba(255,255,255,0.2)'
+          }}/>
+        </div>
+        
+        {/* Pointer shadow/mount */}
+        <div style={{
+          position: 'absolute', top: '-30px', left: '50%', transform: 'translateX(-50%)',
+          width: '20px', height: '20px', borderRadius: '50%',
+          background: 'radial-gradient(circle at 30% 30%, #fff, #94a3b8)',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.4)', zIndex: 11
+        }} />
+
+        {/* The Spinning Wheel */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0,
           width: '100%', height: '100%', borderRadius: '50%',
           background: `conic-gradient(${gradient})`,
           transform: `rotate(${rotation}deg)`,
           transition: 'transform 3s cubic-bezier(0.2, 0.8, 0.1, 1)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-          border: '4px solid #fff',
-          position: 'relative'
+          boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)',
+          zIndex: 2
         }}>
+          {/* Inner 3D Overlay for the dome effect */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3) 0%, rgba(0,0,0,0.3) 100%)',
+            pointerEvents: 'none'
+          }} />
+
+          {/* Pegs */}
+          {pegs.map((angle, i) => (
+            <div key={`peg-${i}`} style={{
+              position: 'absolute', top: '50%', left: '50%',
+              width: '8px', height: '8px', borderRadius: '50%',
+              background: 'radial-gradient(circle at 30% 30%, #fff, #cbd5e1)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+              transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-120px)`,
+            }} />
+          ))}
+
+          {/* Text Labels */}
           {items.map((item, i) => {
             const angle = (i * sliceAngle) + (sliceAngle / 2);
             return (
@@ -112,14 +162,24 @@ export function RouletteApp({ onBack }: RouletteAppProps) {
                 width: '50%', height: '20px',
                 transformOrigin: '0% 50%',
                 transform: `translateY(-50%) rotate(${angle}deg)`,
-                textAlign: 'right', paddingRight: '15px', boxSizing: 'border-box',
-                color: '#fff', fontWeight: 'bold', fontSize: '14px', textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                textAlign: 'right', paddingRight: '25px', boxSizing: 'border-box',
+                color: '#fff', fontWeight: '800', fontSize: '15px', 
+                textShadow: '1px 1px 3px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.5)',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                letterSpacing: '1px'
               }}>
                 {item}
               </div>
             );
           })}
+
+          {/* Center Hub */}
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: '40px', height: '40px', borderRadius: '50%',
+            background: 'radial-gradient(circle at 30% 30%, #fff, #fbbf24, #d97706)',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.5)'
+          }} />
         </div>
       </div>
     );
