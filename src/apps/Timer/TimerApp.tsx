@@ -13,27 +13,51 @@ interface TimerItem {
   totalSeconds: number;
   remainingSeconds: number;
   isRunning: boolean;
+  type: 'duration' | 'targetTime';
+  targetEpochMs?: number;
+  isRinging?: boolean;
+  lastTtsTime?: number;
 }
 
 export function TimerApp({ onBack }: TimerAppProps) {
   const [timers, setTimers] = useState<TimerItem[]>([]);
   const [newLabel, setNewLabel] = useState('');
+  const [timerMode, setTimerMode] = useState<'duration' | 'targetTime'>('duration');
   const [newMinutes, setNewMinutes] = useState(5);
+  const [targetTimeStr, setTargetTimeStr] = useState('12:00');
   const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     intervalRef.current = window.setInterval(() => {
       setTimers(prevTimers => {
         let hasChanges = false;
+        const now = Date.now();
         const updatedTimers = prevTimers.map(timer => {
+          if (timer.isRinging) {
+            // TTS 20초 주기 반복
+            if (now - (timer.lastTtsTime || 0) >= 20000) {
+              playTTS(timer.label);
+              hasChanges = true;
+              return { ...timer, lastTtsTime: now };
+            }
+            return timer;
+          }
+
           if (timer.isRunning && timer.remainingSeconds > 0) {
             hasChanges = true;
-            const newRemaining = timer.remainingSeconds - 1;
+            let newRemaining = timer.remainingSeconds;
+            
+            if (timer.type === 'targetTime' && timer.targetEpochMs) {
+              newRemaining = Math.max(0, Math.floor((timer.targetEpochMs - now) / 1000));
+            } else {
+              newRemaining = timer.remainingSeconds - 1;
+            }
+
             if (newRemaining === 0) {
-              // TTS 알림 및 사운드 효과
+              // 최초 알람 및 TTS
               playTTS(timer.label);
               soundManager.startAlarm();
-              return { ...timer, remainingSeconds: 0, isRunning: false };
+              return { ...timer, remainingSeconds: 0, isRunning: false, isRinging: true, lastTtsTime: now };
             }
             return { ...timer, remainingSeconds: newRemaining };
           }
@@ -56,14 +80,37 @@ export function TimerApp({ onBack }: TimerAppProps) {
   };
 
   const addTimer = () => {
-    if (newMinutes <= 0) return;
-    const newTimer: TimerItem = {
-      id: Date.now(),
-      label: newLabel || '타이머',
-      totalSeconds: newMinutes * 60,
-      remainingSeconds: newMinutes * 60,
-      isRunning: false,
-    };
+    let newTimer: TimerItem;
+    if (timerMode === 'duration') {
+      if (newMinutes <= 0) return;
+      newTimer = {
+        id: Date.now(),
+        label: newLabel || '타이머',
+        totalSeconds: newMinutes * 60,
+        remainingSeconds: newMinutes * 60,
+        isRunning: false,
+        type: 'duration'
+      };
+    } else {
+      if (!targetTimeStr) return;
+      const [hours, minutes] = targetTimeStr.split(':').map(Number);
+      const now = new Date();
+      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+      if (target.getTime() <= now.getTime()) {
+        target.setDate(target.getDate() + 1); // tomorrow
+      }
+      const targetEpochMs = target.getTime();
+      const remSecs = Math.max(0, Math.floor((targetEpochMs - Date.now()) / 1000));
+      newTimer = {
+        id: Date.now(),
+        label: newLabel || '알람',
+        totalSeconds: remSecs,
+        remainingSeconds: remSecs,
+        isRunning: true, // auto start
+        type: 'targetTime',
+        targetEpochMs
+      };
+    }
     setTimers([...timers, newTimer]);
     setNewLabel('');
   };
@@ -71,14 +118,14 @@ export function TimerApp({ onBack }: TimerAppProps) {
   const toggleTimer = (id: number) => {
     soundManager.stopAlarm();
     setTimers(timers.map(t => 
-      t.id === id ? { ...t, isRunning: !t.isRunning } : t
+      t.id === id ? { ...t, isRunning: !t.isRunning, isRinging: false } : t
     ));
   };
 
   const stopTimer = (id: number) => {
     soundManager.stopAlarm();
     setTimers(timers.map(t => 
-      t.id === id ? { ...t, isRunning: false, remainingSeconds: t.totalSeconds } : t
+      t.id === id ? { ...t, isRunning: false, isRinging: false, remainingSeconds: t.type === 'targetTime' ? 0 : t.totalSeconds } : t
     ));
   };
 
@@ -94,8 +141,10 @@ export function TimerApp({ onBack }: TimerAppProps) {
   }, []);
 
   const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
+    if (h > 0) return `${h}:${m}:${s}`;
     return `${m}:${s}`;
   };
 
@@ -112,17 +161,28 @@ export function TimerApp({ onBack }: TimerAppProps) {
       }}>
         
         {/* 타이머 추가 UI */}
-        <div style={{ 
-          background: 'rgba(255,255,255,0.1)', 
-          backdropFilter: 'blur(10px)',
-          padding: '16px', 
-          borderRadius: '20px',
-          marginBottom: '24px',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-        }}>
-          <h3 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Play size={20} color="#38bdf8" /> 
             새 타이머 추가
           </h3>
+          
+          {/* 탭 버튼 */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', background: 'rgba(0,0,0,0.4)', borderRadius: '12px', padding: '4px' }}>
+            <button 
+              onClick={() => setTimerMode('duration')}
+              style={{ flex: 1, padding: '8px', border: 'none', borderRadius: '8px', background: timerMode === 'duration' ? 'rgba(255,255,255,0.15)' : 'transparent', color: timerMode === 'duration' ? '#fff' : '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              모래시계(시간 길이)
+            </button>
+            <button 
+              onClick={() => setTimerMode('targetTime')}
+              style={{ flex: 1, padding: '8px', border: 'none', borderRadius: '8px', background: timerMode === 'targetTime' ? 'rgba(255,255,255,0.15)' : 'transparent', color: timerMode === 'targetTime' ? '#fff' : '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              알람(목표 시각)
+            </button>
+          </div>
+
           <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
             <input 
               type="text" 
@@ -135,16 +195,24 @@ export function TimerApp({ onBack }: TimerAppProps) {
               }}
             />
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '0 12px', borderRadius: '12px' }}>
-              <input 
-                type="number" 
-                value={newMinutes}
-                onChange={(e) => setNewMinutes(Number(e.target.value))}
-                style={{
-                  width: '50px', padding: '12px 0', border: 'none',
-                  background: 'transparent', color: '#fff', textAlign: 'right', outline: 'none'
-                }}
-              />
-              <span style={{ color: '#94a3b8' }}>분</span>
+              {timerMode === 'duration' ? (
+                <>
+                  <input 
+                    type="number" 
+                    value={newMinutes}
+                    onChange={(e) => setNewMinutes(Number(e.target.value))}
+                    style={{ width: '50px', padding: '12px 0', border: 'none', background: 'transparent', color: '#fff', textAlign: 'right', outline: 'none' }}
+                  />
+                  <span style={{ color: '#94a3b8' }}>분</span>
+                </>
+              ) : (
+                <input 
+                  type="time" 
+                  value={targetTimeStr}
+                  onChange={(e) => setTargetTimeStr(e.target.value)}
+                  style={{ padding: '12px 0', border: 'none', background: 'transparent', color: '#fff', outline: 'none', width: '110px' }}
+                />
+              )}
             </div>
           </div>
           <button 
@@ -211,33 +279,34 @@ export function TimerApp({ onBack }: TimerAppProps) {
                       {formatTime(timer.remainingSeconds)}
                     </div>
                   </div>
-                  
-                  {/* 컨트롤 버튼 */}
+                                    {/* 컨트롤 버튼 */}
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
-                    <button 
-                      onClick={() => toggleTimer(timer.id)}
-                      style={{ 
-                        width: '64px', height: '64px', borderRadius: '32px', border: 'none',
-                        background: timer.isRunning ? 'rgba(239,68,68,0.15)' : 'rgba(56,189,248,0.15)',
-                        color: timer.isRunning ? '#ef4444' : '#38bdf8',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', transition: 'all 0.2s ease'
-                      }}
-                    >
-                      {timer.isRunning ? <Pause size={30} /> : <Play size={30} style={{ marginLeft: '4px' }} />}
-                    </button>
-                    <button 
-                      onClick={() => stopTimer(timer.id)}
-                      style={{ 
-                        width: '64px', height: '64px', borderRadius: '32px', border: 'none',
-                        background: 'rgba(255,255,255,0.1)', color: '#cbd5e1',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <Square size={26} />
-                    </button>
-                  </div>
+                      {timer.type === 'duration' && (
+                        <button 
+                          onClick={() => toggleTimer(timer.id)}
+                          style={{ 
+                            width: '64px', height: '64px', borderRadius: '32px', border: 'none',
+                            background: timer.isRunning ? 'rgba(255,255,255,0.1)' : 'rgba(56, 189, 248, 0.2)', 
+                            color: timer.isRunning ? '#cbd5e1' : '#38bdf8',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', transition: 'all 0.2s ease'
+                          }}
+                        >
+                          {timer.isRunning ? <Pause size={30} /> : <Play size={30} style={{ marginLeft: '4px' }} />}
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => stopTimer(timer.id)}
+                        style={{ 
+                          width: '64px', height: '64px', borderRadius: '32px', border: 'none',
+                          background: 'rgba(255,255,255,0.1)', color: '#cbd5e1',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer', transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <Square size={24} />
+                      </button>
+                    </div>
                 </div>
               );
             })
