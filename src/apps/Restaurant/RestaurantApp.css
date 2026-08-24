@@ -204,8 +204,8 @@
 }
 
 .search-btn {
-  background: linear-gradient(135deg, #ec4899, #be185d);
-  box-shadow: 0 2px 4px rgba(236, 72, 153, 0.3);
+  background: linear-gradient(135deg, #34d399, #059669);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
 }
 
 .category-chips {
