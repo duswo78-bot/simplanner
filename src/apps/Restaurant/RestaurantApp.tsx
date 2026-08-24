@@ -413,9 +413,17 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
           </div>
         )}
         
-        {currentPlaces.length === 0 && !loading && !error && (
+        {currentPlaces.length === 0 && !loading && !error && searchIdRef.current > 0 && (
           <div className="empty-state">
             조건에 맞는 맛집이 없습니다.
+          </div>
+        )}
+
+        {currentPlaces.length === 0 && !loading && !error && searchIdRef.current === 0 && (
+          <div className="welcome-state">
+            <div className="welcome-image-collage"></div>
+            <div className="welcome-text">오늘 뭐 먹지?</div>
+            <div className="welcome-subtext">지역과 카테고리를 선택하거나 직접 검색해보세요!</div>
           </div>
         )}
 
