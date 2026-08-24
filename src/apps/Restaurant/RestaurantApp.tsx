@@ -421,9 +421,9 @@ export function RestaurantApp({ onBack }: RestaurantAppProps) {
 
         {currentPlaces.length === 0 && !loading && !error && searchIdRef.current === 0 && (
           <div className="welcome-state">
-            <div className="welcome-image-collage"></div>
             <div className="welcome-text">오늘 뭐 먹지?</div>
-            <div className="welcome-subtext">지역과 카테고리를 선택하거나 직접 검색해보세요!</div>
+            <div className="welcome-subtext" style={{ marginBottom: '24px' }}>지역과 카테고리를 선택하거나 직접 검색해보세요!</div>
+            <div className="welcome-image-collage"></div>
           </div>
         )}
 
